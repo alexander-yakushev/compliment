@@ -10,7 +10,7 @@
 (defn dash-matches? [^String prefix, ^String var]
   (parts-match? (split prefix #"-") (split var #"-")))
 
-(defn get-scope-and-prefix [s ns]
+(defn get-scope-and-prefix [^String s, ns]
   (let [[scope-name sym] (if (> (.indexOf s "/") -1)
                            (.split s "/") ())
         scope (when scope-name
@@ -30,7 +30,7 @@
 
 (defn candidates [^String prefix ns context]
   (if (var-symbol? prefix)
-    (let [[scope prefix] (get-scope-and-prefix prefix ns)
+    (let [[scope, ^String prefix] (get-scope-and-prefix prefix ns)
           ns-form-namespace (try-get-ns-from-context context)
           vars (cond
                 scope (ns-publics scope)
