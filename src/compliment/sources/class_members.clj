@@ -1,17 +1,26 @@
 (ns compliment.sources.class-members
+  "Completion for both static and non-static class members."
   (:use [compliment.sources :only [defsource]]
         [compliment.utils :only [parts-match? resolve-class]]
         [clojure.string :only [split join]])
   (:import [java.lang.reflect Method Field Member Modifier]))
 
-(defn static? [^Member member]
+(defn static?
+  "Tests if class member is static."
+  [^Member member]
   (Modifier/isStatic (.getModifiers member)))
 
 ;; ## Regular (non-static) members
 
-(def members-cache (atom {}))
+(def ^{:doc "Stores cache of all non-static members for every
+  namespace."}
+  members-cache (atom {}))
 
-(defn populate-members-cache [ns classes-cnt]
+(defn populate-members-cache
+  "Populates members cache for a given namespace. `classes-cnt` is a
+  number that indicates the current number of imported classes in this
+  namespace."
+  [ns classes-cnt]
   (loop [cache (transient {})
 
          [^Member c & r]
@@ -34,27 +43,40 @@
       (swap! members-cache assoc ns {:classes-cnt classes-cnt
                                      :methods (persistent! cache)}))))
 
-(defn update-cache [ns]
+(defn update-cache
+  "Updates members cache for a given namespace if necessary."
+  [ns]
   (let [imported-cls-cnt (count (filter class? (vals (ns-map *ns*))))]
     (when (or (nil? (@members-cache ns))
               (not= (get-in @members-cache [ns :classes-cnt])
                     imported-cls-cnt))
       (populate-members-cache ns imported-cls-cnt))))
 
-(defn get-all-members [ns]
+(defn get-all-members
+  "Returns all non-static members for a given namespace."
+  [ns]
   (update-cache ns)
   (get-in @members-cache [ns :methods]))
 
-(defn class-member-symbol? [^String x]
+(defn class-member-symbol?
+  "Tests if a symbol name looks like a non-static class member."
+  [^String x]
   (.startsWith x "."))
 
-(defn camel-case-matches? [^String prefix, ^String member-name]
+(defn camel-case-matches?
+  "Tests if prefix matches the member name following camel case rules.
+  Thus, prefix `getDeF` matches member `getDeclaredFields`."
+  [^String prefix, ^String member-name]
   (let [regex #"[A-Z]?[a-z]*"
         prefix-parts (re-seq regex prefix)
         cl-parts (re-seq regex member-name)]
     (parts-match? prefix-parts cl-parts)))
 
-(defn try-get-object-class [context]
+(defn try-get-object-class
+  "Tries to get the type of the object from the context, which the
+  member will be applied to. If the object is a Var, derefs it and
+  gets the type of its content."
+  [context]
   (when (and (= (:idx (first context)) 0))
     (let [sym (second (:form (first context)))]
       (when (symbol? sym)
@@ -63,8 +85,7 @@
           (type (resolve sym)))))))
 
 (defn members-candidates
-  "Returns a list of potential java non-static fields and methods
-  candidates for a given namespace."
+  "Returns a list of Java non-static fields and methods candidates."
   [prefix ns context]
   (when (class-member-symbol? prefix)
     (let [prefix (subs prefix 1)
@@ -85,13 +106,18 @@
 
 ;; ## Static members
 
-(defn static-member-symbol? [^String x]
+(defn static-member-symbol?
+  "Tests if prefix looks like a static member symbol."
+  [^String x]
   (and (not (.startsWith x ":"))
        (> (.indexOf x "/") -1)))
 
-(def static-members-cache (atom {}))
+(def ^{:doc "Stores cache of all static members for every class."}
+  static-members-cache (atom {}))
 
-(defn populate-static-members-cache [^Class class]
+(defn populate-static-members-cache
+  "Populates static members cache for a given class."
+  [^Class class]
   (loop [cache {}, [^Member c & r] (concat (.getMethods class)
                                            (.getFields class))]
     (if c
@@ -104,13 +130,15 @@
       (swap! static-members-cache assoc class cache))))
 
 (defn static-members
-  "Returns a list of potential static members for a given class."
+  "Returns all static members for a given class."
   [^Class class]
   (when-not (@static-members-cache class)
     (populate-static-members-cache class))
   (keys (@static-members-cache class)))
 
-(defn static-members-candidates [^String prefix, ns context]
+(defn static-members-candidates
+  "Returns a list of static member candidates."
+  [^String prefix, ns context]
   (when (static-member-symbol? prefix)
     (let [[cl-name member-prefix] (.split prefix "/")
           cl (resolve-class (symbol cl-name))

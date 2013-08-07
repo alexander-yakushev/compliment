@@ -1,10 +1,32 @@
-(ns compliment.context)
+(ns compliment.context
+  "Utilities for parsing and storing the current completion context.")
 
-(def ^:private previous-context (atom nil))
+(def ^{:doc "Stores the last completion context."
+       :private true}
+  previous-context (atom nil))
 
-(def prefix-placeholder '__prefix__)
+(def ^{:doc "Special symbol which substitutes prefix in the context,
+  so the former can be found unambiguously."}
+  prefix-placeholder '__prefix__)
 
-(defn parse-context [context]
+(defn parse-context
+  "Takes a context which is a Lisp form and returns a transformed context.
+
+  The result is a list of maps, each map represents a level of the
+  context from inside to outside. Map has `:idx` and `:form` values,
+  and `:map-role` if the level is a map. `:idx` defines the position
+  of prefix (or the form containing prefix) on the current
+  level (number for lists and vectors, key or value for maps).
+
+  Example: `(dotimes [i 10] ({:foo {:baz __prefix__}, :bar 42} :quux))`
+
+  Transformed it looks like:
+
+  `({:idx :baz, :map-role :value, :form {:baz __prefix__}}
+    {:idx :foo, :map-role :key, :form {:foo {:baz __prefix__}, :bar 42}}
+    {:idx 0, :form ({:foo {:baz __prefix__}, :bar 42} :quux)}
+    {:idx 2, :form (dotimes [i 10] ({:foo {:baz __prefix__}, :bar 42} :quux))})`."
+  [context]
   (let [parse (fn parse [ctx]
                 (cond
                  (sequential? ctx)
@@ -29,7 +51,9 @@
     (when parsed
       (reverse parsed))))
 
-(defn cache-context [context]
+(defn cache-context
+  "Parses a context, or returns one from cache if it was unchanged."
+  [context]
   (when-not (= context :same)
     (reset! previous-context (parse-context context)))
   @previous-context)
