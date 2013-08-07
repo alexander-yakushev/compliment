@@ -48,10 +48,10 @@
 (defn class-member-symbol? [^String x]
   (.startsWith x "."))
 
-(defn camel-case-matches?  [^String prefix, ^String classname]
+(defn camel-case-matches? [^String prefix, ^String member-name]
   (let [regex #"[A-Z]?[a-z]*"
-        prefix-parts (re-seq #"[A-Z]?[a-z]*" prefix)
-        cl-parts (re-seq #"[A-Z]?[a-z]*" classname)]
+        prefix-parts (re-seq regex prefix)
+        cl-parts (re-seq regex member-name)]
     (parts-match? prefix-parts cl-parts)))
 
 (defn try-get-object-class [context]
