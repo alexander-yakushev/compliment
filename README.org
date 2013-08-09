@@ -25,8 +25,8 @@
      sure the speed is acceptable on any host. This is mostly a
      concern when run on Android, because a person like you is curious
      enough to try Clojure-Android someday.
-   - *Editor agnosticism.* Your freedom is valuable, and you should be
-     able to choose any coding tools you want. This is achieved by
+   - *Editor agnosticism.* Your freedom is important, and you should
+     be able to choose any coding tools you want. This is achieved by
      having the dumbest client possible (but to the point where speed
      is not impaired). Ideally editor should not know about completion
      at all, only giving the prefix to Compliment and showing the
@@ -35,9 +35,9 @@
      completion being smart as well. Default Compliment sources use
      various techniques to give more meaningful completion depending
      on the context, and allow some fuzziness in prefix.
-   - *Extensibility.* Your insatiable passion for exploration will
-     never be satisfied by a set in stone completion list. For this
-     reason Compliment allows every library developer to write custom
+   - *Extensibility.* Your insatiable passion for exploration won't be
+     satisfied by a set in stone completion list. For this reason
+     Compliment allows every library developer to write custom
      sources, so later other users of the library will have better
      experience utilizing it.
 
