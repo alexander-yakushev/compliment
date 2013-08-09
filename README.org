@@ -44,9 +44,14 @@
 ** Installation
 
    Adding Compliment to the server (application) side is as easy as
-   specifying this in project.clj `:dependencies`:
+   specifying this in project.clj =:dependencies=:
 
    : [compliment "0.0.1"]
 
    Currently only Emacs is supported, by using [[https://github.com/alexander-yakushev/ac-nrepl-compliment][ac-nrepl-compliment]].
    You can see client installation details under the link.
+
+** Examples
+
+   [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios
+   Compliment supports so far.
