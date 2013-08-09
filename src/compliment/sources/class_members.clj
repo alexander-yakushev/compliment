@@ -100,9 +100,62 @@
                 (some #(= klass (.getDeclaringClass ^Member %)) members))]
         (str "." member-name)))))
 
+;; ### Member documentation
+
+(defn type-to-pretty-string
+  "Takes a type (either a class or a primitive) and returns it's
+  human-readable name."
+  [^Class t]
+  (if (or (.isLocalClass t)
+          (.isMemberClass t))
+    (.getName t)
+    (.getSimpleName t)))
+
+(defn doc-method-parameters
+  "Takes a list of method parameters and stringifies it."
+  [parameters]
+  (->> parameters
+       (map type-to-pretty-string)
+       (interpose " ")
+       join
+       (format "(%s)")))
+
+(defn create-members-doc
+  "Takes a list of members (presumably with the same name) and turns
+  them into a docstring."
+  [members]
+  (->> members
+       (group-by (fn [^Member m] (.getDeclaringClass m)))
+       (map (fn [[^Class class, members]]
+              (let [^Member f-mem (first members)]
+                (str (.getName class) "." (.getName f-mem)
+                     (if (instance? Field f-mem)
+                       (str " = " (try (.get ^Field f-mem nil)
+                                       (catch Exception e "?"))
+                            " (" (type-to-pretty-string (.getType ^Field f-mem)) ")\n"
+                            (Modifier/toString (.getModifiers f-mem)))
+                       (join
+                        (map (fn [^Method member]
+                               (when (instance? Method member)
+                                 (str "\n  " (doc-method-parameters (.getParameterTypes member))
+                                      " -> " (type-to-pretty-string (.getReturnType ^Method member))
+                                      " (" (Modifier/toString (.getModifiers member)) ")")))
+                             (distinct members))))
+                     "\n"))))
+       (interpose "\n")
+       join))
+
+(defn members-doc
+  "Documentation function for non-static members."
+  [member-str ns]
+  (when (class-member-symbol? member-str)
+    (update-cache ns)
+    (when-let [member (get-in @members-cache [ns :methods (subs member-str 1)])]
+      (create-members-doc member))))
+
 (defsource ::members
   :candidates #'members-candidates
-  :doc (constantly nil))
+  :doc #'members-doc)
 
 ;; ## Static members
 
@@ -129,11 +182,16 @@
         (recur cache r))
       (swap! static-members-cache assoc class cache))))
 
+(defn update-static-cache
+  "Updates static members cache for a given class if necessary."
+  [class]
+  (when-not (@static-members-cache class)
+    (populate-static-members-cache class)))
+
 (defn static-members
   "Returns all static members for a given class."
   [^Class class]
-  (when-not (@static-members-cache class)
-    (populate-static-members-cache class))
+  (update-static-cache class)
   (keys (@static-members-cache class)))
 
 (defn static-members-candidates
@@ -151,6 +209,18 @@
                          (.startsWith ^String member member-prefix))]
             (str cl-name "/" member)))))))
 
+(defn static-member-doc
+  "Given a member name and class returns its docstring."
+  [member-str ns]
+  (when (static-member-symbol? member-str)
+    (let [[cl-name member-name] (.split member-str "/")
+          cl (resolve-class (symbol cl-name))
+          member (when cl
+                   (update-static-cache cl)
+                   (get-in @static-members-cache [cl member-name]))]
+      (when member
+        (create-members-doc member)))))
+
 (defsource ::static-members
   :candidates #'static-members-candidates
-  :doc (constantly nil))
+  :doc #'static-member-doc)
