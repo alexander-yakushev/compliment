@@ -1,8 +1,7 @@
 (ns compliment.sources.namespaces-and-classes
   "Completion for namespace and class names."
   (:use [compliment.sources :only [defsource]]
-        [compliment.utils :only [parts-match?]]
-        [clojure.string :only [split]]))
+        [compliment.utils :only [parts-match? split]]))
 
 (defn nscl-symbol?
   "Tests if prefix looks like a namespace or classname."
@@ -13,7 +12,7 @@
   "Tests if prefix partially matches a var name with periods as
   separators."
   [^String prefix, ^String namespace]
-  (parts-match? (split prefix #"\.") (split namespace #"\.")))
+  (parts-match? (split prefix #"\." true) (split namespace #"\.")))
 
 (defn imported-classes
   "Returns names of all classes imported into a given namespace."

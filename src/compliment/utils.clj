@@ -1,6 +1,19 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
-  (:require clojure.main))
+  (:require clojure.main
+            [clojure.string :as string]))
+
+(defn split
+  "Like clojure.string/split, but returns adds an empty string at the
+  end if `s` ends with `re` and `append-empty?` is true."
+  ([^String s, re]
+     (split s re false))
+  ([^String s, re append-empty?]
+     (let [parts (string/split s re)]
+       (if (and append-empty?
+                (re-matches (re-pattern (str ".+" re "$")) s))
+         (conj parts "")
+         parts))))
 
 (defn parts-match?
   "Tests if each part of the complete symbol starts with each

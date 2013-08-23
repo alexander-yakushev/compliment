@@ -1,8 +1,7 @@
 (ns compliment.sources.ns-mappings
   "Completion for vars and classes in the current namespace."
   (:use [compliment.sources :only [defsource]]
-        [compliment.utils :only [parts-match?]]
-        [clojure.string :only [split]])
+        [compliment.utils :only [parts-match? split]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -14,7 +13,7 @@
   "Tests if prefix partially matches a var name with dashes as
   separators."
   [^String prefix, ^String var]
-  (parts-match? (split prefix #"-") (split var #"-")))
+  (parts-match? (split prefix #"-" true) (split var #"-")))
 
 (defn get-scope-and-prefix
   "Tries to get take apart scope namespace and prefix in prefixes like
