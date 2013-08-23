@@ -31,11 +31,13 @@
 (defn try-get-ns-from-context
   "Tries to extract a namespace name if context is a `ns` definition."
   [context]
-  (let [[var-list ns-def use-def] context]
+  (let [[var-list ns-def use-def top-form] context]
     (when (and (sequential? (:form var-list))
-               (= (second (:form ns-def)) :only)
-               (= (first (:form use-def)) :use)
-               (= (first (:form (last context))) 'ns))
+               (= (first (:form top-form)) 'ns)
+               (or (and (= (first (:form use-def)) :use)
+                        (= (second (:form ns-def)) :only))
+                   (and (= (first (:form use-def)) :require)
+                        (= (second (:form ns-def)) :refer))))
       (find-ns (first (:form ns-def))))))
 
 (defn candidates
