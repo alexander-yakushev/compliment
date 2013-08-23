@@ -27,7 +27,7 @@
                     ((ns-aliases ns) (symbol scope-name))))
         prefix (if scope
                  (or sym "") s)]
-    [scope prefix]))
+    [scope-name scope prefix]))
 
 (defn try-get-ns-from-context
   "Tries to extract a namespace name if context is a `ns` definition."
@@ -46,7 +46,7 @@
   [^String prefix
    ns context]
   (if (var-symbol? prefix)
-    (let [[scope, ^String prefix] (get-scope-and-prefix prefix ns)
+    (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
           ns-form-namespace (try-get-ns-from-context context)
           vars (cond
                 scope (ns-publics scope)
@@ -59,7 +59,7 @@
                     (dash-matches? prefix var-name)
                     (.startsWith var-name prefix))]
         (if scope
-          (str scope "/" var-name)
+          (str scope-name "/" var-name)
           var-name)))))
 
 (defn generate-docstring
