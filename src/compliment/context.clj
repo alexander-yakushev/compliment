@@ -1,5 +1,16 @@
 (ns compliment.context
-  "Utilities for parsing and storing the current completion context.")
+  "Utilities for parsing and storing the current completion context."
+  (:require [clojure.walk :refer [walk]]))
+
+(defn- restore-map-literals [context]
+  (clojure.walk/walk (fn [el]
+                       (if (and (sequential? el)
+                                (= (first el) 'compliment-hashmap))
+                         (apply hash-map
+                                (if (even? (count el))
+                                  (concat (rest el) [nil])
+                                  (rest el)))
+                         el)) identity context))
 
 (def ^{:doc "Stores the last completion context."
        :private true}
@@ -47,7 +58,7 @@
                          (nth res 2)))
 
                  (= ctx prefix-placeholder) ()))
-        parsed (parse context)]
+        parsed (parse (restore-map-literals context))]
     (when parsed
       (reverse parsed))))
 
