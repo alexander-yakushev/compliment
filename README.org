@@ -1,4 +1,3 @@
-
 * Compliment
 
   Compliment is a Clojure completion library you deserve. It was
@@ -55,3 +54,8 @@
 
    [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios
    Compliment supports so far.
+
+** License
+
+   Copyright © 2013 Alexander Yakushev. Distributed under the
+   Eclipse Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
