@@ -45,7 +45,7 @@
    Adding Compliment to the server (application) side is as easy as
    specifying this in project.clj =:dependencies=:
 
-   : [compliment "0.0.1"]
+[[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
    Currently only Emacs is supported, by using [[https://github.com/alexander-yakushev/ac-nrepl-compliment][ac-nrepl-compliment]].
    You can see client installation details under the link.
