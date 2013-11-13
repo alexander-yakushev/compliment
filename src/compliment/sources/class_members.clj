@@ -211,7 +211,7 @@
 
 (defn static-member-doc
   "Given a member name and class returns its docstring."
-  [member-str ns]
+  [^String member-str ns]
   (when (static-member-symbol? member-str)
     (let [[cl-name member-name] (.split member-str "/")
           cl (resolve-class (symbol cl-name))
