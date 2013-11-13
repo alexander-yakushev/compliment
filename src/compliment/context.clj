@@ -3,14 +3,14 @@
   (:require [clojure.walk :refer [walk]]))
 
 (defn- restore-map-literals [context]
-  (clojure.walk/walk (fn [el]
-                       (if (and (sequential? el)
-                                (= (first el) 'compliment-hashmap))
-                         (apply hash-map
-                                (if (even? (count el))
-                                  (concat (rest el) [nil])
-                                  (rest el)))
-                         el)) identity context))
+  (clojure.walk/postwalk (fn [el]
+                           (if (and (sequential? el)
+                                    (= (first el) 'compliment-hashmap))
+                             (apply hash-map
+                                    (if (even? (count el))
+                                      (concat (rest el) [nil])
+                                      (rest el)))
+                             el)) context))
 
 (def ^{:doc "Stores the last completion context."
        :private true}
