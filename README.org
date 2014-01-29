@@ -47,6 +47,9 @@
 
 [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
+   You can also make Compliment available in all projects by adding that line to 
+   =:dependencies= section of =:user= profile inside Leiningen's =profile.clj=.
+   
    Currently only Emacs is supported, by using [[https://github.com/alexander-yakushev/ac-cider-compliment][ac-cider-compliment]].
    You can see client installation details under the link.
 
