@@ -23,7 +23,7 @@
      implementation, and some Emacs auto-complete features to make
      sure the speed is acceptable on any host. This is mostly a
      concern when run on Android, because a person like you is curious
-     enough to try Clojure-Android someday.
+     enough to try [[http://clojure-android.info][Clojure-Android]] someday.
    - *Editor agnosticism.* Your freedom is important, and you should
      be able to choose any coding tools you want. This is achieved by
      having the dumbest client possible (but to the point where speed
@@ -48,7 +48,7 @@
 [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
    You can also make Compliment available in all projects by adding that line to 
-   =:dependencies= section of =:user= profile inside Leiningen's =profile.clj=.
+   =:dependencies= section of =:user= profile inside =~/.lein/profiles.clj=.
    
    Currently only Emacs is supported, by using [[https://github.com/alexander-yakushev/ac-cider-compliment][ac-cider-compliment]].
    You can see client installation details under the link.
