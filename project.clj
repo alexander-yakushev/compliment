@@ -1,6 +1,6 @@
 (defproject compliment "0.0.3"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "The Clojure completion library you deserve"
+  :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.3.0"]]
