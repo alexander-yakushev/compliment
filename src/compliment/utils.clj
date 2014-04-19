@@ -4,8 +4,8 @@
             [clojure.string :as string]))
 
 (defn split
-  "Like clojure.string/split, but returns adds an empty string at the
-  end if `s` ends with `re` and `append-empty?` is true."
+  "Like clojure.string/split, but adds an empty string at the end if
+  `s` ends with `re` and `append-empty?` is true."
   ([^String s, re]
      (split s re false))
   ([^String s, re append-empty?]

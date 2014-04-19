@@ -5,7 +5,7 @@
   (:import java.io.StringWriter))
 
 (defn var-symbol?
-  "Test if prefix resembles a bar name."
+  "Test if prefix resembles a var name."
   [x]
   (re-matches #"[^\.\/\:]+([^\/\:]+\/[^\.\/\:]*)?" x))
 
@@ -44,8 +44,7 @@
   "Returns a list of namespace-bound candidates, with namespace being
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
-  [^String prefix
-   ns context]
+  [^String prefix, ns context]
   (if (var-symbol? prefix)
     (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
           ns-form-namespace (try-get-ns-from-context context)
