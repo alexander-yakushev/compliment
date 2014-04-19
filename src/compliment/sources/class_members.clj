@@ -79,10 +79,9 @@
   [context]
   (when (and (= (:idx (first context)) 0))
     (let [sym (second (:form (first context)))]
-      (when (symbol? sym)
-        (if (= (type (resolve sym)) clojure.lang.Var)
-          (type (deref (resolve sym)))
-          (type (resolve sym)))))))
+      (when (and (symbol? sym)
+                 (= (type (resolve sym)) clojure.lang.Var))
+        (type (deref (resolve sym)))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
