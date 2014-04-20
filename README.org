@@ -58,6 +58,14 @@
    [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios
    Compliment supports so far.
 
+** For developers
+
+   See test files to get an idea how public API and completion
+   sources work.
+
+   To understand what is a context and how it works see [[https://github.com/alexander-yakushev/compliment/wiki/Context][Context]] wiki
+   page.
+
 ** License
 
    Copyright © 2013-2014 Alexander Yakushev. Distributed under the

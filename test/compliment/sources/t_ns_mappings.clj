@@ -55,11 +55,13 @@
 
   (fact "inside (ns ...) vars are looked up only from :used namespace"
     (src/candidates "ins-" *ns*
-                    (ctx/parse-context '(ns (:use [clojure.zip
-                                                   :only [__prefix__]]))))
+                    (ctx/parse-context '(ns foo.bar
+                                          (:use [clojure.zip
+                                                 :only [__prefix__]]))))
     => (just #{"insert-child" "insert-left" "insert-right"})
 
     (src/candidates "s" *ns*
-                    (ctx/parse-context '(ns (:require [clojure.string
-                                                       :refer [__prefix__]]))))
+                    (ctx/parse-context '(ns foo.bar
+                                          (:require [clojure.string
+                                                     :refer [__prefix__]]))))
     => (just #{"split" "split-lines"})))

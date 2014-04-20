@@ -1,9 +1,8 @@
 (ns compliment.t-context
   (:require [midje.sweet :refer :all]
-            [compliment.context :as ctx]
-            ))
+            [compliment.context :as ctx]))
 
-;; This namespace test only context parsing. For testing usage of
+;; This namespace tests only context parsing. For testing usage of
 ;; context see sources test files.
 
 (facts "about context parsing"

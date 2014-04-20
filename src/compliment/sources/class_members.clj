@@ -74,8 +74,7 @@
 
 (defn try-get-object-class
   "Tries to get the type of the object from the context, which the
-  member will be applied to. If the object is a Var, derefs it and
-  gets the type of its content."
+  member will be applied to. Object should be a Var."
   [context]
   (when (and (= (:idx (first context)) 0))
     (let [sym (second (:form (first context)))]
