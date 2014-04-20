@@ -17,9 +17,12 @@
     (src/members-candidates ".getDeclF" *ns* nil)
     => (just #{".getDeclaredFields" ".getDeclaredField"})
 
-    (src/members-candidates ".mkd" *ns* nil)
-    => () ; java.io.File is not imported into the current namespace
-    )
+    (src/members-candidates ".pu" *ns* nil)
+    => () ; Because java.util.HashMap is not imported into current ns
+
+    (import 'java.util.HashMap)
+    (src/members-candidates ".pu" *ns* nil)
+    => (just #{".put" ".putAll"}))
 
   (fact "if context is provided and the class of first arg can be
   resolved, select candidates only for that class (works only for vars)"

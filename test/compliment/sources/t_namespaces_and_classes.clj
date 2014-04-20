@@ -5,7 +5,7 @@
             [compliment.utils :as utils]))
 
 (facts "about namespaces/classes"
-  (fact "ns/class symbol is something that like part of either"
+  (fact "ns/class symbol is something that looks like part of either"
     "clojure"       => src/nscl-symbol?
     "clojure.z"     => src/nscl-symbol?
     "java.lang.Run" => src/nscl-symbol?)
