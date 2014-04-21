@@ -28,6 +28,14 @@
     (core/completions ".gSV" nil)
     => (just #{".getSpecificationVersion" ".getSpecificationVendor"}))
 
+  (fact "candidates are sorted by their length first, and then alphabetically"
+    (core/completions "map" nil)
+    => ["map" "map?" "mapv" "mapcat" "map-indexed"
+        "map-containing" "maps-containing"]
+
+    (core/completions "al-" nil)
+    => ["all-ns" "alter-meta!" "alter-var-root"])
+
   (fact "context can help some sources to give better candidates list"
     (def a-str "a string")
     (core/completions ".sub" (ctx/parse-context '(__prefix__ a-str)))

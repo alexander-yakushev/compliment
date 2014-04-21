@@ -11,7 +11,20 @@ through functions defined here."
                                 class-members))
   (:use [compliment.sources :only [all-sources]]
         [compliment.context :only [cache-context]]
-        [clojure.string :only [join]]))
+        [clojure.string :only [join]])
+  (:import java.util.Comparator))
+
+(defn sort-by-length
+  "Sorts list of strings by their length first, and then
+  alphabetically if length is equal."
+  [candidates]
+  (sort (reify Comparator
+          (compare [_ s1 s2]
+            (let [res (compare (count s1) (count s2))]
+              (if (zero? res)
+                (compare s1 s2)
+                res))))
+        candidates))
 
 (defn completions
   "Returns a list of completions for the given prefix. Optional
@@ -21,12 +34,13 @@ was initiated, having prefix replaced with `__prefix__` symbol."
      (completions prefix *ns* context))
   ([prefix ns context]
      (let [ctx (cache-context context)]
-       (flatten
-        (for [[_ {:keys [candidates enabled]}] (all-sources)
-              :when enabled
-              :let [cands (candidates prefix ns ctx)]
-              :when cands]
-          cands)))))
+       (-> (for [[_ {:keys [candidates enabled]}] (all-sources)
+                 :when enabled
+                 :let [cands (candidates prefix ns ctx)]
+                 :when cands]
+             cands)
+           flatten
+           sort-by-length))))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol."
