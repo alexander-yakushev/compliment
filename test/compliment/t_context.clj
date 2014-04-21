@@ -16,12 +16,14 @@
     => '({:idx 0, :form (__prefix__ foo i)}
          {:idx 2, :form (dotimes [i 10] (__prefix__ foo i))})
 
-    (ctx/parse-context '(ns (:import java.io.File)
+    (ctx/parse-context '(ns test
+                          (:import java.io.File)
                           (:use [clojure.string :only [reverse __prefix__]])))
     => '({:idx 1, :form [reverse __prefix__]}
          {:idx 2, :form [clojure.string :only [reverse __prefix__]]}
          {:idx 1, :form (:use [clojure.string :only [reverse __prefix__]])}
-         {:idx 2, :form (ns (:import java.io.File)
+         {:idx 3, :form (ns test
+                          (:import java.io.File)
                           (:use [clojure.string :only [reverse __prefix__]]))}))
 
   (fact "on each level in lists and vectors :idx field shows the
@@ -40,9 +42,9 @@
     (ctx/parse-context '(compliment-hashmap :foo __prefix__ :bar))
     => '({:idx :foo, :map-role :value, :form {:foo __prefix__, :bar nil}}))
 
-  (fact "in maps :map-role shows which position the __prefix__ (or
-  form with it) is in the map, and :idx shows the opposite element of
-  its key-value pair."
+  (fact "in maps :map-role shows which role in key-value pair the
+  __prefix__ (or the form with it) has, and :idx shows the opposite
+  element of its key-value pair."
     (ctx/parse-context '(compliment-hashmap :akey (compliment-hashmap __prefix__ 42)))
     => #(and (= (:map-role (first %)) :key) ; in {__prefix__ 42}
              (= (:idx (first %)) 42)
