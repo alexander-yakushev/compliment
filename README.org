@@ -1,4 +1,4 @@
-* Compliment
+* Compliment [[https://travis-ci.org/alexander-yakushev/compliment.svg?branch=master]]
 
   Compliment is a Clojure completion library you deserve. It was
   inspired by [[https://github.com/ninjudd/clojure-complete][clojure-complete]] and borrows some implementation details
