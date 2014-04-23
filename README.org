@@ -66,6 +66,8 @@
    To understand what is a context and how it works see [[https://github.com/alexander-yakushev/compliment/wiki/Context][Context]] wiki
    page.
 
+   How to write your own sources is explained on [[https://github.com/alexander-yakushev/compliment/wiki/Custom-sources][Custom sources]] page.
+
 ** License
 
    Copyright © 2013-2014 Alexander Yakushev. Distributed under the
