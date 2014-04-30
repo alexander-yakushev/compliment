@@ -151,6 +151,18 @@
     (when-let [member (get-in @members-cache [ns :methods (subs member-str 1)])]
       (create-members-doc member))))
 
+(defn classname-doc [^Class class]
+  (let [members (group-by static? (concat (.getMethods class)
+                                          (.getFields class)))
+        [static non-static] (for [flag [true false]]
+                              (->> (map #(.getName %) (members flag))
+                                   distinct
+                                   (interpose ", ")
+                                   join))]
+    (str (.getName class) "\n\n"
+         " Non-static members:\n  " non-static "\n\n"
+         " Static members:\n  " static "\n")))
+
 (defsource ::members
   :candidates #'members-candidates
   :doc #'members-doc)

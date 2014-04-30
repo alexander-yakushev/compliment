@@ -93,7 +93,8 @@
   [symbol-str ns]
   (if (var-symbol? symbol-str)
     (when-let [var (ns-resolve ns (symbol symbol-str))]
-      (generate-docstring (meta var)))))
+      (when (meta var)
+        (generate-docstring (meta var))))))
 
 (defsource ::ns-mappings
   :candidates #'candidates
