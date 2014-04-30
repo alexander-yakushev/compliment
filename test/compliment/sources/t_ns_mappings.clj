@@ -51,7 +51,11 @@
 
     (src/candidates "str/re" ..some-ns.. nil)
     => (just #{"str/replace" "str/replace-first" "str/reverse"})
-    (provided (ns-aliases ..some-ns..) => {'str (find-ns 'clojure.string)}))
+    (provided (ns-aliases ..some-ns..) => {'str (find-ns 'clojure.string)})
+
+    (src/candidates "s/cap" ..some-ns.. nil)
+    => ["s/capitalize"]
+    (provided (ns-aliases ..some-ns..) => {'s (find-ns 'clojure.string)}))
 
   (fact "inside (ns ...) vars are looked up only from :used namespace"
     (src/candidates "ins-" *ns*
