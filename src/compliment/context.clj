@@ -12,6 +12,14 @@
                                       (rest el)))
                              el)) context))
 
+(defn- safe-read-context-string [^String context]
+  (try (-> context
+           (.replace "{" "(compliment-hashmap ")
+           (.replace "}" ")")
+           read-string
+           restore-map-literals)
+       (catch Exception ex nil)))
+
 (def ^{:doc "Stores the last completion context."
        :private true}
   previous-context (atom nil))
@@ -58,13 +66,14 @@
                          (nth res 2)))
 
                  (= ctx prefix-placeholder) ()))
-        parsed (parse (restore-map-literals context))]
+        parsed (parse context)]
     (when parsed
       (reverse parsed))))
 
 (defn cache-context
-  "Parses a context, or returns one from cache if it was unchanged."
-  [context]
-  (when-not (= context :same)
-    (reset! previous-context (parse-context context)))
+  "Parses the context, or returns one from cache if it was unchanged."
+  [context-string]
+  (let [context (safe-read-context-string context-string)]
+    (when-not (= context :same)
+      (reset! previous-context (parse-context context))))
   @previous-context)

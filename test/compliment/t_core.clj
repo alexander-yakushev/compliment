@@ -38,11 +38,11 @@
 
   (fact "context can help some sources to give better candidates list"
     (def a-str "a string")
-    (core/completions ".sub" (ctx/parse-context '(__prefix__ a-str)))
+    (core/completions ".sub" "(__prefix__ a-str)")
     => (just #{".subSequence" ".substring"})
 
     (def a-big-int 42M)
-    (core/completions ".sub" (ctx/parse-context '(__prefix__ a-big-int)))
+    (core/completions ".sub" "(__prefix__ a-big-int)")
     => [".subtract"]))
 
 (facts "about documentation"

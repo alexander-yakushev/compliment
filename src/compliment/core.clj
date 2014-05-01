@@ -30,10 +30,10 @@ through functions defined here."
   "Returns a list of completions for the given prefix. Optional
 context (can be nil) should be a Lisp form from where the completion
 was initiated, having prefix replaced with `__prefix__` symbol."
-  ([prefix context]
-     (completions prefix *ns* context))
-  ([prefix ns context]
-     (let [ctx (cache-context context)]
+  ([prefix context-str]
+     (completions prefix *ns* context-str))
+  ([prefix ns context-str]
+     (let [ctx (cache-context context-str)]
        (-> (for [[_ {:keys [candidates enabled]}] (all-sources)
                  :when enabled
                  :let [cands (candidates prefix ns ctx)]

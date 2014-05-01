@@ -5,6 +5,16 @@
 ;; This namespace tests only context parsing. For testing usage of
 ;; context see sources test files.
 
+(facts "about context reading"
+  (fact "safe-read-context-string takes clojure code in a string and
+  reads it into clojure data structures"
+    (#'ctx/safe-read-context-string "(__prefix__ foo [bar] :baz \"with strings\")")
+    => '(__prefix__ foo [bar] :baz "with strings"))
+
+  (fact "maps with odd number of elements are also handled"
+    (#'ctx/safe-read-context-string "{:foo bar __prefix__}")
+    => '{:foo bar, __prefix__ nil}))
+
 (facts "about context parsing"
   (fact "prefix placeholder in a context represents the location in
   the code form from where the completion was initiated"
@@ -35,17 +45,14 @@
              (= (:idx (nth % 2)) 2)) ; in top-level form
     )
 
-  (fact "map literals are replaced by (compliment-hashmap ...) lists
-  by the client and replaced back by Compliment. This is done because
-  Clojure reader would fail if map contained odd number of elements.
-  If it is the case, nil is appended to make the elements even."
-    (ctx/parse-context '(compliment-hashmap :foo __prefix__ :bar))
+  (fact "broken map literals are fixed before they get to parse-context"
+    (ctx/parse-context (#'ctx/safe-read-context-string "{:foo __prefix__ :bar}"))
     => '({:idx :foo, :map-role :value, :form {:foo __prefix__, :bar nil}}))
 
   (fact "in maps :map-role shows which role in key-value pair the
   __prefix__ (or the form with it) has, and :idx shows the opposite
   element of its key-value pair."
-    (ctx/parse-context '(compliment-hashmap :akey (compliment-hashmap __prefix__ 42)))
+    (ctx/parse-context '{:akey {__prefix__ 42}})
     => #(and (= (:map-role (first %)) :key) ; in {__prefix__ 42}
              (= (:idx (first %)) 42)
 
