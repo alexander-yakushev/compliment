@@ -155,7 +155,8 @@
   (let [members (group-by static? (concat (.getMethods class)
                                           (.getFields class)))
         [static non-static] (for [flag [true false]]
-                              (->> (map #(.getName %) (members flag))
+                              (->> (for [^Member m (members flag)]
+                                     (.getName m))
                                    distinct
                                    (interpose ", ")
                                    join))]
