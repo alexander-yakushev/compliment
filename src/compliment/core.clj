@@ -8,7 +8,8 @@
 through functions defined here."
   (:require (compliment.sources ns-mappings
                                 namespaces-and-classes
-                                class-members))
+                                class-members
+                                keywords))
   (:use [compliment.sources :only [all-sources]]
         [compliment.context :only [cache-context]]
         [clojure.string :only [join]])
