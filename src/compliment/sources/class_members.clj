@@ -27,7 +27,7 @@
          (for [^Class class (vals (ns-map ns))
                :when (class? class)
                ^Member member (concat (.getMethods class) (.getFields class))
-               :when (and (not (static? member)))]
+               :when (not (static? member))]
            (let [dc (.getDeclaringClass member)]
              (if (= dc class)
                member
@@ -76,7 +76,7 @@
   "Tries to get the type of the object from the context, which the
   member will be applied to. Object should be a Var."
   [context]
-  (when (and (= (:idx (first context)) 0))
+  (when (= (:idx (first context)) 0)
     (let [sym (second (:form (first context)))]
       (when (and (symbol? sym)
                  (= (type (resolve sym)) clojure.lang.Var))

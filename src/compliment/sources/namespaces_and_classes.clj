@@ -28,7 +28,7 @@
     (let [has-dot (> (.indexOf prefix ".") -1)]
       (for [^String ns-str (concat (map (comp name ns-name) (all-ns))
                                    (imported-classes ns)
-                                   (when (not has-dot)
+                                   (when-not has-dot
                                      (map name (keys (ns-aliases ns)))))
             :when (if has-dot
                     (nscl-matches? prefix ns-str)
