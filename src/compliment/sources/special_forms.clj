@@ -19,7 +19,8 @@
 (defn doc
   "Documentation function for special forms."
   [symbol-str _]
-  (vars/generate-docstring (#'repl/special-doc (symbol symbol-str))))
+  (when (vars/var-symbol? symbol-str)
+    (vars/generate-docstring (#'repl/special-doc (symbol symbol-str)))))
 
 (defsource ::special-forms
   :candidates #'candidates
