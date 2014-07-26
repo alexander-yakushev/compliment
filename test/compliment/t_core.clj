@@ -10,7 +10,7 @@
   (fact "`completions` takes a prefix, optional namespace and a context.
   If context is missing, `nil` should be passed"
     (core/completions "redu" nil)
-    => (just #{"reductions" "reduce" "reduce-kv"})
+    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
 
     (core/completions "fac" (find-ns 'midje.sweet) nil)
     => (just #{"fact-group" "fact" "facts"})

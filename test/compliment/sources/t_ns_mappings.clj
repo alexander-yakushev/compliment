@@ -35,7 +35,7 @@
 (facts "about vars completion"
   (fact "unqualified vars are looked up in the given namespace"
     (src/candidates "redu" *ns* nil)
-    => (just #{"reduce" "reduce-kv" "reductions"})
+    => (contains #{"reduce" "reduce-kv" "reductions"} :gaps-ok)
 
     (src/candidates "re-ma" *ns* nil)
     => (just #{"re-matches" "re-matcher" "ref-max-history"})
@@ -50,7 +50,7 @@
     => (just #{"clojure.set/subset?" "clojure.set/superset?"})
 
     (src/candidates "str/re" ..some-ns.. nil)
-    => (just #{"str/replace" "str/replace-first" "str/reverse"})
+    => (contains #{"str/replace" "str/replace-first" "str/reverse"} :gaps-ok)
     (provided (ns-aliases ..some-ns..) => {'str (find-ns 'clojure.string)})
 
     (src/candidates "s/cap" ..some-ns.. nil)
