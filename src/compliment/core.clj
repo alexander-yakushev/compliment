@@ -16,6 +16,14 @@ through functions defined here."
         [clojure.string :only [join]])
   (:import java.util.Comparator))
 
+(def all-files
+  "List of all Compliment files in an order they should be loaded. This is
+  required by REPLy."
+  (map (partial format "compliment/%s.clj")
+       ["utils" "context" "sources" "sources/class_members"
+        "sources/ns_mappings" "sources/namespaces_and_classes"
+        "sources/keywords" "sources/special_forms" "core"]))
+
 (defn sort-by-length
   "Sorts list of strings by their length first, and then
   alphabetically if length is equal."
