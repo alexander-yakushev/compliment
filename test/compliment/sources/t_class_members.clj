@@ -22,7 +22,7 @@
 
     (import 'java.util.HashMap)
     (src/members-candidates ".pu" *ns* nil)
-    => (just #{".put" ".putAll"}))
+    => (contains #{".put" ".putAll"} :gaps-ok))
 
   (fact "if context is provided and the class of first arg can be
   resolved, select candidates only for that class (works only for vars)"
@@ -39,8 +39,8 @@
 
   (fact "static members candidates are taken for the class in prefix"
     (src/static-members-candidates "String/" *ns* nil)
-    => (just #{"String/CASE_INSENSITIVE_ORDER" "String/copyValueOf"
-               "String/format" "String/valueOf"})
+    => (contains #{"String/CASE_INSENSITIVE_ORDER" "String/copyValueOf"
+                   "String/format" "String/valueOf"} :gaps-ok)
 
     ;; Don't have to import class to get static members for it.
     (src/static-members-candidates "java.io.File/sep" *ns* nil)
