@@ -1,3 +1,11 @@
 language: clojure
 lein: lein2
-script: lein2 midje
+script:
+  - lein2 midje
+  - lein2 with-profile +1.5 midje
+  - lein2 with-profile +1.6 midje
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
