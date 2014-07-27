@@ -10,7 +10,8 @@ through functions defined here."
                                 namespaces-and-classes
                                 class-members
                                 keywords
-                                special-forms))
+                                special-forms
+                                local-bindings))
   (:use [compliment.sources :only [all-sources]]
         [compliment.context :only [cache-context]]
         [clojure.string :only [join]])
@@ -22,7 +23,8 @@ through functions defined here."
   (map (partial format "compliment/%s.clj")
        ["utils" "context" "sources" "sources/class_members"
         "sources/ns_mappings" "sources/namespaces_and_classes"
-        "sources/keywords" "sources/special_forms" "core"]))
+        "sources/keywords" "sources/special_forms" "sources/local-bindings"
+        "core"]))
 
 (defn sort-by-length
   "Sorts list of strings by their length first, and then
