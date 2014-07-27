@@ -5,7 +5,7 @@
             [compliment.utils :refer [parts-match?]]
             [clojure.string :refer [split join]]))
 
-(def let-like-forms '#{let if-let when-let doseq for})
+(def let-like-forms '#{let if-let when-let if-some when-some doseq for})
 
 (def defn-like-forms '#{defn defn- fn defmacro})
 
