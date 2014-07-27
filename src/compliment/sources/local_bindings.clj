@@ -7,7 +7,7 @@
 
 (def let-like-forms '#{let if-let when-let doseq for})
 
-(def defn-like-forms '#{defn defmacro})
+(def defn-like-forms '#{defn defn- fn defmacro})
 
 (defn parse-binding
   "Given a binding node returns the list of local bindings introduced by that
