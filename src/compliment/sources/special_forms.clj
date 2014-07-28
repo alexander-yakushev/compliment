@@ -8,10 +8,17 @@
   (set (map name '[def if do let quote var fn loop recur throw try catch
                    monitor-enter monitor-exit doto new set!])))
 
+(defn first-item-in-list? [ctx]
+  "If context is not nil, check if prefix is the first item in a list form."
+  (if ctx
+    (if-let [expr (first ctx)]
+      (and (list? (:form expr)) (= (:idx expr) 0)))
+    true))
+
 (defn candidates
   "Returns list of completions for special forms."
-  [prefix _ _]
-  (when (vars/var-symbol? prefix)
+  [prefix _ context]
+  (when (and (vars/var-symbol? prefix) (first-item-in-list? context))
     (for [form special-forms
           :when (vars/dash-matches? prefix form)]
       form)))
