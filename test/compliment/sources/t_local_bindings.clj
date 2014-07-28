@@ -34,7 +34,7 @@
                                 ([arg1 arg2] (do-stuff __prefix__)))))
     => (just #{"arg" "arg1" "arg2"}))
 
-  (fact "all forms of destructuring in bindings are supported"
+  (fact "destructuring is also supported"
     (src/candidates "" *ns* (ctx/parse-context
                              '(let [foo 42,
                                     [bar baz] lst
@@ -48,6 +48,5 @@
     (src/candidates "" *ns* (ctx/parse-context
                              '(defn afunction [arg1 arg2]
                                 (distinct (let [foo 13, arg2 14]
-                                            __prefix__))))
-                             )
+                                            __prefix__)))))
     => (just #{"arg1" "arg2" "foo"})))

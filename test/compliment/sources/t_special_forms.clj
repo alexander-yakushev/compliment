@@ -14,4 +14,5 @@
     => ["monitor-enter" "monitor-exit"])
 
   (fact "there are docs for special forms too"
-    (src/doc "try" *ns*) => string?))
+    (src/doc "try" *ns*) => string?
+    (src/doc "not-a-form" => nil)))

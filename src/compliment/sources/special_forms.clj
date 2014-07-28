@@ -5,8 +5,8 @@
             [compliment.sources.ns-mappings :as vars]))
 
 (def ^:private special-forms
-  (map name '[def if do let quote var fn loop recur throw try catch
-              monitor-enter monitor-exit doto new set!]))
+  (set (map name '[def if do let quote var fn loop recur throw try catch
+                   monitor-enter monitor-exit doto new set!])))
 
 (defn candidates
   "Returns list of completions for special forms."
@@ -19,7 +19,7 @@
 (defn doc
   "Documentation function for special forms."
   [symbol-str _]
-  (when (vars/var-symbol? symbol-str)
+  (when (and (vars/var-symbol? symbol-str) (special-forms symbol-str))
     (vars/generate-docstring (#'repl/special-doc (symbol symbol-str)))))
 
 (defsource ::special-forms
