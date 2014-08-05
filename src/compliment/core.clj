@@ -39,20 +39,25 @@ through functions defined here."
         candidates))
 
 (defn completions
-  "Returns a list of completions for the given prefix. Optional
-context (can be nil) should be a Lisp form from where the completion
-was initiated, having prefix replaced with `__prefix__` symbol."
+  "Returns a list of completions for the given prefix. Optional context (can be
+nil) should be a string with Lisp form from where the completion was initiated,
+having prefix replaced with `__prefix__` symbol. Optional sort-order can be
+either :by-length or :by-name."
   ([prefix context-str]
-     (completions prefix *ns* context-str))
+     (completions prefix *ns* context-str :by-length))
   ([prefix ns context-str]
-     (let [ctx (cache-context context-str)]
+     (completions prefix ns context-str :by-length))
+  ([prefix ns context-str sort-order]
+     (let [ctx (cache-context context-str)
+           sort-fn (if (= sort-order :by-name)
+                     sort sort-by-length)]
        (-> (for [[_ {:keys [candidates enabled]}] (all-sources)
                  :when enabled
                  :let [cands (candidates prefix ns ctx)]
                  :when cands]
              cands)
            flatten
-           sort-by-length))))
+           sort-fn))))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol."
