@@ -1,57 +1,51 @@
 * Compliment [[https://travis-ci.org/alexander-yakushev/compliment.svg?branch=master]]
 
-  Compliment is a Clojure completion library you deserve. It was
-  inspired by [[https://github.com/ninjudd/clojure-complete][clojure-complete]] and borrows some implementation details
-  from it. Compliment provides a fast, smart and extensible solution
-  to complete vars, namespaces, class members and whatever else custom
-  sources can implement.
+  Compliment is a Clojure completion library and a successor to
+  [[https://github.com/ninjudd/clojure-complete][clojure-complete]]. Compliment provides a fast, smart and extensible solution to
+  complete vars, namespaces, class members, local bindings and whatever else
+  custom sources can implement.
 
-  Compliment can be used as a dependency in your project. On the
-  client side, only Emacs is supported for now, but I hope other
-  editors/IDEs will catch up.
+  You can use Compliment in the following editors/IDEs:
+
+  - Emacs --- via [[https://github.com/clojure-emacs/cider][CIDER]] and [[https://github.com/clojure-emacs/ac-cider][ac-cider]]
+  - Vim --- via [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
+  - [[https://nightcode.info/][Nightcode]]
 
   Also, I am so glad you came here. You look gorgeous today.
 
 ** Rationale
 
-   Since *clojure-complete* is a de-facto standard completion lib for
-   nREPL, here's the list of distinctive goals Compliment tries to
-   achieve.
+   I wrote Compliment specifically for you because you are amazing and I believe
+   you deserve a matching completion lib. Here are the features it boasts:
 
-   - *Speed.* Your time is too precious to wait for completion to
-     happen. Compliment sacrifices some simplicity in its
-     implementation, and some Emacs auto-complete features to make
-     sure the speed is acceptable on any host. This is mostly a
-     concern when run on Android, because a person like you is curious
-     enough to try [[http://clojure-android.info][Clojure-Android]] someday.
-   - *Editor agnosticism.* Your freedom is important, and you should
-     be able to choose any coding tools you want. This is achieved by
-     having the dumbest client possible (but to the point where speed
-     is not impaired). Ideally editor should not know about completion
-     at all, only giving the prefix to Compliment and showing the
-     results.
-   - *Smart completion.* Such a smart person like you is entitled to
-     completion being smart as well. Default Compliment sources use
-     various techniques to give more meaningful completion depending
-     on the context, and allow some fuzziness in prefix.
-   - *Extensibility.* Your insatiable passion for exploration won't be
-     satisfied by a set in stone completion list. For this reason
-     Compliment allows every library developer to write custom
-     sources, so later other users of the library will have better
-     experience utilizing it.
+   - *Speed.* Your time is too precious to wait for completion to happen.
+     Compliment is designed to be fast and is carefully benchmarked to make sure
+     no sudden performance drops appear. It allows Compliment to work
+     effectively even on [[http://clojure-android.info][Android]].
+   - *Smart completion.* Such a smart person like you is entitled to completion
+     being smart as well. Default Compliment sources use various techniques to
+     give more meaningful completion depending on the context, and allow some
+     fuzziness in prefix.
+   - *Extensibility.* Your insatiable passion for exploration won't be satisfied
+     by a set in stone completion list. For this reason Compliment allows every
+     library developer to write custom sources, so later other users of the
+     library will have better experience utilizing it.
 
 ** Installation
 
-   Adding Compliment to the server (application) side is as easy as
-   specifying this in project.clj =:dependencies=:
+   If you use Nightcode or Vim with vim.fireplace then you don't have to install
+   anything at all --- Compliment will be already there for you. In case you are
+   Emacs+CIDER user there are two completion "frontends" to choose from:
+
+   - [[http://www.emacswiki.org/emacs/AutoComplete][auto-complete]] --- you will also have to install [[https://github.com/clojure-emacs/ac-cider][ac-cider]] for Compliment to
+     work.
+   - [[http://company-mode.github.io/][company-mode]] --- CIDER has built-in support for company-mode completion,
+     but it lacks documentation tooltips for candidates.
+
+   If for some reason you want to use Compliment directly from your
+   application add this to the =:dependencies=:
 
 [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
-
-   You can also make Compliment available in all projects by adding that line to 
-   =:dependencies= section of =:user= profile inside =~/.lein/profiles.clj=.
-   
-   Currently only Emacs is supported, by using [[https://github.com/alexander-yakushev/ac-cider-compliment][ac-cider-compliment]].
-   You can see client installation details under the link.
 
 ** Examples
 
