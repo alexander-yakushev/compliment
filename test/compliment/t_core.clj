@@ -30,8 +30,7 @@
 
   (fact "candidates are sorted by their length first, and then alphabetically"
     (core/completions "map" nil)
-    => ["map" "map?" "mapv" "mapcat" "map-indexed"
-        "map-containing" "maps-containing"]
+    => (contains ["map" "map?" "mapv" "mapcat" "map-indexed"])
 
     (core/completions "al-" nil)
     => ["all-ns" "alter-meta!" "alter-var-root"])
