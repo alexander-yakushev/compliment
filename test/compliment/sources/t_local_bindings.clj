@@ -52,5 +52,5 @@
     => (just #{"arg1" "arg2" "foo"}))
 
   (fact "source silently fails if context is malformed"
-    (src/candidates "" "(let __prefix__)") => empty?
-    (src/candidates "" "(defn [args] \"doc\" name (__prefix__))") => empty?))
+    (src/candidates "" *ns* "(let __prefix__)") => empty?
+    (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => empty?))
