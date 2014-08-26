@@ -18,6 +18,10 @@
     (core/completions "fac" (find-ns 'clojure.core) nil)
     => ())
 
+  (fact "in case of non-existing namespace doesn't fail"
+    (core/completions "redu" nil nil) => anything
+    (core/completions "n-m" 'foo.bar.baz nil) => anything)
+
   (fact "many sources allow some sort of fuzziness in prefixes"
     (core/completions "re-me" nil)
     => (just #{"remove-method" "reset-meta!"})

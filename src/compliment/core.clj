@@ -38,6 +38,14 @@ through functions defined here."
                 res))))
         candidates))
 
+(defn ensure-ns
+  "Takes either a namespace object or a symbol and returns the corresponding
+  namespace if it exists, otherwise returns `user` namespace."
+  [ns]
+  (cond (instance? clojure.lang.Namespace ns) ns
+        (symbol? ns) (or (find-ns ns) (find-ns 'user))
+        :else (find-ns 'user)))
+
 (defn completions
   "Returns a list of completions for the given prefix. Optional context (can be
 nil) should be a string with Lisp form from where the completion was initiated,
@@ -53,7 +61,7 @@ either :by-length or :by-name."
                      sort sort-by-length)]
        (-> (for [[_ {:keys [candidates enabled]}] (all-sources)
                  :when enabled
-                 :let [cands (candidates prefix ns ctx)]
+                 :let [cands (candidates prefix (ensure-ns ns) ctx)]
                  :when cands]
              cands)
            flatten
@@ -66,7 +74,7 @@ either :by-length or :by-name."
   ([symbol-str ns]
      (->> (for [[_ {:keys [doc enabled]}] (all-sources)
                 :when enabled
-                :let [docstr (doc symbol-str ns)]
+                :let [docstr (doc symbol-str (ensure-ns ns))]
                 :when docstr]
             docstr)
           (interpose "\n\n")
