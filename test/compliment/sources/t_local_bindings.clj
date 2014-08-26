@@ -49,4 +49,8 @@
                              '(defn afunction [arg1 arg2]
                                 (distinct (let [foo 13, arg2 14]
                                             __prefix__)))))
-    => (just #{"arg1" "arg2" "foo"})))
+    => (just #{"arg1" "arg2" "foo"}))
+
+  (fact "source silently fails if context is malformed"
+    (src/candidates "" "(let __prefix__)") => empty?
+    (src/candidates "" "(defn [args] \"doc\" name (__prefix__))") => empty?))

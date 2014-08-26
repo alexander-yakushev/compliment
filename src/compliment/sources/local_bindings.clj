@@ -48,7 +48,8 @@
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."
   [ctx]
-  (distinct (mapcat (comp extract-local-bindings :form) ctx)))
+  (try (distinct (mapcat (comp extract-local-bindings :form) ctx))
+       (catch Exception ex ())))
 
 (defn candidates
   "Returns a list of local bindings inside the context that match prefix."
