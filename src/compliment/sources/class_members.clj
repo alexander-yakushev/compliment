@@ -172,9 +172,8 @@
 
 (defn static-member-symbol?
   "Tests if prefix looks like a static member symbol."
-  [^String x]
-  (and (not (.startsWith x ":"))
-       (> (.indexOf x "/") -1)))
+  [x]
+  (re-matches #"[^\/\:\.][^\:]*\/.*" x))
 
 (def ^{:doc "Stores cache of all static members for every class."}
   static-members-cache (atom {}))
