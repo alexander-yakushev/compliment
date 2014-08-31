@@ -21,7 +21,7 @@
                                 (filter symbol?)
                                 (mapcat parse-binding))
               keys-binds (if-let [ks (:keys binding-node)]
-                           (map str ks) ())
+                           (mapv str ks) ())
               as-binds (if-let [as (:as binding-node)]
                         [(str as)] ())]
           (concat normal-binds keys-binds as-binds))

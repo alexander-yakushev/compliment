@@ -53,4 +53,9 @@
 
   (fact "source silently fails if context is malformed"
     (src/candidates "" *ns* "(let __prefix__)") => empty?
-    (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => empty?))
+    (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => empty?
+    (src/candidates "" *ns* "(defn resources
+                               \"Build api functions for resources\"
+                               [{:keys [resources] :as discovery-doc}]
+                               (for [[_ {:keys __prefix__}] resources]
+                                 (generate-schema s)))") => empty?))
