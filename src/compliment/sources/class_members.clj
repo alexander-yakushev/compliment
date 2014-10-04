@@ -1,8 +1,8 @@
 (ns compliment.sources.class-members
   "Completion for both static and non-static class members."
-  (:use [compliment.sources :only [defsource]]
-        [compliment.utils :only [parts-match? resolve-class]]
-        [clojure.string :only [split join]])
+  (:require [compliment.sources :refer [defsource]]
+            [compliment.utils :refer [fuzzy-matches-no-skip? resolve-class]]
+            [clojure.string :refer [join]])
   (:import [java.lang.reflect Method Field Member Modifier]))
 
 (defn static?
@@ -66,11 +66,8 @@
 (defn camel-case-matches?
   "Tests if prefix matches the member name following camel case rules.
   Thus, prefix `getDeF` matches member `getDeclaredFields`."
-  [^String prefix, ^String member-name]
-  (let [regex #"[A-Z]?[a-z]*"
-        prefix-parts (re-seq regex prefix)
-        cl-parts (re-seq regex member-name)]
-    (parts-match? prefix-parts cl-parts)))
+  [prefix member-name]
+  (fuzzy-matches-no-skip? prefix member-name #(Character/isUpperCase ^char %)))
 
 (defn try-get-object-class
   "Tries to get the type of the object from the context, which the

@@ -3,29 +3,36 @@
   (:require clojure.main
             [clojure.string :as string]))
 
-(defn split
-  "Like clojure.string/split, but adds an empty string at the end if
-  `s` ends with `re` and `append-empty?` is true."
-  ([^String s, re]
-     (split s re false))
-  ([^String s, re append-empty?]
-     (let [parts (string/split s re)]
-       (if (and append-empty?
-                (re-matches (re-pattern (str ".+" re "$")) s))
-         (conj parts "")
-         parts))))
+(defn fuzzy-matches?
+  "Tests if symbol matches the prefix when symbol is split into parts on
+  separator."
+  [prefix, ^String symbol, separator]
+  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
+    (loop [pre (rest prefix), sym (rest symbol), skipping false]
+      (cond (empty? pre) true
+            (empty? sym) false
+            skipping (if (= (first sym) separator)
+                       (recur (if (= (first pre) separator)
+                                (rest pre) pre)
+                              (rest sym) false)
+                       (recur pre (rest sym) true))
+            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
+            :else (recur pre (rest sym) (not (= (first sym) separator)))))))
 
-(defn parts-match?
-  "Tests if each part of the complete symbol starts with each
-  respective part of the prefix. Both arguments should be lists of
-  string."
-  [prefix-parts complete-parts]
-  (and (<= (count prefix-parts) (count complete-parts))
-       (loop [p prefix-parts, n complete-parts]
-         (if (first p)
-           (when (.startsWith ^String (first n) ^String (first p))
-             (recur (rest p) (rest n)))
-           true))))
+(defn fuzzy-matches-no-skip?
+  "Tests if symbol matches the prefix when test checks whether character is a
+  separator. Unlike `fuzzy-maches?` requires separator characters to be present
+  in prefix."
+  [prefix, ^String symbol, test]
+  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
+    (loop [pre prefix, sym symbol, skipping false]
+      (cond (empty? pre) true
+            (empty? sym) false
+            skipping (if (test (first sym))
+                       (recur pre sym false)
+                       (recur pre (rest sym) true))
+            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
+            :else (recur pre (rest sym) true)))))
 
 (defn resolve-symbol
   "Tries to resolve a symbol in the current namespace, or returns nil

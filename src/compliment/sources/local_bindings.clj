@@ -2,8 +2,7 @@
   "Completion source for local bindings introduced by defn, let and the like."
   (:require [compliment.sources :refer [defsource]]
             [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]
-            [compliment.utils :refer [parts-match?]]
-            [clojure.string :refer [split join]]))
+            [clojure.string :refer [join]]))
 
 (def let-like-forms '#{let if-let when-let if-some when-some doseq for})
 

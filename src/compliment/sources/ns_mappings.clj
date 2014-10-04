@@ -1,7 +1,7 @@
 (ns compliment.sources.ns-mappings
   "Completion for vars and classes in the current namespace."
-  (:use [compliment.sources :only [defsource]]
-        [compliment.utils :only [parts-match? split]])
+  (:require [compliment.sources :refer [defsource]]
+            [compliment.utils :refer [fuzzy-matches?]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -12,8 +12,8 @@
 (defn dash-matches?
   "Tests if prefix partially matches a var name with dashes as
   separators."
-  [^String prefix, ^String var]
-  (parts-match? (split prefix #"-" true) (split var #"-")))
+  [prefix var]
+  (fuzzy-matches? prefix var \-))
 
 (defn get-scope-and-prefix
   "Tries to get take apart scope namespace and prefix in prefixes like
@@ -51,13 +51,10 @@
           vars (cond
                 scope (ns-publics scope)
                 ns-form-namespace (ns-publics ns-form-namespace)
-                :else (ns-map ns))
-          has-dash (> (.indexOf prefix "-") -1)]
+                :else (ns-map ns))]
       (for [[var _] vars
-            :let [^String var-name (name var)]
-            :when (if has-dash
-                    (dash-matches? prefix var-name)
-                    (.startsWith var-name prefix))]
+            :let [var-name (name var)]
+            :when (dash-matches? prefix var-name)]
         (if scope
           (str scope-name "/" var-name)
           var-name)))))
