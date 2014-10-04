@@ -18,10 +18,10 @@
       (completions ".geIV" nil)
       (completions ":req" nil)))
 
-;; (facts "about performance"
-;;   (let [res (crit/quick-benchmark (execute-completions)
-;;                                   {:supress-jvm-option-warnings true})]
-;;     (fact "simple benchmark suite shouldn't take longer than specified limit"
-;;       (first (:mean res)) => (partial > 15))
+(facts "about performance"
+  (let [res (crit/quick-benchmark (execute-completions)
+                                  {:supress-jvm-option-warnings true})]
+    (fact "simple benchmark suite shouldn't take longer than specified limit"
+      (first (:mean res)) => (partial > 15))
 
-;;     (crit/report-result res)))
+    (crit/report-result res)))
