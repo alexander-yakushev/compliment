@@ -24,10 +24,16 @@
 
   (fact "many sources allow some sort of fuzziness in prefixes"
     (core/completions "re-me" nil)
-    => (just #{"remove-method" "reset-meta!"})
+    => (just #{"remove-method" "reset-meta!" "remove-all-methods"})
+
+    (core/completions "remme" nil)
+    => (just [#"remove-method" "remove-all-methods"])
 
     (core/completions "cl.co." nil)
     => (just #{"clojure.core.protocols" "clojure.core.unify"})
+
+    (core/completions "clcop" nil)
+    => ["clojure.core.protocols"]
 
     (core/completions ".gSV" nil)
     => (just #{".getSpecificationVersion" ".getSpecificationVendor"}))
