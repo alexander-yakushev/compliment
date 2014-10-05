@@ -1,6 +1,7 @@
 (ns compliment.t-benchmark
   (:require [midje.sweet :refer :all]
             [compliment.core :refer [completions]]
+            [compliment.sources.namespaces-and-classes :refer [all-classes]]
             [criterium.core :as crit]))
 
 (def ^:private ctx
@@ -22,12 +23,15 @@
       (completions ":req" nil)))
 
 (facts "about performance" :bench
-  (let [res (crit/quick-benchmark (execute-completions)
-                            {:supress-jvm-option-warnings true})]
+  (let [;; Don't include initialization into benchmark.
+        _ (all-classes)
+        res (crit/quick-benchmark (execute-completions)
+                                  {:supress-jvm-option-warnings true})]
     (fact "simple benchmark suite shouldn't take longer than specified limit"
-      (first (:mean res)) => (partial > 30))
+      (first (:mean res)) => (partial > 100))
 
     (crit/report-result res)))
 
 (fact "this is a full benchmark" :fullbench
+  (all-classes)
   (crit/bench (execute-completions) :supress-jvm-option-warnings true))

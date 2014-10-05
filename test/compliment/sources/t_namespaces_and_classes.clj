@@ -29,13 +29,16 @@
     (src/candidates "sr" *ns* nil)
     => ["src"]
 
+    (src/candidates "java.io.Stri" *ns* nil)
+    => (contains #{"java.io.StringWriter" "java.io.StringReader"})
+
     (src/candidates "j.i.F" *ns* nil)
-    => () ; Because java.io.File is not imported into the current ns
+    => () ; Because fuzziness works only for classes imported into current ns
 
     (src/candidates "j.i.F" ..some-ns.. nil)
     => ["java.io.File"]
     (provided (ns-map ..some-ns..) => {'File (utils/resolve-class 'java.io.File)})
 
-    ;; Imported classes are covered by ns-mappings source, see
-    ;; respective test file.
+    ;; Imported classes without package qualifiers are covered by ns-mappings
+    ;; source, see respective test file.
     ))
