@@ -9,4 +9,6 @@
                    :plugins [[lein-midje "3.1.3"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha1"]]}}
-  :aliases {"test-all" ["do" ["check"] ["midje"]]})
+  :aliases {"test-all" ["do" ["check"] ["midje" ":filters" "-fullbench"]]
+            "bench" ["midje" ":filters" "bench"]
+            "fullbench" ["midje" ":filters" "fullbench"]})
