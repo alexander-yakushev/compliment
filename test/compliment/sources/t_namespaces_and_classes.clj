@@ -31,8 +31,7 @@
     => ["src"]
 
     (src/candidates "clojure.java." *ns* nil)
-    => (contains #{"clojure.java.classpath" "clojure.java.browse"
-                   "clojure.java.shell"} :gaps-ok)
+    => (contains #{ "clojure.java.browse" "clojure.java.shell"} :gaps-ok)
 
     (src/candidates "java.io.Stri" *ns* nil)
     => (contains #{"java.io.StringWriter" "java.io.StringReader"} :gaps-ok)
