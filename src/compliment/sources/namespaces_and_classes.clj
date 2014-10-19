@@ -42,6 +42,15 @@
         (for [^File file (file-seq (File. path))]
           (.replace ^String (.getPath file) path ""))))
 
+(def ^:private all-files-on-path
+  "Returns the list of all files on the classpath."
+  (memoize
+   (fn []
+     (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
+           path (.split (System/getProperty prop) File/pathSeparator)
+           file (classfiles-from-path path)]
+       file))))
+
 (def all-classes
   "Returns a map of all classes that can be located on the classpath. Key
   represent the root package of the class, and value is a list of all classes
@@ -49,13 +58,22 @@
   (memoize
    (fn []
      (->>
-      (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-            path (.split (System/getProperty prop) File/pathSeparator)
-            ^String file (classfiles-from-path path)
+      (for [^String file (all-files-on-path)
             :when (and (.endsWith file ".class") (not (.contains file "__")))]
         (.. file (replace ".class" "") (replace File/separator ".")))
       doall
       (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
+
+(def all-namespaces
+  "Returns the list of all Clojure namespaces obtained by classpath scanning."
+  (memoize
+   (fn []
+     (for [^String file (all-files-on-path)
+           :when (and (.endsWith file ".clj")
+                      (not (.startsWith file "META-INF")))
+           :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
+           :when nsname]
+       (.. nsname (replace File/separator ".") (replace "_" "-"))))))
 
 (defn candidates
   "Returns a list of namespace and classname completions."
@@ -72,20 +90,27 @@
        ;; Fuzziness is too slow for all classes, so just startsWith.
        ;; Also have to do clever tricks to keep the performance high.
        (if has-dot
-         (for [[root-pkg classes] (all-classes)
-               :when (.startsWith prefix root-pkg)
-               ^String cl-str classes
-               :when (.startsWith cl-str prefix)]
-           cl-str)
-         (for [[^String root-pkg _] (all-classes)
-               :when (.startsWith root-pkg prefix)]
-           (str root-pkg ".")))))))
+         (concat (for [[root-pkg classes] (all-classes)
+                       :when (.startsWith prefix root-pkg)
+                       ^String cl-str classes
+                       :when (.startsWith cl-str prefix)]
+                   cl-str)
+                 (for [ns-str (all-namespaces)
+                       :when (nscl-matches? prefix ns-str)]
+                   ns-str))
+         (concat (for [[^String root-pkg _] (all-classes)
+                       :when (.startsWith root-pkg prefix)]
+                   (str root-pkg "."))
+                 (for [^String ns-str (all-namespaces)
+                       :when (.startsWith ns-str prefix)]
+                   ns-str)))))))
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)
     (if-let [ns (find-ns (symbol ns-or-class-str))]
       (str ns "\n" (:doc (meta ns)) "\n")
-      (when-let [class (ns-resolve curr-ns (symbol ns-or-class-str))]
+      (when-let [class (try (ns-resolve curr-ns (symbol ns-or-class-str))
+                            (catch Exception ex nil))]
         (when (= (type class) Class)
           (classname-doc class))))))
 

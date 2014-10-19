@@ -30,7 +30,7 @@
     => (just [#"remove-method" "remove-all-methods"])
 
     (core/completions "cl.co." nil)
-    => (just #{"clojure.core.protocols" "clojure.core.unify"})
+    => (contains #{"clojure.core.protocols" "clojure.core.unify"} :gaps-ok)
 
     (core/completions "clcop" nil)
     => ["clojure.core.protocols"]

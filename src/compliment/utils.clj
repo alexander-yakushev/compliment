@@ -17,7 +17,7 @@
                               (rest sym) false)
                        (recur pre (rest sym) true))
             (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
-            :else (recur pre (rest sym) (not (= (first sym) separator)))))))
+            :else (recur pre (rest sym) (not= (first sym) separator))))))
 
 (defn fuzzy-matches-no-skip?
   "Tests if symbol matches the prefix when test checks whether character is a

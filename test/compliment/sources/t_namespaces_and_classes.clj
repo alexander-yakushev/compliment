@@ -21,7 +21,8 @@
     (src/nscl-matches? "jlRun" "java.lang.Runtime") => truthy))
 
 (facts "about ns/class completion"
-  (fact "they are completed according to the mapping in the given namespace"
+  (fact "they are completed either according to the mapping in the given
+  namespace, or by classpath scanning results"
     (src/candidates "cl.s" *ns* nil)
     => (contains #{"clojure.java.shell" "clojure.set"
                    "clojure.stacktrace" "clojure.string"} :gaps-ok)
@@ -29,8 +30,12 @@
     (src/candidates "sr" *ns* nil)
     => ["src"]
 
+    (src/candidates "clojure.java." *ns* nil)
+    => (contains #{"clojure.java.classpath" "clojure.java.browse"
+                   "clojure.java.shell"} :gaps-ok)
+
     (src/candidates "java.io.Stri" *ns* nil)
-    => (contains #{"java.io.StringWriter" "java.io.StringReader"})
+    => (contains #{"java.io.StringWriter" "java.io.StringReader"} :gaps-ok)
 
     (src/candidates "j.i.F" *ns* nil)
     => () ; Because fuzziness works only for classes imported into current ns
