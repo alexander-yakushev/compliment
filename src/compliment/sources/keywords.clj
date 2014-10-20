@@ -1,15 +1,14 @@
 (ns compliment.sources.keywords
   "Completion for keywords interned globally across the application"
-  (:use [compliment.sources :only [defsource]])
+  (:require [compliment.sources :refer [defsource]]
+            [compliment.utils :refer [defmemoized]])
   (:import java.lang.reflect.Field))
 
-(def ^{:private true}
-  keywords-table
-  (memoize
-   (fn []
-     (let [^Field field (.getDeclaredField clojure.lang.Keyword "table")]
-       (.setAccessible field true)
-       (.get field nil)))))
+(defmemoized ^:private keywords-table
+  []
+  (let [^Field field (.getDeclaredField clojure.lang.Keyword "table")]
+    (.setAccessible field true)
+    (.get field nil)))
 
 (defn candidates
   [prefix _ _]

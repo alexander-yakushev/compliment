@@ -1,7 +1,7 @@
 (ns compliment.sources.namespaces-and-classes
   "Completion for namespace and class names."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches?]]
+            [compliment.utils :refer [fuzzy-matches? defmemoized]]
             [compliment.sources.class-members :refer [classname-doc]])
   (:import [java.util.jar JarFile JarEntry]
            java.io.File))
@@ -42,38 +42,34 @@
         (for [^File file (file-seq (File. path))]
           (.replace ^String (.getPath file) path ""))))
 
-(def ^:private all-files-on-path
+(defmemoized ^:private all-files-on-path
   "Returns the list of all files on the classpath."
-  (memoize
-   (fn []
-     (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-           path (.split (System/getProperty prop) File/pathSeparator)
-           file (classfiles-from-path path)]
-       file))))
+  []
+  (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
+        path (.split (System/getProperty prop) File/pathSeparator)
+        file (classfiles-from-path path)]
+    file))
 
-(def all-classes
+(defmemoized all-classes
   "Returns a map of all classes that can be located on the classpath. Key
   represent the root package of the class, and value is a list of all classes
   for that package."
-  (memoize
-   (fn []
-     (->>
-      (for [^String file (all-files-on-path)
-            :when (and (.endsWith file ".class") (not (.contains file "__")))]
-        (.. file (replace ".class" "") (replace File/separator ".")))
-      doall
-      (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
+  []
+  (->> (for [^String file (all-files-on-path)
+             :when (and (.endsWith file ".class") (not (.contains file "__")))]
+         (.. file (replace ".class" "") (replace File/separator ".")))
+       doall
+       (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
 
-(def all-namespaces
+(defmemoized all-namespaces
   "Returns the list of all Clojure namespaces obtained by classpath scanning."
-  (memoize
-   (fn []
-     (for [^String file (all-files-on-path)
-           :when (and (.endsWith file ".clj")
-                      (not (.startsWith file "META-INF")))
-           :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-           :when nsname]
-       (.. nsname (replace File/separator ".") (replace "_" "-"))))))
+  []
+  (for [^String file (all-files-on-path)
+        :when (and (.endsWith file ".clj")
+                   (not (.startsWith file "META-INF")))
+        :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
+        :when nsname]
+    (.. nsname (replace File/separator ".") (replace "_" "-"))))
 
 (defn candidates
   "Returns a list of namespace and classname completions."

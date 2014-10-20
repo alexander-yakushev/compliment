@@ -56,3 +56,11 @@
   fully qualified name or an alias in the given namespace."
   [sym ns]
   (or (find-ns sym) ((ns-aliases ns) sym)))
+
+(defmacro ^{:doc "Defines a memoized function."
+            :forms '([name doc-string? [params*] body])}
+  defmemoized [name & fdecl]
+  (let [[doc & fdecl] (if (string? (first fdecl))
+                        [(first fdecl) (rest fdecl)]
+                        ["" fdecl])]
+    `(def ~name ~doc (memoize (fn ~@fdecl)))))
