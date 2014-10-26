@@ -38,11 +38,11 @@
     (src/candidates "" *ns* (ctx/parse-context
                              '(let [foo 42,
                                     [bar baz] lst
-                                    {a :a, b :b} m
+                                    {a :a, {b :b :as c} :b, [d] :d} m
                                     {:keys [key1 key2]} m2
                                     [_ rec {urs :ive :as total}] val]
                                 __prefix__)))
-    => (just #{"foo" "bar" "baz" "a" "b" "key1" "key2" "rec" "urs" "total"}))
+    => (just #{"foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "rec" "urs" "total"}))
 
   (fact "bindings are scanned recursively"
     (src/candidates "" *ns* (ctx/parse-context

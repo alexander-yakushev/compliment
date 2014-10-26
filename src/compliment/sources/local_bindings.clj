@@ -17,7 +17,7 @@
 
         (map? binding-node)
         (let [normal-binds (->> (keys binding-node)
-                                (filter symbol?)
+                                (remove keyword?)
                                 (mapcat parse-binding))
               keys-binds (if-let [ks (:keys binding-node)]
                            (mapv str ks) ())
