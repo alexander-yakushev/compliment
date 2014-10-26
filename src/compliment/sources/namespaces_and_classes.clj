@@ -46,7 +46,7 @@
   "Returns the list of all files on the classpath."
   []
   (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-        path (.split (System/getProperty prop) File/pathSeparator)
+        path (.split (or (System/getProperty prop) "") File/pathSeparator)
         file (classfiles-from-path path)]
     file))
 
