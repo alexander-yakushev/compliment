@@ -34,10 +34,14 @@
               :when (.endsWith ^String (.getName jar) ".jar")
               file (classfiles-from-path (.getPath jar))]
           file)
+
         (.endsWith path ".jar")
         (try (for [^JarEntry entry (enumeration-seq (.entries (JarFile. path)))]
                (.getName entry))
              (catch Exception e))
+
+        (= path "") ()
+
         :else
         (for [^File file (file-seq (File. path))]
           (.replace ^String (.getPath file) path ""))))
