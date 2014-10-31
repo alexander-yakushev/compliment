@@ -34,21 +34,11 @@
             (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
             :else (recur pre (rest sym) true)))))
 
-(defn resolve-symbol
-  "Tries to resolve a symbol in the current namespace, or returns nil
-  if the symbol can't be resolved."
-  [sym]
-  (try (resolve sym)
-       (catch Exception e
-         (when (not= ClassNotFoundException
-                     (class (clojure.main/repl-exception e)))
-           (throw e)))))
-
 (defn resolve-class
   "Tries to resolve a classname from the given symbol, or returns nil
   if classname can't be resolved."
-  [sym]
-  (when-let [val (resolve-symbol sym)]
+  [ns sym]
+  (when-let [val (ns-resolve ns sym)]
     (when (class? val) val)))
 
 (defn resolve-namespace

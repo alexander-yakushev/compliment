@@ -206,7 +206,7 @@
   [^String prefix, ns context]
   (when (static-member-symbol? prefix)
     (let [[cl-name member-prefix] (.split prefix "/")
-          cl (resolve-class (symbol cl-name))
+          cl (resolve-class ns (symbol cl-name))
           member-prefix (or member-prefix "")]
       (when cl
         (let [inparts? (re-find #"[A-Z]" member-prefix)]
@@ -221,7 +221,7 @@
   [^String member-str ns]
   (when (static-member-symbol? member-str)
     (let [[cl-name member-name] (.split member-str "/")
-          cl (resolve-class (symbol cl-name))
+          cl (resolve-class ns (symbol cl-name))
           member (when cl
                    (update-static-cache cl)
                    (get-in @static-members-cache [cl member-name]))]

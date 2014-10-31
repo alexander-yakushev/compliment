@@ -44,7 +44,7 @@
 
     (src/candidates "j.i.F" ..some-ns.. nil)
     => ["java.io.File"]
-    (provided (ns-map ..some-ns..) => {'File (utils/resolve-class 'java.io.File)})
+    (provided (ns-map ..some-ns..) => {'File (utils/resolve-class *ns* 'java.io.File)})
 
     ;; Imported classes without package qualifiers are covered by ns-mappings
     ;; source, see respective test file.

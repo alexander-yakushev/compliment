@@ -44,7 +44,12 @@
 
     ;; Don't have to import class to get static members for it.
     (src/static-members-candidates "java.io.File/sep" *ns* nil)
-    => (just #{"java.io.File/separator" "java.io.File/separatorChar"}))
+    => (just #{"java.io.File/separator" "java.io.File/separatorChar"})
+
+    ;; But for imported classes last name can be used.
+    (do (import 'java.io.File)
+        (src/static-members-candidates "File/sep" *ns* nil))
+    => (just #{"File/separator" "File/separatorChar"}))
 
   (fact "single slash doesn't break the completion"
     (src/static-members-candidates "/" *ns* nil) => nil))
