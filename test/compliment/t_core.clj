@@ -16,7 +16,13 @@
     => (just #{"fact-group" "fact" "facts"})
 
     (core/completions "fac" (find-ns 'clojure.core) nil)
-    => ())
+    => ()
+
+    (core/completions "compliment.core/co" *ns* nil)
+    => (just ["compliment.core/completions"])
+
+    (core/completions "core/doc" *ns* nil)
+    => (just ["core/documentation"]))
 
   (fact "in case of non-existing namespace doesn't fail"
     (core/completions "redu" nil nil) => anything

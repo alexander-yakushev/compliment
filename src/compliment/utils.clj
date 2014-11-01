@@ -38,7 +38,8 @@
   "Tries to resolve a classname from the given symbol, or returns nil
   if classname can't be resolved."
   [ns sym]
-  (when-let [val (ns-resolve ns sym)]
+  (when-let [val (try (ns-resolve ns sym)
+                      (catch ClassNotFoundException ex nil))]
     (when (class? val) val)))
 
 (defn resolve-namespace
