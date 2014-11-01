@@ -26,17 +26,19 @@ through functions defined here."
         "sources/keywords" "sources/special_forms" "sources/local-bindings"
         "core"]))
 
+(def ^:private by-length-comparator
+  (reify Comparator
+    (compare [_ s1 s2]
+      (let [res (compare (count s1) (count s2))]
+        (if (zero? res)
+          (compare s1 s2)
+          res)))))
+
 (defn sort-by-length
   "Sorts list of strings by their length first, and then
   alphabetically if length is equal."
   [candidates]
-  (sort (reify Comparator
-          (compare [_ s1 s2]
-            (let [res (compare (count s1) (count s2))]
-              (if (zero? res)
-                (compare s1 s2)
-                res))))
-        candidates))
+  (sort by-length-comparator candidates))
 
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
