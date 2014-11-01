@@ -23,7 +23,7 @@ through functions defined here."
   (map (partial format "compliment/%s.clj")
        ["utils" "context" "sources" "sources/class_members"
         "sources/ns_mappings" "sources/namespaces_and_classes"
-        "sources/keywords" "sources/special_forms" "sources/local-bindings"
+        "sources/keywords" "sources/special_forms" "sources/local_bindings"
         "core"]))
 
 (def ^:private by-length-comparator
