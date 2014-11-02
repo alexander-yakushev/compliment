@@ -3,6 +3,10 @@
   (:require clojure.main
             [clojure.string :as string]))
 
+(def android-vm?
+  "Signifies if the application is running on Android."
+  (.contains ^String (System/getProperty "java.vendor") "Android"))
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."

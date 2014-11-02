@@ -1,7 +1,7 @@
 (ns compliment.sources.namespaces-and-classes
   "Completion for namespace and class names."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches? defmemoized]]
+            [compliment.utils :refer [fuzzy-matches? defmemoized android-vm?]]
             [compliment.sources.class-members :refer [classname-doc]])
   (:import [java.util.jar JarFile JarEntry]
            java.io.File))
@@ -49,10 +49,12 @@
 (defmemoized ^:private all-files-on-path
   "Returns the list of all files on the classpath."
   []
-  (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-        path (.split (or (System/getProperty prop) "") File/pathSeparator)
-        file (classfiles-from-path path)]
-    file))
+  (if android-vm?
+    ()
+    (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
+          path (.split (or (System/getProperty prop) "") File/pathSeparator)
+          file (classfiles-from-path path)]
+      file)))
 
 (defmemoized all-classes
   "Returns a map of all classes that can be located on the classpath. Key
