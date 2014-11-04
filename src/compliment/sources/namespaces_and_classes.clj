@@ -63,7 +63,9 @@
   []
   (->> (for [^String file (all-files-on-path)
              :when (and (.endsWith file ".class") (not (.contains file "__")))]
-         (.. file (replace ".class" "") (replace File/separator ".")))
+         (.. (if (.startsWith file File/separator)
+               (.substring file 1) file)
+             (replace ".class" "") (replace File/separator ".")))
        doall
        (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
 
