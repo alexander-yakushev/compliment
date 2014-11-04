@@ -48,4 +48,7 @@
 
     ;; Imported classes without package qualifiers are covered by ns-mappings
     ;; source, see respective test file.
-    ))
+    )
+  (fact "anonymous and inner classes are not suggested"
+    (src/candidates "java.util.ArrayDeq" *ns* nil)
+    => ["java.util.ArrayDeque"]))

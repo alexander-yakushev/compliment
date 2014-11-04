@@ -62,7 +62,8 @@
   for that package."
   []
   (->> (for [^String file (all-files-on-path)
-             :when (and (.endsWith file ".class") (not (.contains file "__")))]
+             :when (and (.endsWith file ".class") (not (.contains file "__"))
+                        (not (.contains file "$")))]
          (.. (if (.startsWith file File/separator)
                (.substring file 1) file)
              (replace ".class" "") (replace File/separator ".")))
