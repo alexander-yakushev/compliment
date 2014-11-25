@@ -8,8 +8,9 @@
   (set (map name '[def if do let quote var fn loop recur throw try catch
                    monitor-enter monitor-exit doto new set!])))
 
-(defn first-item-in-list? [ctx]
+(defn first-item-in-list?
   "If context is not nil, check if prefix is the first item in a list form."
+  [ctx]
   (if ctx
     (if-let [expr (first ctx)]
       (and (list? (:form expr)) (= (:idx expr) 0)))

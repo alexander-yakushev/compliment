@@ -1,5 +1,6 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
+  (:refer-clojure :exclude [test])
   (:require clojure.main
             [clojure.string :as string]))
 

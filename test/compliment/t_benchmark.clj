@@ -22,7 +22,7 @@
       (completions ".geIV" nil)
       (completions ":req" nil)))
 
-(facts "about performance" :bench
+(facts "about performance" :bench :quickbench
   (let [;; Don't include initialization into benchmark.
         _ (all-classes)
         res (crit/quick-benchmark (execute-completions)
@@ -32,6 +32,6 @@
 
     (crit/report-result res)))
 
-(fact "this is a full benchmark" :fullbench
+(fact "this is a full benchmark" :bench :fullbench
   (all-classes)
   (crit/bench (execute-completions) :supress-jvm-option-warnings true))
