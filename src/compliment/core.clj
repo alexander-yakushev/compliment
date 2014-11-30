@@ -5,13 +5,14 @@
 
 (ns compliment.core
   "Core namespace. Most interactions with Compliment should happen
-through functions defined here."
+  through functions defined here."
   (:require (compliment.sources ns-mappings
                                 namespaces-and-classes
                                 class-members
                                 keywords
                                 special-forms
-                                local-bindings))
+                                local-bindings)
+            [defprecated.core :as depr])
   (:use [compliment.sources :only [all-sources]]
         [compliment.context :only [cache-context]]
         [clojure.string :only [join]])
@@ -48,26 +49,38 @@ through functions defined here."
         (symbol? ns) (or (find-ns ns) (find-ns 'user))
         :else (find-ns 'user)))
 
-(defn completions
-  "Returns a list of completions for the given prefix. Optional context (can be
-nil) should be a string with Lisp form from where the completion was initiated,
-having prefix replaced with `__prefix__` symbol. Optional sort-order can be
-either :by-length or :by-name."
-  ([prefix context-str]
-     (completions prefix *ns* context-str :by-length))
-  ([prefix ns context-str]
-     (completions prefix ns context-str :by-length))
-  ([prefix ns context-str sort-order]
-     (let [ctx (cache-context context-str)
-           sort-fn (if (= sort-order :by-name)
-                     sort sort-by-length)]
-       (-> (for [[_ {:keys [candidates enabled]}] (all-sources)
+(depr/defn completions
+  "Returns a list of completions for the given prefix. Options map can contain
+  the following options:
+  - :ns - namespace where completion is initiated;
+  - :context - code form around the prefix;
+  - :sort-order (either :by-length or :by-name);
+  - :sources - list of source keywords to use."
+  ([prefix]
+   (completions prefix {}))
+  ([prefix options-map]
+   (if (string? options-map)
+     (completions prefix {:context options-map})
+     (let [{:keys [ns context sort-order sources]
+            :or {ns *ns*, sort-order :by-length}} options-map
+            ctx (cache-context context)
+            sort-fn (if (= sort-order :by-name)
+                      sort sort-by-length)]
+       (-> (for [[_ {:keys [candidates enabled]}] (if sources
+                                                    (all-sources sources)
+                                                    (all-sources))
                  :when enabled
                  :let [cands (candidates prefix (ensure-ns ns) ctx)]
                  :when cands]
              cands)
            flatten
            sort-fn))))
+  (^:deprecated
+   [prefix ns context-str]
+   (completions prefix {:ns ns, :context context-str}))
+  (^:deprecated
+   [prefix ns context-str sort-order]
+   (completions prefix {:ns ns, :context context-str, :sort-order sort-order})))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol."

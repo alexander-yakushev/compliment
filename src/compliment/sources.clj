@@ -6,9 +6,11 @@
   sources (atom nil))
 
 (defn all-sources
-  "Returns the list of all completion sources."
-  []
-  @sources)
+  "Returns the list of all completion sources, or the selected once specified by
+  `source-kws`."
+  ([] @sources)
+  ([source-kws]
+   (select-keys @sources source-kws)))
 
 (defn defsource
   "Defines a source with the given name and argument map. Map must

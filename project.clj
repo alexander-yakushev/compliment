@@ -3,7 +3,8 @@
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.1"]]
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [defprecated "0.1.1"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [criterium "0.4.3"]]
                    :plugins [[lein-midje "3.1.3"]]}
