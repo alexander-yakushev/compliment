@@ -7,58 +7,64 @@
 ;; in-depth source testing see their respective test files.
 
 (facts "about completion"
-  (fact "`completions` takes a prefix, optional namespace and a context.
-  If context is missing, `nil` should be passed"
-    (core/completions "redu" nil)
+  (fact "`completions` takes a prefix, and optional options-map."
+    (core/completions "redu")
     => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
 
-    (core/completions "fac" (find-ns 'midje.sweet) nil)
+    (core/completions "fac" {:ns (find-ns 'midje.sweet)})
     => (just #{"fact-group" "fact" "facts"})
 
-    (core/completions "fac" (find-ns 'clojure.core) nil)
+    (core/completions "fac" {:ns (find-ns 'clojure.core)})
     => ()
 
-    (core/completions "compliment.core/co" *ns* nil)
+    (core/completions "compliment.core/co")
     => (just ["compliment.core/completions"])
 
-    (core/completions "core/doc" *ns* nil)
+    (core/completions "core/doc")
     => (just ["core/documentation"]))
 
   (fact "in case of non-existing namespace doesn't fail"
-    (core/completions "redu" nil nil) => anything
-    (core/completions "n-m" 'foo.bar.baz nil) => anything)
+    (core/completions "redu" {:ns nil}) => anything
+    (core/completions "n-m" {:ns 'foo.bar.baz}) => anything)
 
   (fact "many sources allow some sort of fuzziness in prefixes"
-    (core/completions "re-me" nil)
+    (core/completions "re-me")
     => (just #{"remove-method" "reset-meta!" "remove-all-methods"})
 
-    (core/completions "remme" nil)
+    (core/completions "remme")
     => (just [#"remove-method" "remove-all-methods"])
 
-    (core/completions "cl.co." nil)
+    (core/completions "cl.co.")
     => (contains #{"clojure.core.protocols" "clojure.core.unify"} :gaps-ok)
 
-    (core/completions "clcop" nil)
+    (core/completions "clcop")
     => ["clojure.core.protocols"]
 
-    (core/completions ".gSV" nil)
+    (core/completions ".gSV")
     => (just #{".getSpecificationVersion" ".getSpecificationVendor"}))
 
   (fact "candidates are sorted by their length first, and then alphabetically"
-    (core/completions "map" nil)
+    (core/completions "map")
     => (contains ["map" "map?" "mapv" "mapcat" "map-indexed"])
 
-    (core/completions "al-" nil)
+    (core/completions "al-")
     => ["all-ns" "alter-meta!" "alter-var-root"])
 
   (fact "context can help some sources to give better candidates list"
     (def a-str "a string")
-    (core/completions ".sub" "(__prefix__ a-str)")
+    (core/completions ".sub" {:context "(__prefix__ a-str)"})
     => (just #{".subSequence" ".substring"})
 
     (def a-big-int 42M)
-    (core/completions ".sub" "(__prefix__ a-big-int)")
-    => [".subtract"]))
+    (core/completions ".sub" {:context "(__prefix__ a-big-int)"})
+    => [".subtract"])
+
+  (fact ":sources list can filter the sources to be used during completion"
+    (core/completions "cl")
+    => #(> (count %) 10)
+
+    (core/completions "cl" {:sources [:compliment.sources.ns-mappings/ns-mappings]})
+    => (just #{"class" "class?" "clojure-version" "clear-agent-errors"})))
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be
