@@ -5,8 +5,8 @@
             [compliment.sources.ns-mappings :as vars]))
 
 (def ^:private special-forms
-  (set (map name '[def if do let quote var fn loop recur throw try catch
-                   monitor-enter monitor-exit doto new set!])))
+  (set (map name '[def if do quote var recur throw try catch
+                   monitor-enter monitor-exit new set!])))
 
 (defn first-item-in-list?
   "If context is not nil, check if prefix is the first item in a list form."
