@@ -125,9 +125,6 @@
   :tag-fn (fn [m ns]
             (let [c (:candidate m)]
               (if (nscl-symbol? c)
-                (let [ns (find-ns (symbol c))
-                      class (try (ns-resolve ns (symbol c))
-                                 (catch Exception ex nil))]
-                  (assoc m :type (cond ns :namespace
-                                       class :class)))
+                (let [ns (find-ns (symbol c))]
+                  (assoc m :type (if ns :namespace :class)))
                 m))))

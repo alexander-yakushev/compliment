@@ -75,7 +75,7 @@
     (contains [{:candidate "clojure.set", :type :namespace}])
 
     (core/completions "clojure.lang.Lisp" {:tagged? true}) =>
-    (contains [{:type nil, :candidate "clojure.lang.LispReader"}])
+    (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
 
     (core/completions ".getName" {:tagged? true}) =>
     (contains #{{:candidate ".getName", :type :method}
