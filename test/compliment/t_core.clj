@@ -82,7 +82,7 @@
                 {:candidate ".getSimpleName", :type :method}} :gaps-ok)
 
     (core/completions "Integer/co" {:tagged? true}) =>
-    (just [{:candidate "Integer/compare", :type :static-method}])
+    (contains [{:candidate "Integer/compare", :type :static-method}])
 
     (core/completions "recu" {:tagged? true}) =>
     (contains [{:candidate "recur", :type :special-form}])
