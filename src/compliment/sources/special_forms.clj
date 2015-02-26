@@ -32,4 +32,5 @@
 
 (defsource ::special-forms
   :candidates #'candidates
-  :doc doc)
+  :doc doc
+  :tag-fn (fn [m _] (assoc m :type :special-form)))

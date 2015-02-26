@@ -11,16 +11,16 @@
             (:require [compliment.core :refer [__prefix__]])))))
 
 (defn execute-completions []
-  (do (completions "cji" nil)
-      (completions "c.j.i" nil)
-      (completions "rek" nil)
-      (completions "java" nil)
-      (completions "java." nil)
-      (completions "compl" ctx)
-      (completions "ba" ctx)
-      (completions "seageseexs" nil)
-      (completions ".geIV" nil)
-      (completions ":req" nil)))
+  (do (completions "cji" {:tagged true})
+      (completions "c.j.i" {:tagged true})
+      (completions "rek" {:tagged true})
+      (completions "java" {:tagged true})
+      (completions "java." {:tagged true})
+      (completions "compl" {:tagged true})
+      (completions "ba" {:tagged true})
+      (completions "seageseexs" {:tagged true})
+      (completions ".geIV" {:tagged true})
+      (completions ":req" {:tagged true})))
 
 (facts "about performance" :bench :quickbench
   (let [;; Don't include initialization into benchmark.

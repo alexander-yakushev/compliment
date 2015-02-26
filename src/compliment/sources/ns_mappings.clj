@@ -84,7 +84,7 @@
           (println "Macro"))
         (println " " (:doc m))))
     (str *out*)))
-
+(meta #'generate-docstring)
 (defn doc
   "Documentation function for this sources' completions."
   [symbol-str ns]
@@ -95,4 +95,21 @@
 
 (defsource ::ns-mappings
   :candidates #'candidates
-  :doc #'doc)
+  :doc #'doc
+  :tag-fn (fn [m ns]
+            (let [var-meta (as-> (:candidate m) c
+                                 (when (var-symbol? c)
+                                   (ns-resolve ns (symbol c)))
+                                 (when c
+                                   (meta c)))]
+              (if var-meta
+                (assoc m :type (cond (:macro var-meta) :macro
+                                     (:arglists var-meta) :function
+                                     :else :var)
+                       :ns (str (:ns var-meta)))
+                m))))
+
+
+
+
+

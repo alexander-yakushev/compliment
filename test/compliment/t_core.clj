@@ -64,7 +64,35 @@
     => #(> (count %) 10)
 
     (core/completions "cl" {:sources [:compliment.sources.ns-mappings/ns-mappings]})
-    => (just #{"class" "class?" "clojure-version" "clear-agent-errors"})))
+    => (just #{"class" "class?" "clojure-version" "clear-agent-errors"}))
+
+  (fact ":tagged? true returns maps with additional data instead of strings"
+    (core/completions "bound" {:tagged? true}) =>
+    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
+                {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
+
+    (core/completions "cl.se" {:tagged? true}) =>
+    (contains [{:candidate "clojure.set", :type :namespace}])
+
+    (core/completions "clojure.lang.Lisp" {:tagged? true}) =>
+    (contains [{:type nil, :candidate "clojure.lang.LispReader"}])
+
+    (core/completions ".getName" {:tagged? true}) =>
+    (contains #{{:candidate ".getName", :type :method}
+                {:candidate ".getSimpleName", :type :method}} :gaps-ok)
+
+    (core/completions "Integer/co" {:tagged? true}) =>
+    (just [{:candidate "Integer/compare", :type :static-method}])
+
+    (core/completions "recu" {:tagged? true}) =>
+    (contains [{:candidate "recur", :type :special-form}])
+
+    (core/completions "ba" {:context "(defn foo [bar baz] (+ 1 __prefix__))"
+                            :tagged? true}) =>
+    (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
+
+    (core/completions ":argl" {:tagged? true}) =>
+    (contains [{:candidate ":arglists", :type :keyword}])))
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be

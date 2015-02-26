@@ -19,4 +19,5 @@
 
 (defsource ::keywords
   :candidates #'candidates
-  :doc (constantly nil))
+  :doc (constantly nil)
+  :tag-fn (fn [m _] (assoc m :type :keyword)))

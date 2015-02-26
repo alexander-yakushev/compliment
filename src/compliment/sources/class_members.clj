@@ -163,7 +163,13 @@
 
 (defsource ::members
   :candidates #'members-candidates
-  :doc #'members-doc)
+  :doc #'members-doc
+  :tag-fn (fn [m ns]
+            (assoc m :type (if (->> (get-in @members-cache [ns :methods
+                                                            (subs (:candidate m) 1)])
+                                    first
+                                    (instance? Method))
+                             :method :field))))
 
 ;; ## Static members
 
@@ -216,18 +222,28 @@
                          (.startsWith ^String member member-prefix))]
             (str cl-name "/" member)))))))
 
+(defn resolve-static-member
+  "Given a string representation of a static member returns Member object."
+  [^String member-str ns]
+  (let [[cl-name member-name] (.split member-str "/")
+        cl (resolve-class ns (symbol cl-name))]
+    (when cl
+      (update-static-cache cl)
+      (get-in @static-members-cache [cl member-name]))))
+
 (defn static-member-doc
   "Given a member name and class returns its docstring."
-  [^String member-str ns]
+  [member-str ns]
   (when (static-member-symbol? member-str)
-    (let [[cl-name member-name] (.split member-str "/")
-          cl (resolve-class ns (symbol cl-name))
-          member (when cl
-                   (update-static-cache cl)
-                   (get-in @static-members-cache [cl member-name]))]
+    (let [member (resolve-static-member member-str ns)]
       (when member
         (create-members-doc member)))))
 
 (defsource ::static-members
   :candidates #'static-members-candidates
-  :doc #'static-member-doc)
+  :doc #'static-member-doc
+  :tag-fn (fn [m ns]
+            (assoc m :type (if (->> (resolve-static-member (:candidate m) ns)
+                                    first
+                                    (instance? Method))
+                             :static-method :static-field))))
