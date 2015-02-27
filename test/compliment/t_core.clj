@@ -66,33 +66,33 @@
     (core/completions "cl" {:sources [:compliment.sources.ns-mappings/ns-mappings]})
     => (just #{"class" "class?" "clojure-version" "clear-agent-errors"}))
 
-  (fact ":tagged? true returns maps with additional data instead of strings"
-    (core/completions "bound" {:tagged? true}) =>
+  (fact ":tag-candidates true appends extra data to candidates"
+    (core/completions "bound" {:tag-candidates true}) =>
     (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
                 {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
 
-    (core/completions "cl.se" {:tagged? true}) =>
+    (core/completions "cl.se" {:tag-candidates true}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
 
-    (core/completions "clojure.lang.Lisp" {:tagged? true}) =>
+    (core/completions "clojure.lang.Lisp" {:tag-candidates true}) =>
     (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
 
-    (core/completions ".getName" {:tagged? true}) =>
+    (core/completions ".getName" {:tag-candidates true}) =>
     (contains #{{:candidate ".getName", :type :method}
                 {:candidate ".getSimpleName", :type :method}} :gaps-ok)
 
-    (core/completions "Integer/co" {:tagged? true}) =>
+    (core/completions "Integer/co" {:tag-candidates true}) =>
     (contains [{:candidate "Integer/compare", :type :static-method}])
 
-    (core/completions "recu" {:tagged? true}) =>
+    (core/completions "recu" {:tag-candidates true}) =>
     (contains [{:candidate "recur", :type :special-form}])
 
     (core/completions "ba" {:context "(defn foo [bar baz] (+ 1 __prefix__))"
-                            :tagged? true}) =>
-    (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
+                            :tag-candidates true}) =>
+                            (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
 
-    (core/completions ":argl" {:tagged? true}) =>
-    (contains [{:candidate ":arglists", :type :keyword}])))
+                            (core/completions ":argl" {:tag-candidates true}) =>
+                            (contains [{:candidate ":arglists", :type :keyword}])))
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be

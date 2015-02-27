@@ -38,8 +38,8 @@
 (defn sort-by-length
   "Sorts list of strings by their length first, and then alphabetically if
   length is equal. Works for tagged and non-tagged results."
-  [tagged? candidates]
-  (if tagged?
+  [tag? candidates]
+  (if tag?
     (sort-by :candidate by-length-comparator candidates)
     (sort by-length-comparator candidates)))
 
@@ -68,26 +68,27 @@
   - :ns - namespace where completion is initiated;
   - :context - code form around the prefix;
   - :sort-order (either :by-length or :by-name);
-  - :tagged? - if true, returns maps instead of just strings;
+  - :tag-candidates - if true, returns maps with extra data instead of strings;
   - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
   ([prefix options-map]
    (if (string? options-map)
      (completions prefix {:context options-map})
-     (let [{:keys [ns context sort-order tagged? sources]
+     (let [{:keys [ns context sort-order sources]
             :or {ns *ns*, sort-order :by-length}} options-map
+            tag? (:tag-candidates options-map)
             ctx (cache-context context)
             sort-fn (if (= sort-order :by-name)
-                      (if tagged?
+                      (if tag?
                         sort (partial sort-by :candidate))
-                      (partial sort-by-length tagged?))]
+                      (partial sort-by-length tag?))]
        (-> (for [[_ {:keys [candidates enabled tag-fn]}] (if sources
                                                            (all-sources sources)
                                                            (all-sources))
                  :when enabled
                  :let [cands (cond-> (candidates prefix (ensure-ns ns) ctx)
-                                     tagged? (tag-candidates tag-fn ns))]
+                                     tag? (tag-candidates tag-fn ns))]
                  :when cands]
              cands)
            flatten
@@ -111,11 +112,3 @@
           docstr)
         (interpose "\n\n")
         join)))
-
-
-
-
-
-
-
-
