@@ -73,12 +73,12 @@
 (defmemoized all-namespaces
   "Returns the list of all Clojure namespaces obtained by classpath scanning."
   []
-  (for [^String file (all-files-on-path)
-        :when (and (.endsWith file ".clj")
-                   (not (.startsWith file "META-INF")))
-        :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-        :when nsname]
-    (.. nsname (replace File/separator ".") (replace "_" "-"))))
+  (set (for [^String file (all-files-on-path)
+             :when (and (.endsWith file ".clj")
+                        (not (.startsWith file "META-INF")))
+             :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
+             :when nsname]
+         (.. nsname (replace File/separator ".") (replace "_" "-")))))
 
 (defn candidates
   "Returns a list of namespace and classname completions."
@@ -124,7 +124,7 @@
   :doc #'doc
   :tag-fn (fn [m ns]
             (let [c (:candidate m)]
-              (if (nscl-symbol? c)
-                (let [ns (find-ns (symbol c))]
-                  (assoc m :type (if ns :namespace :class)))
-                m))))
+              (assoc m :type (if (or (find-ns (symbol c))
+                                     ((ns-aliases ns) (symbol c))
+                                     ((all-namespaces) c))
+                               :namespace :class)))))

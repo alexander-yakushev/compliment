@@ -74,8 +74,22 @@
     (core/completions "cl.se" {:tag-candidates true}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
 
+    ;; Test for not required namespaces
+    (core/completions "cl.test.ta" {:tag-candidates true}) =>
+    (just [{:type :namespace, :candidate "clojure.test.tap"}])
+
+    ;; Test for aliases
+    (core/completions "cor" {:tag-candidates true}) =>
+    (just [{:type :namespace, :candidate "core"}])
+
     (core/completions "clojure.lang.Lisp" {:tag-candidates true}) =>
     (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
+
+    (core/completions "java.net.URLE" {:tag-candidates true}) =>
+    (contains [{:type :class, :candidate "java.net.URLEncoder"}])
+
+    (compliment.core/completions "RuntimeE" {:tag-candidates true}) =>
+    (just [{:ns "compliment.t-core", :type :class, :candidate "RuntimeException"}])
 
     (core/completions ".getName" {:tag-candidates true}) =>
     (contains #{{:candidate ".getName", :type :method}

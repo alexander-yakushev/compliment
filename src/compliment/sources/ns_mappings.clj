@@ -97,19 +97,14 @@
   :candidates #'candidates
   :doc #'doc
   :tag-fn (fn [m ns]
-            (let [var-meta (as-> (:candidate m) c
-                                 (when (var-symbol? c)
-                                   (ns-resolve ns (symbol c)))
-                                 (when c
-                                   (meta c)))]
-              (if var-meta
+            (let [c (:candidate m)
+                  var (when (var-symbol? c)
+                        (ns-resolve ns (symbol c)))
+                  var-meta (meta var)]
+              (if var
                 (assoc m :type (cond (:macro var-meta) :macro
                                      (:arglists var-meta) :function
+                                     (= (type var) Class) :class
                                      :else :var)
-                       :ns (str (:ns var-meta)))
+                       :ns (str (or (:ns var-meta) ns)))
                 m))))
-
-
-
-
-
