@@ -70,6 +70,14 @@
        doall
        (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
 
+(defmemoized all-classes-short-names
+  "Returns a map where short classnames are matched with vectors with
+  package-qualified classnames."
+  []
+  (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
+                 (nth 2))
+            (apply concat (vals (all-classes)))))
+
 (defmemoized all-namespaces
   "Returns the list of all Clojure namespaces obtained by classpath scanning."
   []
@@ -80,35 +88,80 @@
              :when nsname]
          (.. nsname (replace File/separator ".") (replace "_" "-")))))
 
+(defn- analyze-import-context
+  "Checks if the completion is called from ns import declaration. If so, and the
+  prefix is inside import vector, return that package name, otherwise return
+  `:root`. If not inside :import, return nil."
+  [ctx]
+  (let [ns-decl (:form (last ctx))
+        import-list (:form (last (butlast ctx)))
+        prefix-form (:form (first ctx))]
+    (when (and (sequential? ns-decl)
+               (= (first ns-decl) 'ns)
+               (sequential? import-list)
+               (= (first import-list) :import))
+      (if (= prefix-form import-list)
+        :root
+        (str (first prefix-form))))))
+
+(defn- get-all-full-names
+  "Returns a list of package-qualified classnames given a short classname."
+  [prefix]
+  (reduce-kv (fn [l, ^String short-name, full-names]
+               (if (.startsWith short-name prefix)
+                 (concat l full-names)
+                 l))
+             ()
+             (all-classes-short-names)))
+
+(defn- get-classes-by-package-name
+  "Returns simple classnames that match the `prefix` and belong to `pkg-name`."
+  [prefix pkg-name]
+  (reduce-kv (fn [l, ^String short-name, full-names]
+               (if (and (.startsWith short-name prefix)
+                        (some #(.startsWith % pkg-name) full-names))
+                 (conj l short-name)
+                 l))
+             ()
+             (all-classes-short-names)))
+
 (defn candidates
   "Returns a list of namespace and classname completions."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
-    (let [has-dot (> (.indexOf prefix ".") -1)]
-      ((comp distinct concat)
-       (for [ns-str (concat (map (comp name ns-name) (all-ns))
-                            (imported-classes ns)
-                            (when-not has-dot
-                              (map name (keys (ns-aliases ns)))))
-             :when (nscl-matches? prefix ns-str)]
-         ns-str)
-       ;; Fuzziness is too slow for all classes, so just startsWith.
-       ;; Also have to do clever tricks to keep the performance high.
-       (if has-dot
-         (concat (for [[root-pkg classes] (all-classes)
-                       :when (.startsWith prefix root-pkg)
-                       ^String cl-str classes
-                       :when (.startsWith cl-str prefix)]
-                   cl-str)
-                 (for [ns-str (all-namespaces)
-                       :when (nscl-matches? prefix ns-str)]
-                   ns-str))
-         (concat (for [[^String root-pkg _] (all-classes)
-                       :when (.startsWith root-pkg prefix)]
-                   (str root-pkg "."))
-                 (for [^String ns-str (all-namespaces)
-                       :when (.startsWith ns-str prefix)]
-                   ns-str)))))))
+    (let [has-dot (> (.indexOf prefix ".") -1)
+          import-ctx (analyze-import-context context)]
+      (cond (= import-ctx :root)
+            (get-all-full-names prefix)
+
+            import-ctx
+            (get-classes-by-package-name prefix import-ctx)
+
+            :else
+            ((comp distinct concat)
+             (for [ns-str (concat (map (comp name ns-name) (all-ns))
+                                  (imported-classes ns)
+                                  (when-not has-dot
+                                    (map name (keys (ns-aliases ns)))))
+                   :when (nscl-matches? prefix ns-str)]
+               ns-str)
+             ;; Fuzziness is too slow for all classes, so just startsWith.
+             ;; Also have to do clever tricks to keep the performance high.
+             (if has-dot
+               (concat (for [[root-pkg classes] (all-classes)
+                             :when (.startsWith prefix root-pkg)
+                             ^String cl-str classes
+                             :when (.startsWith cl-str prefix)]
+                         cl-str)
+                       (for [ns-str (all-namespaces)
+                             :when (nscl-matches? prefix ns-str)]
+                         ns-str))
+               (concat (for [[^String root-pkg _] (all-classes)
+                             :when (.startsWith root-pkg prefix)]
+                         (str root-pkg "."))
+                       (for [^String ns-str (all-namespaces)
+                             :when (.startsWith ns-str prefix)]
+                         ns-str))))))))
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)

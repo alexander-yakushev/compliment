@@ -51,4 +51,12 @@
     )
   (fact "anonymous and inner classes are not suggested"
     (src/candidates "java.util.ArrayDeq" *ns* nil)
-    => ["java.util.ArrayDeque"]))
+    => ["java.util.ArrayDeque"])
+
+  (fact "inside :import block additional rules apply"
+    (src/candidates "Handler" *ns* (ctx/parse-context '(ns (:require stuff)
+                                                         (:import __prefix__))))
+    => (contains #{"clojure.asm.Handler" "java.util.logging.Handler"} :gaps-ok)
+
+    (src/candidates "Lis" *ns* (ctx/parse-context '(ns (:import [clojure.lang __prefix__]))))
+    => (just ["LispReader"])))
