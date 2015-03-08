@@ -119,7 +119,7 @@
   [prefix pkg-name]
   (reduce-kv (fn [l, ^String short-name, full-names]
                (if (and (.startsWith short-name prefix)
-                        (some #(.startsWith % pkg-name) full-names))
+                        (some #(.startsWith ^String % pkg-name) full-names))
                  (conj l short-name)
                  l))
              ()

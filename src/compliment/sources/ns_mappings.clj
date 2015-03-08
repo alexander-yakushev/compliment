@@ -101,10 +101,15 @@
                   var (when (var-symbol? c)
                         (ns-resolve ns (symbol c)))
                   var-meta (meta var)]
-              (if var
-                (assoc m :type (cond (:macro var-meta) :macro
-                                     (:arglists var-meta) :function
-                                     (= (type var) Class) :class
-                                     :else :var)
-                       :ns (str (or (:ns var-meta) ns)))
-                m))))
+              (cond (= (type var) Class)
+                    (assoc m :type :class
+                           :package (.getName (.getPackage ^Class var)))
+
+                    var-meta
+                    (assoc m :type (cond (:macro var-meta) :macro
+                                         (:arglists var-meta) :function
+                                         :else :var)
+                           :ns (str (or (:ns var-meta) ns)))
+
+                    :else m))))
+

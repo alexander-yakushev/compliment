@@ -71,6 +71,9 @@
     (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
                 {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
 
+    (core/completions "a-big-" {:tag-candidates true})
+    => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int"}])
+
     (core/completions "cl.se" {:tag-candidates true}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
 
@@ -88,11 +91,8 @@
     (core/completions "java.net.URLE" {:tag-candidates true}) =>
     (contains [{:type :class, :candidate "java.net.URLEncoder"}])
 
-    (compliment.core/completions "RuntimeE" {:tag-candidates true}) =>
-    (just [{:ns "compliment.t-core", :type :class, :candidate "RuntimeException"}])
-
-    (contains #{{:candidate ".getName", :type :method}
-                {:candidate ".getSimpleName", :type :method}} :gaps-ok)
+    (compliment.core/completions "RuntimeE" {:tag-candidates true})
+    => (just [{:package "java.lang", :type :class, :candidate "RuntimeException"}])
 
     (core/completions ".getName" {:tag-candidates true}) =>
     (contains #{{:candidate ".getName", :type :method}
