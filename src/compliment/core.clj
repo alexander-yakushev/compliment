@@ -76,7 +76,8 @@
    (if (string? options-map)
      (completions prefix {:context options-map})
      (let [{:keys [ns context sort-order sources]
-            :or {ns *ns*, sort-order :by-length}} options-map
+            :or {sort-order :by-length}} options-map
+            ns (ensure-ns (or ns *ns*))
             tag? (:tag-candidates options-map)
             ctx (cache-context context)
             sort-fn (if (= sort-order :by-name)
@@ -87,7 +88,7 @@
                                                            (all-sources sources)
                                                            (all-sources))
                  :when enabled
-                 :let [cands (cond-> (candidates prefix (ensure-ns ns) ctx)
+                 :let [cands (cond-> (candidates prefix ns ctx)
                                      tag? (tag-candidates tag-fn ns))]
                  :when cands]
              cands)

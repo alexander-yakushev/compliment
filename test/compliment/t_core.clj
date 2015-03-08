@@ -91,9 +91,19 @@
     (compliment.core/completions "RuntimeE" {:tag-candidates true}) =>
     (just [{:ns "compliment.t-core", :type :class, :candidate "RuntimeException"}])
 
+    (contains #{{:candidate ".getName", :type :method}
+                {:candidate ".getSimpleName", :type :method}} :gaps-ok)
+
     (core/completions ".getName" {:tag-candidates true}) =>
     (contains #{{:candidate ".getName", :type :method}
                 {:candidate ".getSimpleName", :type :method}} :gaps-ok)
+
+    (compliment.core/completions ".getName" {:ns 'compliment.t-core
+                                             :tag-candidates true})
+    => (contains [{:candidate ".getName", :type :method}])
+
+    (core/completions "Integer/SI" {:tag-candidates true})
+    => (just [{:type :static-field, :candidate "Integer/SIZE"}])
 
     (core/completions "Integer/co" {:tag-candidates true}) =>
     (contains [{:candidate "Integer/compare", :type :static-method}])
