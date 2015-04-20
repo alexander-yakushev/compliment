@@ -82,8 +82,8 @@
     (just [{:type :namespace, :candidate "clojure.test.tap"}])
 
     ;; Test for aliases
-    (core/completions "cor" {:tag-candidates true}) =>
-    (just [{:type :namespace, :candidate "core"}])
+    (core/completions "cor" {:tag-candidates true})
+    => (contains [{:type :namespace, :candidate "core"}])
 
     (core/completions "clojure.lang.Lisp" {:tag-candidates true}) =>
     (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
