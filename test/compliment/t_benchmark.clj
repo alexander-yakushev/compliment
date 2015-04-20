@@ -10,6 +10,9 @@
             (:require [criterium.core :as crit])
             (:require [compliment.core :refer [__prefix__]])))))
 
+(def ^:private ctx2
+  (str '(jio/resource "__prefix__")))
+
 (defn execute-completions []
   (do (completions "cji" {:tag-candidates true})
       (completions "c.j.i" {:tag-candidates true})
@@ -20,7 +23,8 @@
       (completions "ba" {:tag-candidates true, :context ctx})
       (completions "seageseexs" {:tag-candidates true})
       (completions ".geIV" {:tag-candidates true})
-      (completions ":req" {:tag-candidates true})))
+      (completions ":req" {:tag-candidates true})
+      (completions "META" {:tag-candidates true :context ctx2})))
 
 (defn benchmark [quick?]
   (let [;; Don't include initialization into benchmark.

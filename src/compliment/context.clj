@@ -65,6 +65,11 @@
                    (cons {:idx (first res) :map-role (second res) :form ctx}
                          (nth res 2)))
 
+                 (string? ctx)
+                 (let [idx (.indexOf ^String ctx (name prefix-placeholder))]
+                   (when (>= idx 0)
+                     [{:idx idx :form ctx}]))
+
                  (= ctx prefix-placeholder) ()))
         parsed (parse context)]
     (when parsed

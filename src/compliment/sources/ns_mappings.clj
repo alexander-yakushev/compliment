@@ -84,7 +84,7 @@
           (println "Macro"))
         (println " " (:doc m))))
     (str *out*)))
-(meta #'generate-docstring)
+
 (defn doc
   "Documentation function for this sources' completions."
   [symbol-str ns]

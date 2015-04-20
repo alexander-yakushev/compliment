@@ -137,4 +137,4 @@
                        (.endsWith file ".clj")
                        (.endsWith file ".jar")
                        (.endsWith file ".class")))]
-    file))
+    (subs file 1)))
