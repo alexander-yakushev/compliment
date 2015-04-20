@@ -18,10 +18,7 @@
   (fact "separator in prefix can be omitted"
     (src/nscl-matches? "cstr" "clojure.string")     => truthy
     (src/nscl-matches? "cji" "clojure.java.io")     => truthy
-    (src/nscl-matches? "jlRun" "java.lang.Runtime") => truthy)
-
-  (fact "if System/getProperty returns nil, Compliment won't fail"
-    (#'src/classfiles-from-path "") => ()))
+    (src/nscl-matches? "jlRun" "java.lang.Runtime") => truthy))
 
 (facts "about ns/class completion"
   (fact "they are completed either according to the mapping in the given

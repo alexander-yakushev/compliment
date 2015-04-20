@@ -1,7 +1,7 @@
 (ns compliment.t-benchmark
   (:require [midje.sweet :refer :all]
             [compliment.core :refer [completions]]
-            [compliment.sources.namespaces-and-classes :refer [all-classes]]
+            [compliment.utils :as utils]
             [criterium.core :as crit]))
 
 (def ^:private ctx
@@ -16,22 +16,29 @@
       (completions "rek" {:tag-candidates true})
       (completions "java" {:tag-candidates true})
       (completions "java." {:tag-candidates true})
-      (completions "compl" {:tag-candidates true})
-      (completions "ba" {:tag-candidates true})
+      (completions "compl" {:tag-candidates true, :context ctx})
+      (completions "ba" {:tag-candidates true, :context ctx})
       (completions "seageseexs" {:tag-candidates true})
       (completions ".geIV" {:tag-candidates true})
       (completions ":req" {:tag-candidates true})))
 
-(facts "about performance" :bench :quickbench
+(defn benchmark [quick?]
   (let [;; Don't include initialization into benchmark.
-        _ (all-classes)
-        res (crit/quick-benchmark (execute-completions)
-                                  {:supress-jvm-option-warnings true})]
+        _ (do (utils/classes-on-classpath)
+              (utils/namespaces-on-classpath)
+              (utils/project-resources))]
+    (if quick?
+      (crit/quick-benchmark (execute-completions)
+                            {:supress-jvm-option-warnings true})
+      (crit/bench (execute-completions)
+                  :supress-jvm-option-warnings true))))
+
+(facts "about performance" :bench :quickbench
+  (let [res (benchmark true)]
     (fact "simple benchmark suite shouldn't take longer than specified limit"
       (first (:mean res)) => (partial > 100))
 
     (crit/report-result res)))
 
 (fact "this is a full benchmark" :bench :fullbench
-  (all-classes)
-  (crit/bench (execute-completions) :supress-jvm-option-warnings true))
+  (benchmark false))

@@ -1,10 +1,9 @@
 (ns compliment.sources.namespaces-and-classes
   "Completion for namespace and class names."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches? defmemoized android-vm?]]
+            [compliment.utils :refer [fuzzy-matches? defmemoized] :as utils]
             [compliment.sources.class-members :refer [classname-doc]])
-  (:import [java.util.jar JarFile JarEntry]
-           java.io.File))
+  (:import java.io.File))
 
 (defn nscl-symbol?
   "Tests if prefix looks like a namespace or classname."
@@ -25,68 +24,13 @@
   (for [[_ ^Class val] (ns-map ns) :when (class? val)]
     (.getName val)))
 
-(defn- classfiles-from-path
-  "Given a path (either a jar file, directory with classes or directory with
-  paths) returns the classes under that path."
-  [^String path]
-  (cond (.endsWith path "/*")
-        (for [^File jar (.listFiles (File. path))
-              :when (.endsWith ^String (.getName jar) ".jar")
-              file (classfiles-from-path (.getPath jar))]
-          file)
-
-        (.endsWith path ".jar")
-        (try (for [^JarEntry entry (enumeration-seq (.entries (JarFile. path)))]
-               (.getName entry))
-             (catch Exception e))
-
-        (= path "") ()
-
-        :else
-        (for [^File file (file-seq (File. path))]
-          (.replace ^String (.getPath file) path ""))))
-
-(defmemoized ^:private all-files-on-path
-  "Returns the list of all files on the classpath."
-  []
-  (if android-vm?
-    ()
-    (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-          path (.split (or (System/getProperty prop) "") File/pathSeparator)
-          file (classfiles-from-path path)]
-      file)))
-
-(defmemoized all-classes
-  "Returns a map of all classes that can be located on the classpath. Key
-  represent the root package of the class, and value is a list of all classes
-  for that package."
-  []
-  (->> (for [^String file (all-files-on-path)
-             :when (and (.endsWith file ".class") (not (.contains file "__"))
-                        (not (.contains file "$")))]
-         (.. (if (.startsWith file File/separator)
-               (.substring file 1) file)
-             (replace ".class" "") (replace File/separator ".")))
-       doall
-       (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
-
 (defmemoized all-classes-short-names
   "Returns a map where short classnames are matched with vectors with
   package-qualified classnames."
   []
   (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
                  (nth 2))
-            (apply concat (vals (all-classes)))))
-
-(defmemoized all-namespaces
-  "Returns the list of all Clojure namespaces obtained by classpath scanning."
-  []
-  (set (for [^String file (all-files-on-path)
-             :when (and (.endsWith file ".clj")
-                        (not (.startsWith file "META-INF")))
-             :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-             :when nsname]
-         (.. nsname (replace File/separator ".") (replace "_" "-")))))
+            (apply concat (vals (utils/classes-on-classpath)))))
 
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
@@ -148,18 +92,18 @@
              ;; Fuzziness is too slow for all classes, so just startsWith.
              ;; Also have to do clever tricks to keep the performance high.
              (if has-dot
-               (concat (for [[root-pkg classes] (all-classes)
+               (concat (for [[root-pkg classes] (utils/classes-on-classpath)
                              :when (.startsWith prefix root-pkg)
                              ^String cl-str classes
                              :when (.startsWith cl-str prefix)]
                          cl-str)
-                       (for [ns-str (all-namespaces)
+                       (for [ns-str (utils/namespaces-on-classpath)
                              :when (nscl-matches? prefix ns-str)]
                          ns-str))
-               (concat (for [[^String root-pkg _] (all-classes)
+               (concat (for [[^String root-pkg _] (utils/classes-on-classpath)
                              :when (.startsWith root-pkg prefix)]
                          (str root-pkg "."))
-                       (for [^String ns-str (all-namespaces)
+                       (for [^String ns-str (utils/namespaces-on-classpath)
                              :when (.startsWith ns-str prefix)]
                          ns-str))))))))
 
@@ -179,5 +123,5 @@
             (let [c (:candidate m)]
               (assoc m :type (if (or (find-ns (symbol c))
                                      ((ns-aliases ns) (symbol c))
-                                     ((all-namespaces) c))
+                                     ((utils/namespaces-on-classpath) c))
                                :namespace :class)))))

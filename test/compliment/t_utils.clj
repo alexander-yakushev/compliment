@@ -33,3 +33,7 @@
 
      (fuzzy-matches-no-skip? "ImpVen" symbol pred) => falsey
      (fuzzy-matches-no-skip? "getmple" symbol pred) => falsey)))
+
+(facts "about classpath"
+  (fact "if System/getProperty returns nil, Compliment won't fail"
+    (#'compliment.utils/list-files "" true) => ()))
