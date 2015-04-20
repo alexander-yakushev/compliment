@@ -1,7 +1,6 @@
 (ns compliment.sources.resources
   "Completion for bundled resource files."
   (:require [clojure.java.io :as io]
-            [compliment.sources.ns-mappings :as vars]
             [compliment.sources :refer [defsource]]
             [compliment.utils :as utils])
   (:import java.io.File

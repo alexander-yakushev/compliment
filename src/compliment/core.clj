@@ -11,7 +11,8 @@
                                 class-members
                                 keywords
                                 special-forms
-                                local-bindings)
+                                local-bindings
+                                resources)
             [defprecated.core :as depr])
   (:use [compliment.sources :only [all-sources]]
         [compliment.context :only [cache-context]]
