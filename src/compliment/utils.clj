@@ -20,15 +20,15 @@
             :else (recur pre (rest sym) (not= (first sym) separator))))))
 
 (defn fuzzy-matches-no-skip?
-  "Tests if symbol matches the prefix when test checks whether character is a
-  separator. Unlike `fuzzy-maches?` requires separator characters to be present
-  in prefix."
-  [prefix, ^String symbol, test]
+  "Tests if symbol matches the prefix where separator? checks whether character
+  is a separator. Unlike `fuzzy-matches?` requires separator characters to be
+  present in prefix."
+  [prefix, ^String symbol, separator?]
   (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
     (loop [pre prefix, sym symbol, skipping false]
       (cond (empty? pre) true
             (empty? sym) false
-            skipping (if (test (first sym))
+            skipping (if (separator? (first sym))
                        (recur pre sym false)
                        (recur pre (rest sym) true))
             (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
@@ -78,7 +78,7 @@
   (cond (.endsWith path "/*")
         (for [^File jar (.listFiles (File. path))
               :when (.endsWith ^String (.getName jar) ".jar")
-              file (list-files (.getPath jar))]
+              file (list-files (.getPath jar) scan-jars?)]
           file)
 
         (.endsWith path ".jar")

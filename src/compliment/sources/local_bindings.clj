@@ -1,8 +1,7 @@
 (ns compliment.sources.local-bindings
   "Completion source for local bindings introduced by defn, let and the like."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]
-            [clojure.string :refer [join]]))
+            [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]))
 
 (def let-like-forms '#{let if-let when-let if-some when-some doseq for})
 
