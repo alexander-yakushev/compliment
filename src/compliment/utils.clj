@@ -67,9 +67,8 @@
   []
   (if android-vm?
     ()
-    (for [prop ["sun.boot.class.path" "java.ext.dirs" "java.class.path"]
-          path (.split (or (System/getProperty prop) "") File/pathSeparator)]
-      path)))
+    (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
+            ["sun.boot.class.path" "java.ext.dirs" "java.class.path"])))
 
 (defn- list-files
   "Given a path (either a jar file, directory with classes or directory with
@@ -100,9 +99,7 @@
   "Returns a list of all files on the classpath, including those located inside
   jar files."
   []
-  (for [path (classpath)
-        file (list-files path true)]
-    file))
+  (mapcat #(list-files % true) (classpath)))
 
 (defmemoized classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
@@ -115,7 +112,6 @@
          (.. (if (.startsWith file File/separator)
                (.substring file 1) file)
              (replace ".class" "") (replace File/separator ".")))
-       doall
        (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
 
 (defmemoized namespaces-on-classpath
@@ -133,8 +129,7 @@
   []
   (for [path (classpath)
         ^String file (list-files path false)
-        :when (not (or (empty? file)
-                       (.endsWith file ".clj")
-                       (.endsWith file ".jar")
-                       (.endsWith file ".class")))]
-    (subs file 1)))
+        :when (not (or (empty? file) (.endsWith file ".clj")
+                       (.endsWith file ".jar") (.endsWith file ".class")))]
+    (if (.startsWith file File/separator)
+      (.substring file 1) file)))

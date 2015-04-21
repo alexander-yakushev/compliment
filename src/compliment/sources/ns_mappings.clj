@@ -1,7 +1,7 @@
 (ns compliment.sources.ns-mappings
   "Completion for vars and classes in the current namespace."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches?]])
+            [compliment.utils :refer [fuzzy-matches? resolve-namespace]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -22,8 +22,7 @@
   (let [[scope-name sym] (if (> (.indexOf s "/") -1)
                            (.split s "/") ())
         scope (when scope-name
-                (or (find-ns (symbol scope-name))
-                    ((ns-aliases ns) (symbol scope-name))))
+                (resolve-namespace (symbol scope-name) ns))
         prefix (if scope
                  (or sym "") s)]
     [scope-name scope prefix]))

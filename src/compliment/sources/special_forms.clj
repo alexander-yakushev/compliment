@@ -12,7 +12,7 @@
   "If context is not nil, check if prefix is the first item in a list form."
   [ctx]
   (if ctx
-    (if-let [expr (first ctx)]
+    (when-let [expr (first ctx)]
       (and (list? (:form expr)) (= (:idx expr) 0)))
     true))
 

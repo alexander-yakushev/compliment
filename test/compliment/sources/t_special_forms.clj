@@ -15,6 +15,9 @@
     => ["monitor-enter" "monitor-exit"]
 
     (src/candidates "" *ns* (ctx/parse-context '(str __prefix__ 42)))
+    => nil
+
+    (src/candidates "" *ns* (ctx/parse-context '[__prefix__ 42]))
     => nil)
 
   (fact "there are docs for special forms too"

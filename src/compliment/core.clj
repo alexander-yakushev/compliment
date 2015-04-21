@@ -51,7 +51,7 @@
   [ns]
   (cond (instance? clojure.lang.Namespace ns) ns
         (symbol? ns) (or (find-ns ns) (find-ns 'user))
-        :else (find-ns 'user)))
+        :else *ns*))
 
 (defn- tag-candidates
   "Iterate over list of string candidates and return maps with each candidate
@@ -79,12 +79,12 @@
      (completions prefix {:context options-map})
      (let [{:keys [ns context sort-order sources]
             :or {sort-order :by-length}} options-map
-            ns (ensure-ns (or ns *ns*))
+            ns (ensure-ns ns)
             tag? (:tag-candidates options-map)
             ctx (cache-context context)
             sort-fn (if (= sort-order :by-name)
                       (if tag?
-                        sort (partial sort-by :candidate))
+                        (partial sort-by :candidate) sort)
                       (partial sort-by-length tag?))]
        (-> (for [[_ {:keys [candidates enabled tag-fn]}] (if sources
                                                            (all-sources sources)

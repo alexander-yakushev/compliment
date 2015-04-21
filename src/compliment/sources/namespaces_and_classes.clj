@@ -121,7 +121,6 @@
   :doc #'doc
   :tag-fn (fn [m ns]
             (let [c (:candidate m)]
-              (assoc m :type (if (or (find-ns (symbol c))
-                                     ((ns-aliases ns) (symbol c))
+              (assoc m :type (if (or (utils/resolve-namespace (symbol c) ns)
                                      ((utils/namespaces-on-classpath) c))
                                :namespace :class)))))

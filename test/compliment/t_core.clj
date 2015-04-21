@@ -50,6 +50,15 @@
     (core/completions "al-")
     => ["all-ns" "alter-meta!" "alter-var-root"])
 
+  (fact "sorting directly by name can also be enabled"
+    (core/completions "map" {:sort-order :by-name})
+    => (contains ["map" "map-indexed" "map?" "mapcat" "mapv"])
+
+    (core/completions "remo" {:sort-order :by-name, :tag-candidates true})
+    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
+                  {:ns "clojure.core", :type :function, :candidate "remove-ns"}
+                  {:ns "clojure.core", :type :function, :candidate "remove-watch"}]))
+
   (fact "context can help some sources to give better candidates list"
     (def a-str "a string")
     (core/completions ".sub" {:context "(__prefix__ a-str)"})
@@ -116,7 +125,21 @@
                             (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
 
                             (core/completions ":argl" {:tag-candidates true}) =>
-                            (contains [{:candidate ":arglists", :type :keyword}])))
+                            (contains [{:candidate ":arglists", :type :keyword}]))
+
+  (fact "if tagging candidates throws an exception, Compliment doesn't crash"
+    (#'core/tag-candidates ["str" "subs"] (fn [& _] (/ 1 0)) *ns*)
+    => (just [{:candidate "str"} {:candidate "subs"}]))
+
+  (fact "deprecated API still works"
+    (core/completions "ba" "(defn foo [bar baz] (+ 1 __prefix__))")
+    => (contains ["bar" "baz"])
+
+    (core/completions "fac" (find-ns 'midje.sweet) nil)
+    => (just #{"fact-group" "fact" "facts"})
+
+    (core/completions "fac" (find-ns 'midje.sweet) nil :by-name)
+    => (just ["fact" "fact-group" "facts"])))
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be

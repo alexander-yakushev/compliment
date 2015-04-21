@@ -12,7 +12,6 @@
                                   [cloverage "1.0.4"]]
                    :plugins [[lein-midje "3.1.3"]
                              [jonase/eastwood "0.2.1"]
-                             [lein-cloverage "1.0.2"]
                              [lein-shell "0.4.0"]]
                    :eastwood {:namespaces [:source-paths]}
 

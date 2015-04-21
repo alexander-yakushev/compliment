@@ -6,9 +6,8 @@
 (facts "about class members"
   (fact "fuzzy matching class members works with camelCase as separator"
     (src/camel-case-matches? ".getDeF" ".getDeclaredFields") => truthy
-    (src/camel-case-matches? ".gT" ".getTextSize")           => truthy))
+    (src/camel-case-matches? ".gT" ".getTextSize")           => truthy)
 
-(facts "about class member completion"
   (fact "candidates are taken from all non-static members of classes
   imported into the current namespace"
     (src/members-candidates ".eq" *ns* nil)
@@ -31,7 +30,10 @@
 
     (def a-str "a string")
     (src/members-candidates ".st" *ns* (ctx/parse-context '(__prefix__ a-str)))
-    => [".startsWith"]))
+    => [".startsWith"])
+
+  (fact "class members have docs"
+    (src/members-doc ".wait" *ns*) => string?))
 
 (facts "about static members"
   (fact "static members can be matched by camelCase too"
@@ -52,4 +54,7 @@
     => (just #{"File/separator" "File/separatorChar"}))
 
   (fact "single slash doesn't break the completion"
-    (src/static-members-candidates "/" *ns* nil) => nil))
+    (src/static-members-candidates "/" *ns* nil) => nil)
+
+  (fact "static class members have docs"
+    (src/static-member-doc "Integer/parseInt" *ns*) => string?))
