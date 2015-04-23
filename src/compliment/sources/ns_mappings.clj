@@ -92,23 +92,32 @@
       (when (meta var)
         (generate-docstring (meta var))))))
 
+(defn- infer-type [var-meta]
+  (cond (:macro var-meta) :macro
+        (:arglists var-meta) :function
+        :else :var))
+
 (defsource ::ns-mappings
   :candidates #'candidates
   :doc #'doc
-  :tag-fn (fn [m {:keys [ns]}]
+  :tag-fn (fn [m {:keys [ns extra-metadata]}]
             (let [c (:candidate m)
                   var (when (var-symbol? c)
                         (ns-resolve ns (symbol c)))
                   var-meta (meta var)]
+
               (cond (= (type var) Class)
                     (assoc m :type :class
                            :package (.getName (.getPackage ^Class var)))
 
                     var-meta
-                    (assoc m :type (cond (:macro var-meta) :macro
-                                         (:arglists var-meta) :function
-                                         :else :var)
-                           :ns (str (or (:ns var-meta) ns)))
+                    (cond-> (assoc m :type (infer-type var-meta)
+                                   :ns (str (or (:ns var-meta) ns)))
+                      (and (:arglists extra-metadata) (:arglists var-meta))
+                      (assoc :arglists (apply list (map pr-str (:arglists var-meta))))
+
+                      (and (:doc extra-metadata) (:doc var-meta))
+                      (assoc :doc (generate-docstring var-meta)))
 
                     :else m))))
 

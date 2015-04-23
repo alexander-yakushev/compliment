@@ -139,7 +139,16 @@
     => (just #{"fact-group" "fact" "facts"})
 
     (core/completions "fac" (find-ns 'midje.sweet) nil :by-name)
-    => (just ["fact" "fact-group" "facts"])))
+    => (just ["fact" "fact-group" "facts"]))
+
+  (fact "tag-candidates-arglists"
+    (core/completions "apply" {:tag-candidates true, :extra-metadata #{:arglists}}) =>
+    (contains #{{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
+              :gaps-ok))
+  (fact "tag-candidates-doc"
+    (core/completions "bound" {:tag-candidates true, :extra-metadata #{:doc}}) =>
+    (contains #{(just {:ns "clojure.core", :type :function, :candidate "bound-fn*", :doc string?})
+                (just {:ns "clojure.core", :type :macro, :candidate "bound-fn", :doc string?})} :gaps-ok)))
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be

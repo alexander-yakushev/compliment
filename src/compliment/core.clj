@@ -71,6 +71,7 @@
   - :context - code form around the prefix;
   - :sort-order (either :by-length or :by-name);
   - :tag-candidates - if true, returns maps with extra data instead of strings;
+  - :extra-metadata - set of extra fields to add to the maps;
   - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
