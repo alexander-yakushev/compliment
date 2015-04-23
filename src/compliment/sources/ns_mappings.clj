@@ -95,7 +95,7 @@
 (defsource ::ns-mappings
   :candidates #'candidates
   :doc #'doc
-  :tag-fn (fn [m ns]
+  :tag-fn (fn [m {:keys [ns]}]
             (let [c (:candidate m)
                   var (when (var-symbol? c)
                         (ns-resolve ns (symbol c)))

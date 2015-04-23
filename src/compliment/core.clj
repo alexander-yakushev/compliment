@@ -56,11 +56,11 @@
 (defn- tag-candidates
   "Iterate over list of string candidates and return maps with each candidate
   having a type and possibly other metadata."
-  [candidates tag-fn ns]
+  [candidates tag-fn options-map]
   (for [c candidates
         :let [cand-map {:candidate c}]]
     (if tag-fn
-      (try (tag-fn cand-map ns)
+      (try (tag-fn cand-map options-map)
            (catch Exception ex cand-map))
       cand-map)))
 
@@ -80,6 +80,7 @@
      (let [{:keys [ns context sort-order sources]
             :or {sort-order :by-length}} options-map
             ns (ensure-ns ns)
+            options-map (assoc options-map :ns ns)
             tag? (:tag-candidates options-map)
             ctx (cache-context context)
             sort-fn (if (= sort-order :by-name)
@@ -91,7 +92,7 @@
                                                            (all-sources))
                  :when enabled
                  :let [cands (cond-> (candidates prefix ns ctx)
-                                     tag? (tag-candidates tag-fn ns))]
+                                     tag? (tag-candidates tag-fn options-map))]
                  :when cands]
              cands)
            flatten

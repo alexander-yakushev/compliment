@@ -119,7 +119,7 @@
 (defsource ::namespaces-and-classes
   :candidates #'candidates
   :doc #'doc
-  :tag-fn (fn [m ns]
+  :tag-fn (fn [m {:keys [ns]}]
             (let [c (:candidate m)]
               (assoc m :type (if (or (utils/resolve-namespace (symbol c) ns)
                                      ((utils/namespaces-on-classpath) c))

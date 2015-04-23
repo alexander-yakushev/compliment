@@ -164,7 +164,7 @@
 (defsource ::members
   :candidates #'members-candidates
   :doc #'members-doc
-  :tag-fn (fn [m ns]
+  :tag-fn (fn [m {:keys [ns]}]
             (assoc m :type (if (->> (get-in @members-cache [ns :methods
                                                             (subs (:candidate m) 1)])
                                     first
@@ -242,7 +242,7 @@
 (defsource ::static-members
   :candidates #'static-members-candidates
   :doc #'static-member-doc
-  :tag-fn (fn [m ns]
+  :tag-fn (fn [m {:keys [ns]}]
             (assoc m :type (if (->> (resolve-static-member (:candidate m) ns)
                                     first
                                     (instance? Method))
