@@ -30,7 +30,7 @@
   []
   (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
                  (nth 2))
-            (apply concat (vals (utils/classes-on-classpath)))))
+            (reduce into [] (vals (utils/classes-on-classpath)))))
 
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
