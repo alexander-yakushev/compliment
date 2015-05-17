@@ -4,10 +4,10 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[defprecated "0.1.2"]]
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0-beta1"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0-beta3"]
                                   [midje "1.6.3"]
                                   [criterium "0.4.3"]
-                                  [cloverage "1.0.4"]]
+                                  [cloverage "1.0.5"]]
                    :plugins [[lein-midje "3.1.3"]
                              [jonase/eastwood "0.2.1"]
                              [lein-shell "0.4.0"]]
@@ -23,4 +23,4 @@
                                           "https://coveralls.io/api/v1/jobs"]]}}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta1"]]}})
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}})
