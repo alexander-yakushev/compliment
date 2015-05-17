@@ -75,37 +75,32 @@
   (when (nscl-symbol? prefix)
     (let [has-dot (> (.indexOf prefix ".") -1)
           import-ctx (analyze-import-context context)]
-      (cond (= import-ctx :root)
-            (get-all-full-names prefix)
-
-            import-ctx
-            (get-classes-by-package-name prefix import-ctx)
-
-            :else
-            ((comp distinct concat)
-             (for [ns-str (concat (map (comp name ns-name) (all-ns))
-                                  (imported-classes ns)
-                                  (when-not has-dot
-                                    (map name (keys (ns-aliases ns)))))
-                   :when (nscl-matches? prefix ns-str)]
-               ns-str)
-             ;; Fuzziness is too slow for all classes, so just startsWith.
-             ;; Also have to do clever tricks to keep the performance high.
-             (if has-dot
-               (concat (for [[root-pkg classes] (utils/classes-on-classpath)
-                             :when (.startsWith prefix root-pkg)
-                             ^String cl-str classes
-                             :when (.startsWith cl-str prefix)]
-                         cl-str)
-                       (for [ns-str (utils/namespaces-on-classpath)
-                             :when (nscl-matches? prefix ns-str)]
-                         ns-str))
-               (concat (for [[^String root-pkg _] (utils/classes-on-classpath)
-                             :when (.startsWith root-pkg prefix)]
-                         (str root-pkg "."))
-                       (for [^String ns-str (utils/namespaces-on-classpath)
-                             :when (.startsWith ns-str prefix)]
-                         ns-str))))))))
+      ((comp distinct concat)
+       (for [ns-str (concat (map (comp name ns-name) (all-ns))
+                            (imported-classes ns)
+                            (when-not has-dot
+                              (map name (keys (ns-aliases ns)))))
+             :when (nscl-matches? prefix ns-str)]
+         ns-str)
+       (cond (= import-ctx :root) (get-all-full-names prefix)
+             import-ctx (get-classes-by-package-name prefix import-ctx))
+       ;; Fuzziness is too slow for all classes, so just startsWith.
+       ;; Also have to do clever tricks to keep the performance high.
+       (if has-dot
+         (concat (for [[root-pkg classes] (utils/classes-on-classpath)
+                       :when (.startsWith prefix root-pkg)
+                       ^String cl-str classes
+                       :when (.startsWith cl-str prefix)]
+                   cl-str)
+                 (for [ns-str (utils/namespaces-on-classpath)
+                       :when (nscl-matches? prefix ns-str)]
+                   ns-str))
+         (concat (for [[^String root-pkg _] (utils/classes-on-classpath)
+                       :when (.startsWith root-pkg prefix)]
+                   (str root-pkg "."))
+                 (for [^String ns-str (utils/namespaces-on-classpath)
+                       :when (.startsWith ns-str prefix)]
+                   ns-str)))))))
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)

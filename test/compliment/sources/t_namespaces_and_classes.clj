@@ -56,7 +56,11 @@
     => (contains #{"clojure.asm.Handler" "java.util.logging.Handler"} :gaps-ok)
 
     (src/candidates "Lis" *ns* (ctx/parse-context '(ns (:import [clojure.lang __prefix__]))))
-    => (just ["LispReader"]))
+    => (just ["LispReader"])
+
+    (src/candidates "java.util" *ns* (ctx/parse-context '(ns (:require stuff)
+                                                           (:import __prefix__))))
+    => (contains #{"java.util.Map" "java.util.Set" "java.util.Date"} :gaps-ok))
 
   (fact "namespaces and classes have documentation"
     (src/doc "clojure.core" *ns*) => string?
