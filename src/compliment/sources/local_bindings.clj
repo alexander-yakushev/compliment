@@ -3,9 +3,11 @@
   (:require [compliment.sources :refer [defsource]]
             [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]))
 
-(def let-like-forms '#{let if-let when-let if-some when-some doseq for})
+(def let-like-forms '#{let if-let when-let if-some when-some})
 
 (def defn-like-forms '#{defn defn- fn defmacro})
+
+(def doseq-like-forms '#{doseq for})
 
 (defn parse-binding
   "Given a binding node returns the list of local bindings introduced by that
@@ -41,7 +43,14 @@
                     (cond (nil? c) bnodes
                           (list? c) (recur r (conj bnodes (first c)))
                           (vector? c) c
-                          :else (recur r bnodes)))))))
+                          :else (recur r bnodes))))
+
+          (doseq-like-forms (first form))
+          (->> (partition 2 (second form))
+               (mapcat (fn [[left right]]
+                         (if (= left :let)
+                           (take-nth 2 right) [left])))
+               (mapcat parse-binding)))))
 
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."

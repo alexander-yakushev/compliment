@@ -44,6 +44,15 @@
                                 __prefix__)))
     => (just #{"foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "rec" "urs" "total"}))
 
+  (fact "in doseq and for :let bindings are supported"
+    (src/candidates "" *ns* (ctx/parse-context
+                             '(doseq [a b
+                                      :let [c (first a)]
+                                      {:keys [d]} e
+                                      :let [{g :g} f, [h i] j]]
+                                __prefix__)))
+    => (just #{"a" "c" "d" "g" "h" "i"}))
+
   (fact "bindings are scanned recursively"
     (src/candidates "" *ns* (ctx/parse-context
                              '(defn afunction [arg1 arg2]
