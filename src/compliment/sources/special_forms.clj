@@ -34,3 +34,14 @@
   :candidates #'candidates
   :doc doc
   :tag-fn (fn [m _] (assoc m :type :special-form)))
+
+(defn literal-candidates
+  "We define `true`, `false`, and `nil` in a separate source because they are
+  not context-dependent (don't have to be first items in the list)."
+  [prefix _ __]
+  (filter #(.startsWith ^String % prefix) ["true" "false" "nil"]))
+
+(defsource ::literals
+  :candidates #'literal-candidates
+  :doc (constantly nil)
+  :tag-fn (fn [m _] (assoc m :type :special-form)))

@@ -120,6 +120,9 @@
     (core/completions "recu" {:tag-candidates true}) =>
     (contains [{:candidate "recur", :type :special-form}])
 
+    (core/completions "tru" {:tag-candidates true}) =>
+    (contains [{:candidate "true", :type :special-form}])
+
     (core/completions "ba" {:context "(defn foo [bar baz] (+ 1 __prefix__))"
                             :tag-candidates true}) =>
                             (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})

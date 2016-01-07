@@ -20,6 +20,11 @@
     (src/candidates "" *ns* (ctx/parse-context '[__prefix__ 42]))
     => nil)
 
+  (fact "literals are completed"
+    (src/literal-candidates "tr" *ns* nil) => ["true"]
+    (src/literal-candidates "f" *ns* nil) => ["false"]
+    (src/literal-candidates "n"  *ns* nil) => ["nil"])
+
   (fact "there are docs for special forms too"
     (src/doc "try" *ns*) => string?
     (src/doc "not-a-form" *ns*) => nil))
