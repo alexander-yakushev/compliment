@@ -1,14 +1,13 @@
 * Compliment [[https://travis-ci.org/alexander-yakushev/compliment/][https://travis-ci.org/alexander-yakushev/compliment.svg?branch=master]] [[https://coveralls.io/r/alexander-yakushev/compliment?branch=master][https://coveralls.io/repos/alexander-yakushev/compliment/badge.svg?branch=master]] [[http://jarkeeper.com/alexander-yakushev/compliment][http://jarkeeper.com/alexander-yakushev/compliment/status.png]]
 
-  Compliment is a Clojure completion library and a successor to
-  [[https://github.com/ninjudd/clojure-complete][clojure-complete]]. Compliment provides a fast, smart and extensible solution to
-  complete vars, namespaces, class members, local bindings and whatever else
-  custom sources can implement.
+  Compliment is a state-of-the-art Clojure completion library. It provides a
+  fast, smart and extensible solution to complete vars, namespaces, class
+  members, local bindings and whatever else custom sources can implement.
 
-  You can use Compliment in the following editors/IDEs:
+  Compliment is used as a completion backend in the following editors/IDEs:
 
-  - Emacs --- via [[https://github.com/clojure-emacs/cider][CIDER]] and [[https://github.com/clojure-emacs/ac-cider][ac-cider]]
-  - Vim --- via [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
+  - Emacs --- [[https://github.com/clojure-emacs/cider][CIDER]] (with [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
+  - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
   - [[https://nightcode.info/][Nightcode]]
 
   Also, I am so glad you came here. You look gorgeous today.
@@ -33,19 +32,19 @@
 
 ** Installation
 
-   If you use Nightcode or Vim with vim.fireplace then you don't have to install
-   anything at all --- Compliment will be already there for you. In case you are
-   Emacs+CIDER user there are two completion "frontends" to choose from:
+   If you use Nightcode or vim-fireplace then you don't have to install anything
+   at all --- Compliment will be already there for you. In case you are
+   Emacs+CIDER user there are two completion frontends to choose from:
 
    - [[http://www.emacswiki.org/emacs/AutoComplete][auto-complete]] --- you will also have to install [[https://github.com/clojure-emacs/ac-cider][ac-cider]] for Compliment to
      work.
    - [[http://company-mode.github.io/][company-mode]] --- CIDER has built-in support for company-mode completion,
      but it lacks documentation tooltips for candidates.
 
-   If for some reason you want to use Compliment directly from your
-   application add this to the =:dependencies=:
+   If you need Compliment embedded directly into your program then add this to
+   the =:dependencies=:
 
-[[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
+   [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
 ** Examples
 
@@ -54,8 +53,7 @@
 
 ** For developers
 
-   See test files to get an idea how public API and completion
-   sources work.
+   See the test files to get an idea how public API and completion sources work.
 
    To understand what is a context and how it works see [[https://github.com/alexander-yakushev/compliment/wiki/Context][Context]] wiki
    page.
@@ -64,5 +62,5 @@
 
 ** License
 
-   Copyright © 2013-2014 Alexander Yakushev. Distributed under the
-   Eclipse Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
+   Copyright © 2013-2015 Alexander Yakushev. Distributed under the Eclipse
+   Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
