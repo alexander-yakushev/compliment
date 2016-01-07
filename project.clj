@@ -10,7 +10,7 @@
                                   [cloverage "1.0.6"]]
                    :plugins [[lein-midje "3.2"]
                              [jonase/eastwood "0.2.3"]
-                             [lein-shell "0.4.0"]]
+                             [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 
                    :aliases {"test" ["do" ["check"] ["midje" ":filters" "-bench"]]

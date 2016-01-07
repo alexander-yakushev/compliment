@@ -60,6 +60,10 @@
 
    How to write your own sources is explained on [[https://github.com/alexander-yakushev/compliment/wiki/Custom-sources][Custom sources]] page.
 
+** Changelog
+
+   You can view the significant changes on the [[https://github.com/alexander-yakushev/compliment/releases][Releases]] page.
+
 ** License
 
    Copyright © 2013-2015 Alexander Yakushev. Distributed under the Eclipse
