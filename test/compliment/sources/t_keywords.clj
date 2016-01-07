@@ -10,19 +10,17 @@
 
   (fact "namespace-qualified keywords work too"
     (do (str ::foo ::bar ::baz)
-        (src/candidates ":compliment.sources.t-keywords" *ns* nil))
-    => (contains #{":compliment.sources.t-keywords/bar"
-                   ":compliment.sources.t-keywords/baz"
-                   ":compliment.sources.t-keywords/foo"}
-                 :gaps-ok))
+        (src/candidates ":compliment.sources.t-keywords/b" *ns* nil))
+    => [":compliment.sources.t-keywords/bar"
+        ":compliment.sources.t-keywords/baz"])
 
   (fact "namespace-qualified keywords can be completed in the same namespace"
     (do (str ::foo ::bar ::baz)
         (src/candidates "::ba" *ns* nil))
-    => (contains #{"::bar" "::baz"} :gaps-ok))
+    => ["::bar" "::baz"])
 
   (fact "namespace-qualified keywords can be completed with an ns alias"
     (do (str :compliment.core/aliased-one :compliment.core/aliased-two)
         (require '[compliment.core :as core])
         (src/candidates "::core/ali" *ns* nil))
-    => (contains #{"::core/aliased-two" "::core/aliased-one"} :gaps-ok)))
+    => ["::core/aliased-two" "::core/aliased-one"]))

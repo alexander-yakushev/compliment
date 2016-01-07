@@ -27,7 +27,7 @@
     => (contains #{"clojure.java.shell" "clojure.set"
                    "clojure.stacktrace" "clojure.string"} :gaps-ok)
 
-    (src/candidates "sr" *ns* nil)
+    (src/candidates "src" *ns* nil)
     => ["src"]
 
     (src/candidates "clojure.java." *ns* nil)
