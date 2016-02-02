@@ -2,7 +2,7 @@ language: clojure
 lein: lein2
 sudo: false
 script:
-  - lein with-profile +1.5 test-all
+  - lein test-all
   - lein with-profile +1.6 test-all
   - lein with-profile +1.7 test-all
 jdk:
@@ -11,7 +11,7 @@ jdk:
   - oraclejdk8
 matrix:
   include:
-    - script: lein with-profile +1.7 coverage
+    - script: lein coverage
       jdk:    oraclejdk8
-    - script: lein with-profile +1.7 eastwood
+    - script: lein eastwood
       jdk:    oraclejdk8

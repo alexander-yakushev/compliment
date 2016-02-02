@@ -1,10 +1,10 @@
-(defproject compliment "0.2.7"
+(defproject compliment "0.2.8-SNAPSHOT"
   :description "The Clojure completion library you deserve"
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[defprecated "0.1.3"]]
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [midje "1.8.3"]
                                   [criterium "0.4.3"]
                                   [cloverage "1.0.6"]]
@@ -21,6 +21,5 @@
                                          ["shell" "curl" "-F"
                                           "json_file=@target/coverage/coveralls.json"
                                           "https://coveralls.io/api/v1/jobs"]]}}
-             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}})
