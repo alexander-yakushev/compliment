@@ -155,7 +155,10 @@
 
 (facts "about documentation"
   (fact "`documentation` takes a symbol string which presumably can be
-  resolved to something that has a docstring.")
-  (core/documentation "reduce")         => (every-pred string? not-empty)
-  (core/documentation ".suspend")       => (every-pred string? not-empty)
-  (core/documentation "jus.t g:arbage") => "")
+  resolved to something that has a docstring."
+    (core/documentation "reduce")         => (every-pred string? not-empty)
+    (core/documentation ".suspend")       => (every-pred string? not-empty)
+    (core/documentation "jus.t g:arbage") => "")
+
+  (fact "don't break on empty input"
+    (core/documentation "") => ""))

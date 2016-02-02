@@ -110,10 +110,12 @@
   ([symbol-str]
    (documentation symbol-str *ns*))
   ([symbol-str ns]
-   (->> (for [[_ {:keys [doc enabled]}] (all-sources)
-              :when enabled
-              :let [docstr (doc symbol-str (ensure-ns ns))]
-              :when docstr]
-          docstr)
-        (interpose "\n\n")
-        join)))
+   (if (empty? symbol-str)
+     ""
+     (->> (for [[_ {:keys [doc enabled]}] (all-sources)
+                :when enabled
+                :let [docstr (doc symbol-str (ensure-ns ns))]
+                :when docstr]
+            docstr)
+          (interpose "\n\n")
+          join))))
