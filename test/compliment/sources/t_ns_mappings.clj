@@ -64,7 +64,7 @@
                                                  :only [__prefix__]]))))
     => (just #{"insert-child" "insert-left" "insert-right"})
 
-    (src/candidates "s" *ns*
+    (src/candidates "spl" *ns*
                     (ctx/parse-context '(ns foo.bar
                                           (:require [clojure.string
                                                      :refer [__prefix__]]))))

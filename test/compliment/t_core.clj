@@ -45,14 +45,14 @@
 
   (fact "candidates are sorted by their length first, and then alphabetically"
     (core/completions "map")
-    => (contains ["map" "map?" "mapv" "mapcat" "map-indexed"])
+    => (contains ["map" "map?" "mapv" "mapcat"])
 
     (core/completions "al-")
     => ["all-ns" "alter-meta!" "alter-var-root"])
 
   (fact "sorting directly by name can also be enabled"
     (core/completions "map" {:sort-order :by-name})
-    => (contains ["map" "map-indexed" "map?" "mapcat" "mapv"])
+    => (contains ["map-indexed" "map?" "mapcat" "mapv"])
 
     (core/completions "remo" {:sort-order :by-name, :tag-candidates true})
     => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
