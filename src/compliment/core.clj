@@ -97,7 +97,8 @@
                  :when cands]
              cands)
            flatten
-           sort-fn))))
+           sort-fn
+           doall))))
   (^:deprecated
    [prefix ns context-str]
    (completions prefix {:ns ns, :context context-str}))
