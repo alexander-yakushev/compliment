@@ -8,7 +8,7 @@
 
   - Emacs --- [[https://github.com/clojure-emacs/cider][CIDER]] (with [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
   - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
-  - [[https://nightcode.info/][Nightcode]]
+  - [[https://sekao.net/nightcode/][Nightcode]]
 
   Also, I am so glad you came here. You look gorgeous today.
 
