@@ -50,7 +50,7 @@
   namespace if it exists, otherwise returns `user` namespace."
   [ns]
   (cond (instance? clojure.lang.Namespace ns) ns
-        (symbol? ns) (or (find-ns ns) (find-ns 'user))
+        (symbol? ns) (or (find-ns ns) (find-ns 'user) *ns*)
         :else *ns*))
 
 (defn- tag-candidates
@@ -80,20 +80,20 @@
      (completions prefix {:context options-map})
      (let [{:keys [ns context sort-order sources]
             :or {sort-order :by-length}} options-map
-            ns (ensure-ns ns)
-            options-map (assoc options-map :ns ns)
-            tag? (:tag-candidates options-map)
-            ctx (cache-context context)
-            sort-fn (if (= sort-order :by-name)
-                      (if tag?
-                        (partial sort-by :candidate) sort)
-                      (partial sort-by-length tag?))]
+           ns (ensure-ns ns)
+           options-map (assoc options-map :ns ns)
+           tag? (:tag-candidates options-map)
+           ctx (cache-context context)
+           sort-fn (if (= sort-order :by-name)
+                     (if tag?
+                       (partial sort-by :candidate) sort)
+                     (partial sort-by-length tag?))]
        (-> (for [[_ {:keys [candidates enabled tag-fn]}] (if sources
                                                            (all-sources sources)
                                                            (all-sources))
                  :when enabled
                  :let [cands (cond-> (candidates prefix ns ctx)
-                                     tag? (tag-candidates tag-fn options-map))]
+                               tag? (tag-candidates tag-fn options-map))]
                  :when cands]
              cands)
            flatten
