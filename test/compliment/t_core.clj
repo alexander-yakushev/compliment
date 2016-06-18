@@ -1,7 +1,8 @@
 (ns compliment.t-core
   (:require [midje.sweet :refer :all]
             [compliment.core :as core]
-            [compliment.context :as ctx]))
+            [compliment.context :as ctx]
+            [compliment.t-helpers :refer :all]))
 
 ;; This namespace contains only sanity checks for the public API. For
 ;; in-depth source testing see their respective test files.
@@ -9,19 +10,19 @@
 (facts "about completion"
   (fact "`completions` takes a prefix, and optional options-map."
     (core/completions "redu")
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+    => (strip-tags (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok))
 
     (core/completions "fac" {:ns (find-ns 'midje.sweet)})
-    => (just #{"fact-group" "fact" "facts"})
+    => (strip-tags (just #{"fact-group" "fact" "facts"}))
 
     (core/completions "fac" {:ns (find-ns 'clojure.core)})
     => ()
 
     (core/completions "compliment.core/co")
-    => (just ["compliment.core/completions"])
+    => (strip-tags (just ["compliment.core/completions"]))
 
     (core/completions "core/doc")
-    => (just ["core/documentation"]))
+    => (strip-tags (just ["core/documentation"])))
 
   (fact "in case of non-existing namespace doesn't fail"
     (core/completions "redu" {:ns nil}) => anything
@@ -29,32 +30,32 @@
 
   (fact "many sources allow some sort of fuzziness in prefixes"
     (core/completions "re-me")
-    => (just #{"remove-method" "reset-meta!" "remove-all-methods"})
+    => (strip-tags (just #{"remove-method" "reset-meta!" "remove-all-methods"}))
 
     (core/completions "remme")
-    => (just [#"remove-method" "remove-all-methods"])
+    => (strip-tags (just [#"remove-method" "remove-all-methods"]))
 
     (core/completions "cl.co.")
-    => (contains #{"clojure.core.protocols" "clojure.core.unify"} :gaps-ok)
+    => (strip-tags (contains #{"clojure.core.protocols" "clojure.core.unify"} :gaps-ok))
 
     (core/completions "clcop")
-    => ["clojure.core.protocols"]
+    => (strip-tags (just ["clojure.core.protocols"]))
 
     (core/completions ".gSV")
-    => (just #{".getSpecificationVersion" ".getSpecificationVendor"}))
+    => (strip-tags (just #{".getSpecificationVersion" ".getSpecificationVendor"})))
 
   (fact "candidates are sorted by their length first, and then alphabetically"
     (core/completions "map")
-    => (contains ["map" "map?" "mapv" "mapcat"])
+    => (strip-tags (contains ["map" "map?" "mapv" "mapcat"]))
 
     (core/completions "al-")
-    => ["all-ns" "alter-meta!" "alter-var-root"])
+    => (strip-tags (just ["all-ns" "alter-meta!" "alter-var-root"])))
 
   (fact "sorting directly by name can also be enabled"
     (core/completions "map" {:sort-order :by-name})
-    => (contains ["map-indexed" "map?" "mapcat" "mapv"])
+    => (strip-tags (contains ["map-indexed" "map?" "mapcat" "mapv"]))
 
-    (core/completions "remo" {:sort-order :by-name, :tag-candidates true})
+    (core/completions "remo" {:sort-order :by-name})
     => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
                   {:ns "clojure.core", :type :function, :candidate "remove-ns"}
                   {:ns "clojure.core", :type :function, :candidate "remove-watch"}]))
@@ -62,94 +63,90 @@
   (fact "context can help some sources to give better candidates list"
     (def a-str "a string")
     (core/completions ".sub" {:context "(__prefix__ a-str)"})
-    => (just #{".subSequence" ".substring"})
+    => (strip-tags (just #{".subSequence" ".substring"}))
 
     (def a-big-int 42M)
     (core/completions ".sub" {:context "(__prefix__ a-big-int)"})
-    => [".subtract"])
+    => (strip-tags (just [".subtract"])))
 
   (fact ":sources list can filter the sources to be used during completion"
     (core/completions "cl")
     => #(> (count %) 10)
 
     (core/completions "cl" {:sources [:compliment.sources.ns-mappings/ns-mappings]})
-    => (just #{"class" "class?" "clojure-version" "clear-agent-errors"}))
+    => (strip-tags (just #{"class" "class?" "clojure-version" "clear-agent-errors"})))
 
-  (fact ":tag-candidates true appends extra data to candidates"
-    (core/completions "bound" {:tag-candidates true}) =>
+  (fact "different metadata is attached to candidates"
+    (core/completions "bound" {}) =>
     (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
                 {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
 
-    (core/completions "a-big-" {:tag-candidates true})
+    (core/completions "fac" {:ns (find-ns 'midje.sweet)})
+    => (just [{:candidate "fact", :type :macro, :ns "midje.sweet"}
+              {:candidate "facts", :type :macro, :ns "midje.sweet"}
+              {:candidate "fact-group", :type :macro, :ns "midje.sweet"}])
+
+    (core/completions "a-big-" {})
     => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int"}])
 
-    (core/completions "cl.se" {:tag-candidates true}) =>
+    (core/completions "cl.se" {}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
 
     ;; Test for not required namespaces
-    (core/completions "cl.test.ta" {:tag-candidates true}) =>
+    (core/completions "cl.test.ta" {}) =>
     (just [{:type :namespace, :candidate "clojure.test.tap"}])
 
     ;; Test for aliases
-    (core/completions "cor" {:tag-candidates true})
+    (core/completions "cor" {})
     => (contains [{:type :namespace, :candidate "core"}])
 
-    (core/completions "clojure.lang.Lisp" {:tag-candidates true}) =>
+    (core/completions "clojure.lang.Lisp" {}) =>
     (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
 
-    (core/completions "java.net.URLE" {:tag-candidates true}) =>
+    (core/completions "java.net.URLE" {}) =>
     (contains [{:type :class, :candidate "java.net.URLEncoder"}])
 
-    (compliment.core/completions "RuntimeE" {:tag-candidates true})
+    (compliment.core/completions "RuntimeE" {})
     => (just [{:package "java.lang", :type :class, :candidate "RuntimeException"}])
 
-    (core/completions ".getName" {:tag-candidates true}) =>
+    (core/completions ".getName" {}) =>
     (contains #{{:candidate ".getName", :type :method}
                 {:candidate ".getSimpleName", :type :method}} :gaps-ok)
 
-    (compliment.core/completions ".getName" {:ns 'compliment.t-core
-                                             :tag-candidates true})
+    (compliment.core/completions ".getName" {:ns 'compliment.t-core})
     => (contains [{:candidate ".getName", :type :method}])
 
-    (core/completions "Integer/SI" {:tag-candidates true})
+    (core/completions "Integer/SI" {})
     => (just [{:type :static-field, :candidate "Integer/SIZE"}])
 
-    (core/completions "Integer/co" {:tag-candidates true}) =>
-    (contains [{:candidate "Integer/compare", :type :static-method}])
+    (core/completions "Integer/co" {})
+    => (contains [{:candidate "Integer/compare", :type :static-method}])
 
-    (core/completions "recu" {:tag-candidates true}) =>
-    (contains [{:candidate "recur", :type :special-form}])
+    (core/completions "recu" {})
+    => (contains [{:candidate "recur", :type :special-form}])
 
-    (core/completions "tru" {:tag-candidates true}) =>
-    (contains [{:candidate "true", :type :special-form}])
+    (core/completions "tru" {})
+    => (contains [{:candidate "true", :type :special-form}])
 
-    (core/completions "ba" {:context "(defn foo [bar baz] (+ 1 __prefix__))"
-                            :tag-candidates true}) =>
-                            (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
+    (core/completions "ba" {:context "(defn foo [bar baz] (+ 1 __prefix__))"})
+    => (contains #{{:candidate "bar", :type :local} {:candidate "baz", :type :local}})
 
-                            (core/completions ":argl" {:tag-candidates true}) =>
-                            (contains [{:candidate ":arglists", :type :keyword}]))
+    (core/completions ":argl" {})
+    => (contains [{:candidate ":arglists", :type :keyword}]))
 
-  (fact "if tagging candidates throws an exception, Compliment doesn't crash"
-    (#'core/tag-candidates ["str" "subs"] (fn [& _] (/ 1 0)) *ns*)
-    => (just [{:candidate "str"} {:candidate "subs"}]))
+  (fact ":plain-candidates true returns plain strings"
+    (core/completions "bound" {:plain-candidates true})
+    => (contains #{"bound?" "bound-fn" "bound-fn*"})
 
-  (fact "deprecated API still works"
-    (core/completions "ba" "(defn foo [bar baz] (+ 1 __prefix__))")
-    => (contains ["bar" "baz"])
+    (core/completions "fac" {:ns (find-ns 'midje.sweet) :plain-candidates true})
+    => (just ["fact" "facts" "fact-group"]))
 
-    (core/completions "fac" (find-ns 'midje.sweet) nil)
-    => (just #{"fact-group" "fact" "facts"})
-
-    (core/completions "fac" (find-ns 'midje.sweet) nil :by-name)
-    => (just ["fact" "fact-group" "facts"]))
-
-  (fact "tag-candidates-arglists"
-    (core/completions "apply" {:tag-candidates true, :extra-metadata #{:arglists}}) =>
+  (fact "extra-metadata arglists"
+    (core/completions "apply" {:extra-metadata #{:arglists}}) =>
     (contains #{{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
               :gaps-ok))
-  (fact "tag-candidates-doc"
-    (core/completions "bound" {:tag-candidates true, :extra-metadata #{:doc}}) =>
+  (fact "extra-metadata doc"
+    (core/completions "bound" {:extra-metadata #{:doc}}) =>
     (contains #{(just {:ns "clojure.core", :type :function, :candidate "bound-fn*", :doc string?})
                 (just {:ns "clojure.core", :type :macro, :candidate "bound-fn", :doc string?})} :gaps-ok)))
 

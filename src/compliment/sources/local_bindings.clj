@@ -64,9 +64,8 @@
   (when (var-symbol? prefix)
     (for [binding (bindings-from-context context)
           :when (dash-matches? prefix binding)]
-      binding)))
+      {:candidate binding, :type :local})))
 
 (defsource ::local-bindings
   :candidates #'candidates
-  :doc (constantly nil)
-  :tag-fn (fn [m _] (assoc m :type :local)))
+  :doc (constantly nil))

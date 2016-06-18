@@ -53,7 +53,8 @@
   [prefix]
   (reduce-kv (fn [l, ^String short-name, full-names]
                (if (.startsWith short-name prefix)
-                 (concat l full-names)
+                 (concat l (map (fn [c] {:candidate c, :type :class})
+                                full-names))
                  l))
              ()
              (all-classes-short-names)))
@@ -64,7 +65,7 @@
   (reduce-kv (fn [l, ^String short-name, full-names]
                (if (and (.startsWith short-name prefix)
                         (some #(.startsWith ^String % pkg-name) full-names))
-                 (conj l short-name)
+                 (conj l {:candidate short-name, :type :class})
                  l))
              ()
              (all-classes-short-names)))
@@ -77,11 +78,13 @@
           import-ctx (analyze-import-context context)]
       ((comp distinct concat)
        (for [ns-str (concat (map (comp name ns-name) (all-ns))
-                            (imported-classes ns)
                             (when-not has-dot
                               (map name (keys (ns-aliases ns)))))
              :when (nscl-matches? prefix ns-str)]
-         ns-str)
+         {:candidate ns-str, :type :namespace})
+       (for [class-str (imported-classes ns)
+             :when (nscl-matches? prefix class-str)]
+         {:candidate class-str, :type :class})
        (cond (= import-ctx :root) (get-all-full-names prefix)
              import-ctx (get-classes-by-package-name prefix import-ctx))
        ;; Fuzziness is too slow for all classes, so just startsWith.
@@ -91,16 +94,16 @@
                        :when (.startsWith prefix root-pkg)
                        ^String cl-str classes
                        :when (.startsWith cl-str prefix)]
-                   cl-str)
+                   {:candidate cl-str, :type :class})
                  (for [ns-str (utils/namespaces-on-classpath)
                        :when (nscl-matches? prefix ns-str)]
-                   ns-str))
+                   {:candidate ns-str, :type :namespace}))
          (concat (for [[^String root-pkg _] (utils/classes-on-classpath)
                        :when (.startsWith root-pkg prefix)]
-                   (str root-pkg "."))
+                   {:candidate (str root-pkg "."), :type :class})
                  (for [^String ns-str (utils/namespaces-on-classpath)
                        :when (.startsWith ns-str prefix)]
-                   ns-str)))))))
+                   {:candidate ns-str, :type :namespace})))))))
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)
@@ -113,9 +116,4 @@
 
 (defsource ::namespaces-and-classes
   :candidates #'candidates
-  :doc #'doc
-  :tag-fn (fn [m {:keys [ns]}]
-            (let [c (:candidate m)]
-              (assoc m :type (if (or (utils/resolve-namespace (symbol c) ns)
-                                     ((utils/namespaces-on-classpath) c))
-                               :namespace :class)))))
+  :doc #'doc)

@@ -10,6 +10,9 @@
     (.setAccessible field true)
     (.get field nil)))
 
+(defn- tagged-candidate [c]
+  {:candidate c, :type :keyword})
+
 (defn qualified-candidates
   "Returns a list of namespace-qualified double-colon keywords (like ::foo)
   resolved for the given namespace."
@@ -19,7 +22,7 @@
     (for [[kw _] (keywords-table)
           :when (= (namespace kw) ns-name)
           :when (.startsWith (name kw) prefix)]
-      (str "::" (name kw)))))
+      (tagged-candidate (str "::" (name kw))))))
 
 (defn aliased-candidates
   "Returns a list of alias-qualified double-colon keywords (like ::str/foo),
@@ -30,7 +33,7 @@
     (for [[kw _] (keywords-table)
           :when (= (namespace kw) alias-ns-name)
           :when (.startsWith (name kw) prefix)]
-      (str "::" alias "/" (name kw)))))
+      (tagged-candidate (str "::" alias "/" (name kw))))))
 
 (defn candidates
   [^String prefix, ns _]
@@ -41,9 +44,8 @@
           double-colon? (qualified-candidates prefix ns)
           single-colon? (for [[kw _] (keywords-table)
                               :when (.startsWith (str kw) (subs prefix 1))]
-                          (str ":" kw)))))
+                          (tagged-candidate (str ":" kw))))))
 
 (defsource ::keywords
   :candidates #'candidates
-  :doc (constantly nil)
-  :tag-fn (fn [m _] (assoc m :type :keyword)))
+  :doc (constantly nil))

@@ -2,19 +2,17 @@
   (:require [clojure.java.io :as io]
             [compliment.context :as ctx]
             [compliment.sources.resources :as src]
+            [compliment.t-helpers :refer :all]
             [midje.sweet :refer :all]))
 
 (facts "about project resources"
-  (fact "resources-by-prefix returns a list of resources matching the prefix"
-    (src/resources-by-prefix "META")
-    => (contains ["META-INF/maven/compliment/compliment/pom.properties"]))
-
   (fact "completion works when started from a string in a resource call"
     (src/candidates "META" *ns* (ctx/parse-context '(resource "__prefix__")))
-    => (contains ["META-INF/maven/compliment/compliment/pom.properties"])
+    => [{:candidate "META-INF/maven/compliment/compliment/pom.properties"
+         :type :resource}]
 
     (src/candidates "META" *ns* (ctx/parse-context '(io/resource "__prefix__")))
-    => (contains ["META-INF/maven/compliment/compliment/pom.properties"])
+    => (strip-tags (contains ["META-INF/maven/compliment/compliment/pom.properties"]))
 
     (src/candidates "META" *ns* nil) => nil)
 

@@ -1,7 +1,9 @@
 (ns compliment.sources.t-ns-mappings
   (:require [midje.sweet :refer :all]
             [compliment.sources.ns-mappings :as src]
-            [compliment.context :as ctx]))
+            [compliment.context :as ctx]
+            [compliment.utils :refer [*extra-metadata*]]
+            [compliment.t-helpers :refer :all]))
 
 (facts "about vars"
   (fact "var symbol is something looking like part of a var, possibly qualified"
@@ -35,37 +37,54 @@
 (facts "about vars completion"
   (fact "unqualified vars are looked up in the given namespace"
     (src/candidates "redu" *ns* nil)
-    => (contains #{"reduce" "reduce-kv" "reductions"} :gaps-ok)
+    => (contains #{{:candidate "reduce", :type :function, :ns "clojure.core"}
+                   {:candidate "reductions", :type :function, :ns "clojure.core"}
+                   {:candidate "reduce-kv", :type :function, :ns "clojure.core"}} :gaps-ok)
 
     (src/candidates "re-ma" *ns* nil)
-    => (just #{"re-matches" "re-matcher" "ref-max-history"})
+    => (strip-tags (just #{"re-matches" "re-matcher" "ref-max-history"}))
+
+    (src/candidates "bindi" *ns* nil)
+    => [{:candidate "binding", :type :macro, :ns "clojure.core"}]
 
     ;; Imported classes also reside in namespace mapping, so they are
     ;; covered here.
     (src/candidates "Runt" *ns* nil)
-    => (just #{"Runtime" "RuntimeException" "RuntimePermission"}))
+    => (just #{{:candidate "Runtime", :type :class, :package "java.lang"}
+               {:candidate "RuntimePermission", :type :class, :package "java.lang"}
+               {:candidate "RuntimeException", :type :class, :package "java.lang"}}))
 
   (fact "qualified vars are looked up in the namespace specified in the prefix"
     (src/candidates "clojure.set/su" *ns* nil)
-    => (just #{"clojure.set/subset?" "clojure.set/superset?"})
+    => (strip-tags (just #{"clojure.set/subset?" "clojure.set/superset?"}))
 
     (src/candidates "str/re" ..some-ns.. nil)
-    => (contains #{"str/replace" "str/replace-first" "str/reverse"} :gaps-ok)
+    => (strip-tags
+        (contains #{"str/replace" "str/replace-first" "str/reverse"} :gaps-ok))
     (provided (ns-aliases ..some-ns..) => {'str (find-ns 'clojure.string)})
 
     (src/candidates "s/cap" ..some-ns.. nil)
-    => ["s/capitalize"]
+    => (strip-tags (just ["s/capitalize"]))
     (provided (ns-aliases ..some-ns..) => {'s (find-ns 'clojure.string)}))
+
+  (fact "extra metadata can be requested from this completion source"
+    (binding [*extra-metadata* #{:doc :arglists}]
+      (doall (src/candidates "freq" *ns* nil)))
+    => [{:candidate "frequencies", :type :function, :ns "clojure.core"
+         :arglists ["[coll]"]
+         :doc "clojure.core/frequencies\n([coll])
+  Returns a map from distinct items in coll to the number of times
+  they appear.\n"}])
 
   (fact "inside (ns ...) vars are looked up only from :used namespace"
     (src/candidates "ins-" *ns*
                     (ctx/parse-context '(ns foo.bar
                                           (:use [clojure.zip
                                                  :only [__prefix__]]))))
-    => (just #{"insert-child" "insert-left" "insert-right"})
+    => (strip-tags (just #{"insert-child" "insert-left" "insert-right"}))
 
     (src/candidates "spl" *ns*
                     (ctx/parse-context '(ns foo.bar
                                           (:require [clojure.string
                                                      :refer [__prefix__]]))))
-    => (just #{"split" "split-lines"})))
+    => (strip-tags (just #{"split" "split-lines"}))))

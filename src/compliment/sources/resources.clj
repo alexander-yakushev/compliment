@@ -18,16 +18,14 @@
            (symbol? fn)
            (= (name fn) "resource")))))
 
-(defn resources-by-prefix [^String prefix]
-  (for [^String res (utils/project-resources)
-        :when (.startsWith res prefix)]
-    res))
-
 (defn candidates
   "Returns list of completions for project resources if within certain context."
   [prefix _ context]
   (when (inside-resource-call? context)
-    (resources-by-prefix prefix)))
+    (for [^String res (utils/project-resources)
+          :when (.startsWith res prefix)]
+      {:candidate res
+       :type :resource})))
 
 (defn doc
   "Documentation function for project resources."
@@ -41,5 +39,4 @@
 
 (defsource ::resources
   :candidates #'candidates
-  :doc #'doc
-  :tag-fn (fn [m _] (assoc m :type :resource)))
+  :doc #'doc)

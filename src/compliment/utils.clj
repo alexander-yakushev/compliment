@@ -3,6 +3,11 @@
   (:import java.io.File
            [java.util.jar JarFile JarEntry]))
 
+(def ^:dynamic *extra-metadata*
+  "Signals to downstream sources which additional information about completion
+  candidates they should attach . Should be a set of keywords."
+  nil)
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."

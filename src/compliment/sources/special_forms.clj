@@ -22,7 +22,8 @@
   (when (and (vars/var-symbol? prefix) (first-item-in-list? context))
     (for [form special-forms
           :when (vars/dash-matches? prefix form)]
-      form)))
+      {:candidate form
+       :type :special-form})))
 
 (defn doc
   "Documentation function for special forms."
@@ -32,16 +33,16 @@
 
 (defsource ::special-forms
   :candidates #'candidates
-  :doc doc
-  :tag-fn (fn [m _] (assoc m :type :special-form)))
+  :doc #'doc)
 
 (defn literal-candidates
   "We define `true`, `false`, and `nil` in a separate source because they are
   not context-dependent (don't have to be first items in the list)."
   [prefix _ __]
-  (filter #(.startsWith ^String % prefix) ["true" "false" "nil"]))
+  (->> ["true" "false" "nil"]
+       (filter #(.startsWith ^String % prefix))
+       (map (fn [c] {:candidate c, :type :special-form}))))
 
 (defsource ::literals
   :candidates #'literal-candidates
-  :doc (constantly nil)
-  :tag-fn (fn [m _] (assoc m :type :special-form)))
+  :doc (constantly nil))

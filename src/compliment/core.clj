@@ -13,10 +13,10 @@
                                 special-forms
                                 local-bindings
                                 resources)
-            [defprecated.core :as depr])
-  (:use [compliment.sources :only [all-sources]]
-        [compliment.context :only [cache-context]]
-        [clojure.string :only [join]])
+            [compliment.sources :refer [all-sources]]
+            [compliment.context :refer [cache-context]]
+            [compliment.utils :refer [*extra-metadata*]]
+            [clojure.string :refer [join]])
   (:import java.util.Comparator))
 
 (def all-files
@@ -40,10 +40,8 @@
 (defn sort-by-length
   "Sorts list of strings by their length first, and then alphabetically if
   length is equal. Works for tagged and non-tagged results."
-  [tag? candidates]
-  (if tag?
-    (sort-by :candidate by-length-comparator candidates)
-    (sort by-length-comparator candidates)))
+  [candidates]
+  (sort-by :candidate by-length-comparator candidates))
 
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
@@ -53,24 +51,13 @@
         (symbol? ns) (or (find-ns ns) (find-ns 'user) *ns*)
         :else *ns*))
 
-(defn- tag-candidates
-  "Iterate over list of string candidates and return maps with each candidate
-  having a type and possibly other metadata."
-  [candidates tag-fn options-map]
-  (for [c candidates
-        :let [cand-map {:candidate c}]]
-    (if tag-fn
-      (try (tag-fn cand-map options-map)
-           (catch Exception ex cand-map))
-      cand-map)))
-
-(depr/defn completions
+(defn completions
   "Returns a list of completions for the given prefix. Options map can contain
   the following options:
   - :ns - namespace where completion is initiated;
   - :context - code form around the prefix;
   - :sort-order (either :by-length or :by-name);
-  - :tag-candidates - if true, returns maps with extra data instead of strings;
+  - :plain-candidates - if true, returns plain strings instead of maps;
   - :extra-metadata - set of extra fields to add to the maps;
   - :sources - list of source keywords to use."
   ([prefix]
@@ -78,33 +65,33 @@
   ([prefix options-map]
    (if (string? options-map)
      (completions prefix {:context options-map})
-     (let [{:keys [ns context sort-order sources]
+     (let [{:keys [ns context sort-order sources extra-metadata]
             :or {sort-order :by-length}} options-map
            ns (ensure-ns ns)
            options-map (assoc options-map :ns ns)
-           tag? (:tag-candidates options-map)
            ctx (cache-context context)
            sort-fn (if (= sort-order :by-name)
-                     (if tag?
-                       (partial sort-by :candidate) sort)
-                     (partial sort-by-length tag?))]
-       (-> (for [[_ {:keys [candidates enabled tag-fn]}] (if sources
-                                                           (all-sources sources)
-                                                           (all-sources))
-                 :when enabled
-                 :let [cands (cond-> (candidates prefix ns ctx)
-                               tag? (tag-candidates tag-fn options-map))]
-                 :when cands]
-             cands)
-           flatten
-           sort-fn
-           doall))))
-  (^:deprecated
-   [prefix ns context-str]
-   (completions prefix {:ns ns, :context context-str}))
-  (^:deprecated
-   [prefix ns context-str sort-order]
-   (completions prefix {:ns ns, :context context-str, :sort-order sort-order})))
+                     (partial sort-by :candidate)
+                     (partial sort-by-length true))]
+       (binding [*extra-metadata* extra-metadata]
+         (let [candidate-fns (keep (fn [[_ src]]
+                                     (when (:enabled src)
+                                       (:candidates src)))
+                                   (if sources
+                                     (all-sources sources)
+                                     (all-sources)))]
+           (as-> (mapcat (fn [f] (f prefix ns ctx)) candidate-fns)
+               candidates
+
+             (if (= sort-order :by-name)
+               (sort-by :candidate candidates)
+               (sort-by :candidate by-length-comparator candidates))
+
+             (if (:plain-candidates options-map)
+               (map :candidate candidates)
+               candidates)
+
+             (doall candidates))))))))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol."

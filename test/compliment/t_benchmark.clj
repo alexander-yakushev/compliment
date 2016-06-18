@@ -14,17 +14,17 @@
   (str '(jio/resource "__prefix__")))
 
 (defn execute-completions []
-  (do (completions "cji" {:tag-candidates true})
-      (completions "c.j.i" {:tag-candidates true})
-      (completions "rek" {:tag-candidates true})
-      (completions "java" {:tag-candidates true})
-      (completions "java." {:tag-candidates true})
-      (completions "compl" {:tag-candidates true, :context ctx})
-      (completions "ba" {:tag-candidates true, :context ctx})
-      (completions "seageseexs" {:tag-candidates true})
-      (completions ".geIV" {:tag-candidates true})
-      (completions ":req" {:tag-candidates true})
-      (completions "META" {:tag-candidates true :context ctx2})))
+  (do (completions "cji")
+      (completions "c.j.i")
+      (completions "rek")
+      (completions "java")
+      (completions "java.")
+      (completions "compl" {:context ctx})
+      (completions "ba" {:context ctx})
+      (completions "seageseexs")
+      (completions ".geIV")
+      (completions ":req")
+      (completions "META" {:context ctx2})))
 
 (defn benchmark [quick?]
   (let [;; Don't include initialization into benchmark.
