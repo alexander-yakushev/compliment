@@ -3,8 +3,8 @@ lein: lein2
 sudo: false
 script:
   - lein test-all
-  - lein with-profile +1.6 test-all
   - lein with-profile +1.7 test-all
+  - lein with-profile +1.8 test-all
 jdk:
   - openjdk7
   - oraclejdk7
