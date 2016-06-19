@@ -8,7 +8,7 @@
 (defn var-symbol?
   "Test if prefix resembles a var name."
   [x]
-  (re-matches #"[^\.\/\:]*([^\/\:]+\/[^\.\/\:]*)?" x))
+  (re-matches #"([^\.\/\:][^\.\/]*([^\/\:]*\/[^\.\/]*)?)?" x))
 
 (defn dash-matches?
   "Tests if prefix partially matches a var name with dashes as

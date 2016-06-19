@@ -67,6 +67,19 @@
     => (strip-tags (just ["s/capitalize"]))
     (provided (ns-aliases ..some-ns..) => {'s (find-ns 'clojure.string)}))
 
+  (fact "handles vars with semicolons in them"
+    (def foo:bar 1)
+    (def foo:baz 2)
+
+    (src/candidates "foo" *ns* nil)
+    => (strip-tags (contains #{"foo:bar" "foo:baz"} :gaps-ok)) ;; passes
+
+    (src/candidates "foo:" *ns* nil)
+    => (strip-tags (contains #{"foo:bar" "foo:baz"} :gaps-ok)) ;; fails
+
+    (src/candidates "foo:b" *ns* nil)
+    => (strip-tags (contains #{"foo:bar" "foo:baz"} :gaps-ok))) ;; fails
+
   (fact "extra metadata can be requested from this completion source"
     (binding [*extra-metadata* #{:doc :arglists}]
       (doall (src/candidates "freq" *ns* nil)))
