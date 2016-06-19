@@ -26,6 +26,10 @@
         (src/candidates "::core/ali" *ns* nil))
     => (strip-tags (just #{"::core/aliased-one" "::core/aliased-two"})))
 
+  (fact "namespace aliases are completed when double colon"
+    (src/candidates "::s" *ns* nil)
+    => (strip-tags (just #{"::src"})))
+
   (fact "keyword candidates have a special tag"
     (do (str :deprecated)
         (src/candidates ":depr" *ns* nil))
