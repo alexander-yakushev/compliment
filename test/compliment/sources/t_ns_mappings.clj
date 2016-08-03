@@ -45,14 +45,18 @@
     => (strip-tags (just #{"re-matches" "re-matcher" "ref-max-history"}))
 
     (src/candidates "bindi" *ns* nil)
-    => [{:candidate "binding", :type :macro, :ns "clojure.core"}]
+    => [{:candidate "binding", :type :macro, :ns "clojure.core"}])
 
-    ;; Imported classes also reside in namespace mapping, so they are
-    ;; covered here.
+  (fact "imported classes are looked up in the given namespace"
     (src/candidates "Runt" *ns* nil)
     => (just #{{:candidate "Runtime", :type :class, :package "java.lang"}
                {:candidate "RuntimePermission", :type :class, :package "java.lang"}
                {:candidate "RuntimeException", :type :class, :package "java.lang"}}))
+
+  (fact "defrecord produces classes that don't have a package"
+    (defrecord Animal [name])
+    (src/candidates "Anim" *ns* nil)
+    => [{:candidate "Animal", :type :class, :package nil}])
 
   (fact "qualified vars are looked up in the namespace specified in the prefix"
     (src/candidates "clojure.set/su" *ns* nil)

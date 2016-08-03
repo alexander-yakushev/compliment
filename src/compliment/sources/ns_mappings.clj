@@ -84,7 +84,9 @@
             :when (dash-matches? prefix var-name)]
         (if (= (type var) Class)
           {:candidate var-name, :type :class,
-           :package (.getName (.getPackage ^Class var))}
+           :package (when-let [pkg (.getPackage ^Class var)]
+                      ;; Some classes don't have a package
+                      (.getName ^Package pkg))}
 
           (cond-> {:candidate (if scope
                                 (str scope-name "/" var-name)
