@@ -73,7 +73,9 @@
   (if android-vm?
     ()
     (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
-            ["sun.boot.class.path" "java.ext.dirs" "java.class.path"])))
+            ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
+             ;; This is where Boot keeps references to dependencies.
+             "fake.class.path"])))
 
 (defn- list-files
   "Given a path (either a jar file, directory with classes or directory with
