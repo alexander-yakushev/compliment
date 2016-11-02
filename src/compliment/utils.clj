@@ -78,18 +78,17 @@
              "fake.class.path"])))
 
 (defn- symlink?
-  [f]
-  (. Files (isSymbolicLink (.toPath f))))
+  "Checks if the given file is a symlink."
+  [^File f]
+  (Files/isSymbolicLink (.toPath f)))
 
 (defn- file-seq-nonr
   "A tree seq on java.io.Files, doesn't resolve symlinked directories to avoid
   infinite sequence resulting from recursive symlinked directories."
-  {:added "1.0"
-   :static true}
   [dir]
   (tree-seq
-   (fn [^java.io.File f] (and (. f (isDirectory)) (not (symlink? f))))
-   (fn [^java.io.File d] (seq (. d (listFiles))))
+   (fn [^File f] (and (.isDirectory f) (not (symlink? f))))
+   (fn [^File d] (seq (.listFiles d)))
    dir))
 
 (defn- list-files
