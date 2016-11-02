@@ -1,6 +1,6 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
-  (:import java.io.File
+  (:import java.io.File java.nio.file.Files
            [java.util.jar JarFile JarEntry]))
 
 (def ^:dynamic *extra-metadata*
@@ -77,6 +77,21 @@
              ;; This is where Boot keeps references to dependencies.
              "fake.class.path"])))
 
+(defn- symlink?
+  [f]
+  (. Files (isSymbolicLink (.toPath f))))
+
+(defn- file-seq-nonr
+  "A tree seq on java.io.Files, doesn't resolve symlinked directories to avoid
+  infinite sequence resulting from recursive symlinked directories."
+  {:added "1.0"
+   :static true}
+  [dir]
+  (tree-seq
+   (fn [^java.io.File f] (and (. f (isDirectory)) (not (symlink? f))))
+   (fn [^java.io.File d] (seq (. d (listFiles))))
+   dir))
+
 (defn- list-files
   "Given a path (either a jar file, directory with classes or directory with
   paths) returns all files under that path."
@@ -98,7 +113,7 @@
         (= path "") ()
 
         :else
-        (for [^File file (file-seq (File. path))
+        (for [^File file (file-seq-nonr (File. path))
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
 
