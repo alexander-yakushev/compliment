@@ -38,8 +38,9 @@
 
    - [[http://www.emacswiki.org/emacs/AutoComplete][auto-complete]] --- you will also have to install [[https://github.com/clojure-emacs/ac-cider][ac-cider]] for Compliment to
      work.
-   - [[http://company-mode.github.io/][company-mode]] --- CIDER has built-in support for company-mode completion,
-     but it lacks documentation tooltips for candidates.
+   - [[http://company-mode.github.io/][company-mode]] --- CIDER has built-in support for company-mode completion. To
+     get documentation tooltips, you will also need to install
+     [[https://github.com/expez/company-quickhelp][company-quickhelp]].
 
    If you need Compliment embedded directly into your program then add this to
    the =:dependencies=:
