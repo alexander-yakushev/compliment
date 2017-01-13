@@ -34,6 +34,18 @@
     (src/members-candidates ".st" *ns* (ctx/parse-context '(__prefix__ a-str)))
     => (strip-tags (just [".startsWith"])))
 
+  (fact "completion should work with vars on different namespaces"
+    (def an-object 1234)
+    (create-ns 'another-ns)
+    (intern 'another-ns 'an-object "foo")
+
+    (let [context (ctx/parse-context '(__prefix__ an-object))]
+      (src/members-candidates ".int" *ns* context)
+      => (strip-tags (just [".intValue"]))
+
+      (src/members-candidates ".toUpper" (find-ns 'another-ns) context)
+      => (strip-tags (just [".toUpperCase"]))))
+
   (fact "class members have docs"
     (src/members-doc ".wait" *ns*) => string?))
 
