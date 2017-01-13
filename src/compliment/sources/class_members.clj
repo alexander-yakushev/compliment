@@ -72,12 +72,12 @@
 (defn try-get-object-class
   "Tries to get the type of the object from the context, which the
   member will be applied to. Object should be a Var."
-  [context]
+  [ns context]
   (when (= (:idx (first context)) 0)
     (let [sym (second (:form (first context)))]
       (when (and (symbol? sym)
-                 (= (type (resolve sym)) clojure.lang.Var))
-        (type (deref (resolve sym)))))))
+                 (= (type (ns-resolve ns sym)) clojure.lang.Var))
+        (type (deref (ns-resolve ns sym)))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
@@ -85,7 +85,7 @@
   (when (class-member-symbol? prefix)
     (let [prefix (subs prefix 1)
           inparts? (re-find #"[A-Z]" prefix)
-          klass (try-get-object-class context)]
+          klass (try-get-object-class ns context)]
       (for [[member-name members] (get-all-members ns)
             :when (if inparts?
                     (camel-case-matches? prefix member-name)
