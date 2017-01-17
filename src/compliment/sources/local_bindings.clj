@@ -3,7 +3,7 @@
   (:require [compliment.sources :refer [defsource]]
             [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]))
 
-(def let-like-forms '#{let if-let when-let if-some when-some})
+(def let-like-forms '#{let if-let when-let if-some when-some loop})
 
 (def defn-like-forms '#{defn defn- fn defmacro})
 
