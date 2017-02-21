@@ -42,13 +42,21 @@
     (src/candidates "j.i.F" *ns* nil)
     => () ; Because fuzziness works only for classes imported into current ns
 
-    (src/candidates "j.i.F" ..some-ns.. nil)
-    => [{:candidate "java.io.File", :type :class}]
-    (provided (ns-map ..some-ns..) => {'File (utils/resolve-class *ns* 'java.io.File)})
+    (import 'java.io.File)
+    (src/candidates "j.i.F" *ns* nil)
+    => (contains [{:candidate "java.io.File", :type :class}])
 
     ;; Imported classes without package qualifiers are covered by ns-mappings
     ;; source, see respective test file.
     )
+
+  (fact "aliases are completed by this source too"
+    (require '[clojure.string :as str])
+    (src/candidates "st" *ns* nil) => (strip-tags (contains ["str"]))
+
+    (require '[clojure.string :as c.str])
+    (src/candidates "c.st" *ns* nil) => (strip-tags (contains ["c.str"])))
+
   (fact "anonymous and inner classes are not suggested"
     (src/candidates "java.util.ArrayDeq" *ns* nil)
     => (strip-tags (just ["java.util.ArrayDeque"])))

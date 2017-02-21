@@ -69,7 +69,11 @@
 
     (src/candidates "s/cap" ..some-ns.. nil)
     => (strip-tags (just ["s/capitalize"]))
-    (provided (ns-aliases ..some-ns..) => {'s (find-ns 'clojure.string)}))
+    (provided (ns-aliases ..some-ns..) => {'s (find-ns 'clojure.string)})
+
+    (src/candidates "c.str/cap" ..some-ns.. nil)
+    => (strip-tags (just ["c.str/capitalize"]))
+    (provided (ns-aliases ..some-ns..) => {'c.str (find-ns 'clojure.string)}))
 
   (fact "handles vars with semicolons in them"
     (def foo:bar 1)
