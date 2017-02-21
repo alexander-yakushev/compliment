@@ -61,13 +61,36 @@
                         ["" fdecl])]
     `(def ~name ~doc (memoize (fn ~@fdecl)))))
 
+(def primitive-cache (atom {}))
+
+(defmacro cache-last-result
+  "If cache for `name` is absent, or `key` doesn't match the key in the cache,
+  calculate `v` and return it. Else return value from cache."
+  {:style/indent 2}
+  [name key value]
+  (let [ksym ()]
+    `(let [name# ~name
+           key# ~key
+           [cached-key# cached-value#] (@primitive-cache name#)]
+       (if (and (contains? @primitive-cache name#) (= cached-key# key#))
+         cached-value#
+         (let [value# ~value]
+           (swap! primitive-cache assoc name# [key# value#])
+           value#)))))
+
+(defn flush-caches
+  "Removes all cached values, forcing functions that depend on
+  `cache-last-result` to recalculate."
+  []
+  (reset! primitive-cache {}))
+
 ;; Classpath inspection
 
 (def android-vm?
   "Signifies if the application is running on Android."
   (.contains ^String (System/getProperty "java.vendor") "Android"))
 
-(defmemoized ^:private classpath
+(defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
   (if android-vm?
@@ -116,41 +139,48 @@
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
 
-(defmemoized ^:private all-files-on-classpath
-  "Returns a list of all files on the classpath, including those located inside
-  jar files."
-  []
-  (mapcat #(list-files % true) (classpath)))
+(defn- all-files-on-classpath
+  "Given a list of files on the classpath, returns the list of all files,
+  including those located inside jar files."
+  [classpath]
+  (cache-last-result ::all-files-on-classpath classpath
+    (mapcat #(list-files % true) classpath)))
 
-(defmemoized classes-on-classpath
+(defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
   represent the root package of the class, and value is a list of all classes
   for that package."
   []
-  (->> (for [^String file (all-files-on-classpath)
-             :when (and (.endsWith file ".class") (not (.contains file "__"))
-                        (not (.contains file "$")))]
-         (.. (if (.startsWith file File/separator)
-               (.substring file 1) file)
-             (replace ".class" "") (replace File/separator ".")))
-       (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))
+  (let [classpath (classpath)]
+    (cache-last-result ::classes-on-classpath classpath
+      (->> (for [^String file (all-files-on-classpath classpath)
+                 :when (and (.endsWith file ".class") (not (.contains file "__"))
+                            (not (.contains file "$")))]
+             (.. (if (.startsWith file File/separator)
+                   (.substring file 1) file)
+                 (replace ".class" "") (replace File/separator ".")))
+           (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
-(defmemoized namespaces-on-classpath
+(defn namespaces-on-classpath
   "Returns the list of all Clojure namespaces obtained by classpath scanning."
   []
-  (set (for [^String file (all-files-on-classpath)
-             :when (and (.endsWith file ".clj")
-                        (not (.startsWith file "META-INF")))
-             :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-             :when nsname]
-         (.. nsname (replace File/separator ".") (replace "_" "-")))))
+  (let [classpath (classpath)]
+    (cache-last-result ::namespaces-on-classpath classpath
+      (set (for [^String file (all-files-on-classpath classpath)
+                 :when (and (.endsWith file ".clj")
+                            (not (.startsWith file "META-INF")))
+                 :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
+                 :when nsname]
+             (.. nsname (replace File/separator ".") (replace "_" "-")))))))
 
-(defmemoized project-resources
+(defn project-resources
   "Returns a list of all non-code files in the current project."
   []
-  (for [path (classpath)
-        ^String file (list-files path false)
-        :when (not (or (empty? file) (.endsWith file ".clj")
-                       (.endsWith file ".jar") (.endsWith file ".class")))]
-    (if (.startsWith file File/separator)
-      (.substring file 1) file)))
+  (let [classpath (classpath)]
+    (cache-last-result ::project-resources classpath
+      (for [path classpath
+            ^String file (list-files path false)
+            :when (not (or (empty? file) (.endsWith file ".clj")
+                           (.endsWith file ".jar") (.endsWith file ".class")))]
+        (if (.startsWith file File/separator)
+          (.substring file 1) file)))))

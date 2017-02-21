@@ -1,7 +1,7 @@
 (ns compliment.sources.namespaces-and-classes
   "Completion for namespace and class names."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches? defmemoized] :as utils]
+            [compliment.utils :refer [fuzzy-matches?] :as utils]
             [compliment.sources.class-members :refer [classname-doc]])
   (:import java.io.File))
 
@@ -24,13 +24,15 @@
   (for [[_ ^Class val] (ns-map ns) :when (class? val)]
     (.getName val)))
 
-(defmemoized all-classes-short-names
+(defn all-classes-short-names
   "Returns a map where short classnames are matched with vectors with
   package-qualified classnames."
   []
-  (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
-                 (nth 2))
-            (reduce into [] (vals (utils/classes-on-classpath)))))
+  (let [all-classes (utils/classes-on-classpath)]
+    (utils/cache-last-result ::all-classes-short-names all-classes
+      (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
+                     (nth 2))
+                (reduce into [] (vals all-classes))))))
 
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
