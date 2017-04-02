@@ -39,12 +39,12 @@
   "Returns a list of alias-qualified double-colon keywords (like ::str/foo),
   where alias has to be registered in the given namespace."
   [prefix ns]
-  (let [[_ alias prefix] (re-matches #"::([^/]+)/(.*)" prefix)
-        alias-ns-name (str (resolve-namespace (symbol alias) ns))]
-    (for [[kw _] (keywords-table)
-          :when (= (namespace kw) alias-ns-name)
-          :when (.startsWith (name kw) prefix)]
-      (tagged-candidate (str "::" alias "/" (name kw))))))
+  (when-let [[_ alias prefix] (re-matches #"::([^/]+)/(.*)" prefix)]
+    (let [alias-ns-name (str (resolve-namespace (symbol alias) ns))]
+      (for [[kw _] (keywords-table)
+            :when (= (namespace kw) alias-ns-name)
+            :when (.startsWith (name kw) prefix)]
+        (tagged-candidate (str "::" alias "/" (name kw)))))))
 
 (defn candidates
   [^String prefix, ns _]

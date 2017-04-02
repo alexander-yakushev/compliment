@@ -33,4 +33,8 @@
   (fact "keyword candidates have a special tag"
     (do (str :deprecated)
         (src/candidates ":depr" *ns* nil))
-    => [{:candidate ":deprecated", :type :keyword}]))
+    => [{:candidate ":deprecated", :type :keyword}])
+
+  (fact "namespace aliases without namespace are handled"
+    (do (src/candidates "::/" *ns* nil)
+     => nil)))
