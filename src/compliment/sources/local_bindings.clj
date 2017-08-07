@@ -9,6 +9,8 @@
 
 (def doseq-like-forms '#{doseq for})
 
+(def letfn-like-forms '#{letfn})
+
 (defn parse-binding
   "Given a binding node returns the list of local bindings introduced by that
   node. Handles vector and map destructuring."
@@ -29,6 +31,23 @@
         (not (#{'& '_} binding-node))
         [(str binding-node)]))
 
+(defn parse-fn-body
+  "Extract function name and arglists from the function body, return list of all
+  completable variables."
+  [fn-body]
+  (let [fn-name (when (symbol? (first fn-body))
+                  (name (first fn-body)))
+        fn-body (if fn-name (rest fn-body) fn-body)]
+    (cond->
+        (mapcat parse-binding
+                (loop [[c & r] fn-body, bnodes []]
+                  (cond (nil? c) bnodes
+                        (list? c) (recur r (conj bnodes (first c))) ;; multi-arity case
+                        (vector? c) c                               ;; single-arity case
+                        :else (recur r bnodes))))
+      fn-name (conj fn-name))))
+
+(letfn [(a ([b] (inc b)) ([c d] (+ (a c) (a d))))] (a 2 3))
 (defn extract-local-bindings
   "When given a form that has a binding vector traverses that binding vector and
   returns the list of all local bindings."
@@ -37,13 +56,10 @@
     (cond (let-like-forms (first form))
           (mapcat parse-binding (take-nth 2 (second form)))
 
-          (defn-like-forms (first form))
-          (mapcat parse-binding
-                  (loop [[c & r] (rest form), bnodes []]
-                    (cond (nil? c) bnodes
-                          (list? c) (recur r (conj bnodes (first c)))
-                          (vector? c) c
-                          :else (recur r bnodes))))
+          (defn-like-forms (first form)) (parse-fn-body (rest form))
+
+          (letfn-like-forms (first form))
+          (mapcat parse-fn-body (second form))
 
           (doseq-like-forms (first form))
           (->> (partition 2 (second form))

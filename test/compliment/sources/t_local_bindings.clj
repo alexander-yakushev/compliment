@@ -19,21 +19,27 @@
                                   __prefix__)))
     => (strip-tags (just #{"item"})))
 
-  (fact "inside defn and defmacro forms the arglist is returned"
+  (fact "inside defn and defmacro forms the name and the arglist is returned"
     (src/candidates "" *ns* (ctx/parse-context
                              '(defmacro amacro [bindings & body] __prefix__)))
-    => (strip-tags (just #{"bindings" "body"}))
+    => (strip-tags (just #{"amacro" "bindings" "body"}))
 
     (src/candidates "" *ns* (ctx/parse-context
                              '(defn afunction "docstring" {:meta data}
                                 [foo bar & rest] __prefix__)))
-    => (strip-tags (just #{"foo" "bar" "rest"}))
+    => (strip-tags (just #{"afunction" "foo" "bar" "rest"}))
 
     (src/candidates "" *ns* (ctx/parse-context
                              '(defn multiarg-fn "docstring"
                                 ([arg] (multiarg-fn arg nil))
                                 ([arg1 arg2] (do-stuff __prefix__)))))
-    => (strip-tags (just #{"arg" "arg1" "arg2"})))
+    => (strip-tags (just #{"multiarg-fn" "arg" "arg1" "arg2"})))
+
+  (fact "letfn is supported"
+    (src/candidates "" *ns* (ctx/parse-context
+                             '(letfn [(local-fn [foo bar & rest] __prefix__)
+                                      (f-2 ([[a b]] a) ([c] c))])))
+    => (strip-tags (just #{"local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"})))
 
   (fact "destructuring is also supported"
     (src/candidates "" *ns* (ctx/parse-context
@@ -60,7 +66,7 @@
                              '(defn afunction [arg1 arg2]
                                 (distinct (let [foo 13, arg2 14]
                                             __prefix__)))))
-    => (strip-tags (just #{"arg1" "arg2" "foo"})))
+    => (strip-tags (just #{"afunction" "arg1" "arg2" "foo"})))
 
   (fact "source silently fails if context is malformed"
     (src/candidates "" *ns* "(let __prefix__)") => empty?
