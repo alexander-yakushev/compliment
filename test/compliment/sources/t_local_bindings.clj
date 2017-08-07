@@ -17,7 +17,17 @@
     (src/candidates "it" *ns* (ctx/parse-context
                                '(for [item (map inc items), part item]
                                   __prefix__)))
-    => (strip-tags (just #{"item"})))
+    => (strip-tags (just #{"item"}))
+
+    (src/candidates "" *ns* (ctx/parse-context
+                             '(with-open [f (io/reader file)]
+                                __prefix__)))
+    => (strip-tags (just #{"f"}))
+
+    (src/candidates "" *ns* (ctx/parse-context
+                             '(dotimes [i 10]
+                                __prefix__)))
+    => (strip-tags (just #{"i"})))
 
   (fact "inside defn and defmacro forms the name and the arglist is returned"
     (src/candidates "" *ns* (ctx/parse-context
@@ -40,6 +50,12 @@
                              '(letfn [(local-fn [foo bar & rest] __prefix__)
                                       (f-2 ([[a b]] a) ([c] c))])))
     => (strip-tags (just #{"local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"})))
+
+  (fact "as-> is supported"
+    (src/candidates "" *ns* (ctx/parse-context
+                             '(as-> (+ 1 2) number
+                                (even? number) __prefix__)))
+    => (strip-tags (just #{"number"})))
 
   (fact "destructuring is also supported"
     (src/candidates "" *ns* (ctx/parse-context

@@ -3,7 +3,8 @@
   (:require [compliment.sources :refer [defsource]]
             [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]))
 
-(def let-like-forms '#{let if-let when-let if-some when-some loop})
+(def let-like-forms '#{let if-let when-let if-some when-some loop with-open
+                       dotimes with-local-vars})
 
 (def defn-like-forms '#{defn defn- fn defmacro})
 
@@ -66,7 +67,9 @@
                (mapcat (fn [[left right]]
                          (if (= left :let)
                            (take-nth 2 right) [left])))
-               (mapcat parse-binding)))))
+               (mapcat parse-binding))
+
+          (= 'as-> (first form)) [(name (nth form 2))])))
 
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."
