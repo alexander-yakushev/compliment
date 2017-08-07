@@ -48,7 +48,6 @@
                         :else (recur r bnodes))))
       fn-name (conj fn-name))))
 
-(letfn [(a ([b] (inc b)) ([c d] (+ (a c) (a d))))] (a 2 3))
 (defn extract-local-bindings
   "When given a form that has a binding vector traverses that binding vector and
   returns the list of all local bindings."
