@@ -1,9 +1,9 @@
-(defproject compliment "0.3.5"
+(defproject compliment "0.3.6-SNAPSHOT"
   :description "The Clojure completion library you deserve"
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0-alpha7"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [midje "1.8.3"]
                                   [criterium "0.4.3"]
                                   [cloverage "1.0.6"]]
