@@ -79,19 +79,21 @@
                                        (:candidates src)))
                                    (if sources
                                      (all-sources sources)
-                                     (all-sources)))]
-           (as-> (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
-               candidates
-
-             (if (= sort-order :by-name)
-               (sort-by :candidate candidates)
-               (sort-by :candidate by-length-comparator candidates))
-
-             (if (:plain-candidates options-map)
-               (map :candidate candidates)
-               candidates)
-
-             (doall candidates))))))))
+                                     (all-sources)))
+               candidates (mapcat
+                            (fn [f] (f prefix nspc ctx))
+                            candidate-fns)
+               sorted-cands (if (= sort-order :by-name)
+                              (sort-by
+                                :candidate
+                                candidates)
+                              (sort-by
+                                :candidate by-length-comparator
+                                candidates))
+               cands (if (:plain-candidates options-map)
+                       (map :candidate sorted-cands)
+                       sorted-cands)]
+           (doall cands)))))))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol."
