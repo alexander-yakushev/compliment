@@ -65,10 +65,10 @@
   ([prefix options-map]
    (if (string? options-map)
      (completions prefix {:context options-map})
-     (let [{:keys [ns context sort-order sources extra-metadata]
+     (let [{:keys [nspc context sort-order sources extra-metadata]
             :or {sort-order :by-length}} options-map
-           ns (ensure-ns ns)
-           options-map (assoc options-map :ns ns)
+           nspc (ensure-ns nspc)
+           options-map (assoc options-map :ns nspc)
            ctx (cache-context context)
            sort-fn (if (= sort-order :by-name)
                      (partial sort-by :candidate)
@@ -80,7 +80,7 @@
                                    (if sources
                                      (all-sources sources)
                                      (all-sources)))]
-           (as-> (mapcat (fn [f] (f prefix ns ctx)) candidate-fns)
+           (as-> (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
                candidates
 
              (if (= sort-order :by-name)
