@@ -46,9 +46,9 @@
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
   namespace if it exists, otherwise returns `user` namespace."
-  [ns]
-  (cond (instance? clojure.lang.Namespace ns) ns
-        (symbol? ns) (or (find-ns ns) (find-ns 'user) *ns*)
+  [nspc]
+  (cond (instance? clojure.lang.Namespace nspc) nspc
+        (symbol? nspc) (or (find-ns nspc) (find-ns 'user) *ns*)
         :else *ns*))
 
 (defn completions
