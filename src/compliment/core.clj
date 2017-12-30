@@ -46,9 +46,9 @@
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
   namespace if it exists, otherwise returns `user` namespace."
-  [ns]
-  (cond (instance? clojure.lang.Namespace ns) ns
-        (symbol? ns) (or (find-ns ns) (find-ns 'user) *ns*)
+  [nspc]
+  (cond (instance? clojure.lang.Namespace nspc) nspc
+        (symbol? nspc) (or (find-ns nspc) (find-ns 'user) *ns*)
         :else *ns*))
 
 (defn completions
@@ -65,10 +65,10 @@
   ([prefix options-map]
    (if (string? options-map)
      (completions prefix {:context options-map})
-     (let [{:keys [ns context sort-order sources extra-metadata]
+     (let [{:keys [context sort-order sources extra-metadata]
             :or {sort-order :by-length}} options-map
-           ns (ensure-ns ns)
-           options-map (assoc options-map :ns ns)
+           nspc (ensure-ns (:ns options-map))
+           options-map (assoc options-map :ns nspc)
            ctx (cache-context context)
            sort-fn (if (= sort-order :by-name)
                      (partial sort-by :candidate)
@@ -80,7 +80,7 @@
                                    (if sources
                                      (all-sources sources)
                                      (all-sources)))]
-           (as-> (mapcat (fn [f] (f prefix ns ctx)) candidate-fns)
+           (as-> (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
                candidates
 
              (if (= sort-order :by-name)
