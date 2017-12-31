@@ -4,11 +4,11 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
-                                  [midje "1.8.3"]
-                                  [criterium "0.4.3"]
-                                  [cloverage "1.0.6"]]
-                   :plugins [[lein-midje "3.2"]
-                             [jonase/eastwood "0.2.3"]
+                                  [midje "1.9.1"]
+                                  [criterium "0.4.4"]
+                                  [cloverage "1.0.10"]]
+                   :plugins [[lein-midje "3.2.1"]
+                             [jonase/eastwood "0.2.5"]
                              [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 

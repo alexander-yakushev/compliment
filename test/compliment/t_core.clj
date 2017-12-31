@@ -38,8 +38,8 @@
     (core/completions "cl.co.")
     => (strip-tags (contains #{"clojure.core.protocols" "clojure.core.unify"} :gaps-ok))
 
-    (core/completions "clcop")
-    => (strip-tags (just ["clojure.core.protocols"]))
+    (core/completions "cji")
+    => (strip-tags (just ["clojure.java.io"]))
 
     (core/completions ".gSV")
     => (strip-tags (just #{".getSpecificationVersion" ".getSpecificationVendor"})))
