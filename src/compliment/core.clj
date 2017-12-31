@@ -65,9 +65,9 @@
   ([prefix options-map]
    (if (string? options-map)
      (completions prefix {:context options-map})
-     (let [{:keys [nspc context sort-order sources extra-metadata]
+     (let [{:keys [context sort-order sources extra-metadata]
             :or {sort-order :by-length}} options-map
-           nspc (ensure-ns nspc)
+           nspc (ensure-ns (:ns options-map))
            options-map (assoc options-map :ns nspc)
            ctx (cache-context context)
            sort-fn (if (= sort-order :by-name)
