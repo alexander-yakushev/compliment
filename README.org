@@ -2,13 +2,16 @@
 
   Compliment is a state-of-the-art Clojure completion library. It provides a
   fast, smart and extensible solution to complete vars, namespaces, class
-  members, local bindings and whatever else custom sources can implement.
+  members, local bindings, and whatever else custom sources might implement.
 
   Compliment is used as a completion backend in the following editors/IDEs:
 
-  - Emacs --- [[https://github.com/clojure-emacs/cider][CIDER]] (with [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
+  - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]] or, now deprecated, [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
   - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
+  - Atom --- [[https://atom.io/packages/proto-repl][Proto REPL]]
   - [[https://sekao.net/nightcode/][Nightcode]]
+  - [[https://sekao.net/nightlight/][Nightlight]]
+  - @bhauman's [[https://github.com/bhauman/rebel-readline/][rebel-readline]]
 
   Also, I am so glad you came here. You look gorgeous today.
 
@@ -19,8 +22,7 @@
 
    - *Speed.* Your time is too precious to wait for completion to happen.
      Compliment is designed to be fast and is carefully benchmarked to make sure
-     no sudden performance drops appear. It allows Compliment to work
-     effectively even on [[http://clojure-android.info][Android]].
+     no sudden performance drops appear.
    - *Smart completion.* Such a smart person like you is entitled to completion
      being smart as well. Default Compliment sources use various techniques to
      give more meaningful completion depending on the context, and allow some
@@ -32,15 +34,10 @@
 
 ** Installation
 
-   If you use Nightcode or vim-fireplace then you don't have to install anything
-   at all --- Compliment will be already there for you. In case you are
-   Emacs+CIDER user there are two completion frontends to choose from:
-
-   - [[http://www.emacswiki.org/emacs/AutoComplete][auto-complete]] --- you will also have to install [[https://github.com/clojure-emacs/ac-cider][ac-cider]] for Compliment to
-     work.
-   - [[http://company-mode.github.io/][company-mode]] --- CIDER has built-in support for company-mode completion. To
-     get documentation tooltips, you will also need to install
-     [[https://github.com/expez/company-quickhelp][company-quickhelp]].
+   If you use Nightcode, vim-fireplace, or Atom then you don't have to install
+   anything at all --- Compliment will already be there for you. In case you are
+   an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
+   [[https://github.com/expez/company-quickhelp][company-quickhelp]]. This [[https://cider.readthedocs.io/en/latest/code_completion/][guide]] will help you configure it.
 
    If you need Compliment embedded directly into your program then add this to
    the =:dependencies=:
