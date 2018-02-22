@@ -36,4 +36,9 @@
 
 (facts "about classpath"
   (fact "if System/getProperty returns nil, Compliment won't fail"
-    (#'compliment.utils/list-files "" true) => ()))
+        (#'compliment.utils/list-files "" true) => ()))
+
+(facts "about resolving namespaces"
+  (require '[compliment.context :as user])
+  (fact "can resolve a namespace aliased as user"
+    (resolve-namespace 'user *ns*) => (find-ns 'compliment.context)))

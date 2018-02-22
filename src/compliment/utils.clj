@@ -51,7 +51,7 @@
   "Tries to resolve a namespace from the given symbol, either from a
   fully qualified name or an alias in the given namespace."
   [sym ns]
-  (or (find-ns sym) ((ns-aliases ns) sym)))
+  (or ((ns-aliases ns) sym) (find-ns sym)))
 
 (defmacro ^{:doc "Defines a memoized function."
             :forms '([name doc-string? [params*] body])}
