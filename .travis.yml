@@ -7,6 +7,7 @@ script:
 jdk:
   - oraclejdk7
   - oraclejdk8
+  - oraclejdk9
 matrix:
   include:
     - script: lein coverage

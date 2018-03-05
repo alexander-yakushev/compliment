@@ -54,9 +54,14 @@
                {:candidate "RuntimeException", :type :class, :package "java.lang"}}))
 
   (fact "defrecord produces classes that don't have a package"
+    ;; Since JDK9, they inherit the namespace package
     (defrecord Animal [name])
     (src/candidates "Anim" *ns* nil)
-    => [{:candidate "Animal", :type :class, :package nil}])
+    => [{:candidate "Animal", :type :class
+         :package (if (try (resolve 'java.lang.Runtime$Version)
+                           (catch Exception _))
+                    "compliment.sources.t_ns_mappings"
+                    nil)}])
 
   (fact "qualified vars are looked up in the namespace specified in the prefix"
     (src/candidates "clojure.set/su" *ns* nil)
