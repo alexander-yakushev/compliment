@@ -38,7 +38,9 @@
                         (= (second (:form ns-def)) :only))
                    (and (= (first (:form use-def)) :require)
                         (= (second (:form ns-def)) :refer))))
-      (find-ns (first (:form ns-def))))))
+      (let [namespace (first (:form ns-def))]
+        (try (require namespace) (catch Exception _))
+        (find-ns namespace)))))
 
 (defn generate-docstring
   "Generates a docstring from a given var metadata. Copied from
