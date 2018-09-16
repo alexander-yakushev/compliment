@@ -1,7 +1,8 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
   (:import java.io.File java.nio.file.Files
-           [java.util.jar JarFile JarEntry]))
+           (java.util.jar JarFile JarEntry)
+           java.util.function.Consumer))
 
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
@@ -90,6 +91,13 @@
   "Signifies if the application is running on Android."
   (.contains ^String (System/getProperty "java.vendor") "Android"))
 
+(def jdk9+?
+  "Signifies if the application is running on JDK 9 or higher."
+  (try (let [major (re-find #"^\d+" (System/getProperty "java.version"))
+             major (Integer/parseInt major)]
+         (>= major 9))
+       (catch Exception _ false)))
+
 (defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
@@ -139,12 +147,36 @@
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
 
+(defn- list-jdk9-base-classfiles
+  "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
+  modules, we have to do extra work to extract them."
+  []
+  ;; We have to do a lot of manual reflection here because otherwise JDK9+ barks
+  ;; at us or illegally accessing internal classes. Bah.
+  (let [mf-class (Class/forName "java.lang.module.ModuleFinder")
+        of-system (.getMethod mf-class "ofSystem" (into-array Class []))
+        mfinder (.invoke of-system nil (object-array 0))
+
+        mrefs (.findAll mfinder)
+        mref-class (Class/forName "java.lang.module.ModuleReference")
+        open-method (.getMethod mref-class "open" (into-array Class []))
+
+        classes (transient [])
+        consumer (reify Consumer (accept [_ v] (conj! classes v)))]
+    (doseq [mref mrefs
+            :let [mrdr (.invoke open-method mref (object-array 0))]]
+      (-> (.list mrdr) (.forEach consumer))
+      (.close mrdr))
+
+    (persistent! classes)))
+
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,
   including those located inside jar files."
   [classpath]
   (cache-last-result ::all-files-on-classpath classpath
-    (mapcat #(list-files % true) classpath)))
+    (cond-> (vec (mapcat #(list-files % true) classpath))
+      jdk9+? (into (list-jdk9-base-classfiles)))))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
