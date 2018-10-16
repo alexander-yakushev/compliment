@@ -1,12 +1,12 @@
 (ns compliment.t-utils
-  (:require [midje.sweet :refer :all]
+  (:require [fudje.sweet :refer :all]
+            [clojure.test :refer :all]
             [compliment.utils :refer :all]))
 
-(facts "about fuzzy matching"
+(deftest fuzzy-matching
   (fact "fuzzy matching works with or without separators provided"
     (fuzzy-matches? "ge-la-me-da" "get-last-message-date" \-) => truthy
     (fuzzy-matches? "gelameda" "get-last-message-date" \-) => truthy)
-
 
   (let [symbol "get-last-message-date"]
     (fact "cases where fuzzy matching should or shouldn't work"
@@ -26,19 +26,19 @@
 
   (let [symbol "getImplementationVendor"
         pred #(Character/isUpperCase ^char %)]
-   (fact "rules for camel-case matching"
-     (fuzzy-matches-no-skip? "gIV" symbol pred) => truthy
-     (fuzzy-matches-no-skip? "getImVendor" symbol pred) => truthy
-     (fuzzy-matches-no-skip? "getVen" symbol pred) => truthy
+    (fact "rules for camel-case matching"
+      (fuzzy-matches-no-skip? "gIV" symbol pred) => truthy
+      (fuzzy-matches-no-skip? "getImVendor" symbol pred) => truthy
+      (fuzzy-matches-no-skip? "getVen" symbol pred) => truthy
 
-     (fuzzy-matches-no-skip? "ImpVen" symbol pred) => falsey
-     (fuzzy-matches-no-skip? "getmple" symbol pred) => falsey)))
+      (fuzzy-matches-no-skip? "ImpVen" symbol pred) => falsey
+      (fuzzy-matches-no-skip? "getmple" symbol pred) => falsey)))
 
-(facts "about classpath"
-  (fact "if System/getProperty returns nil, Compliment won't fail"
-        (#'compliment.utils/list-files "" true) => ()))
+(deftest classpath-test
+  (testing "if System/getProperty returns nil, Compliment won't fail"
+    (is (= () (#'compliment.utils/list-files "" true)))))
 
-(facts "about resolving namespaces"
+(deftest namespace-resolving-test
   (require '[compliment.context :as user])
   (fact "can resolve a namespace aliased as user"
     (resolve-namespace 'user *ns*) => (find-ns 'compliment.context)))

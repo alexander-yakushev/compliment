@@ -1,19 +1,20 @@
 (ns compliment.sources.t-special-forms
-  (:require [midje.sweet :refer :all]
+  (:require [fudje.sweet :refer :all]
+            [clojure.test :refer :all]
             [compliment.context :as ctx]
             [compliment.sources.special-forms :as src]
             [compliment.t-helpers :refer :all]))
 
-(facts "about special forms"
+(deftest special-forms-test
   (fact "special forms are matched when they are first item in the list"
     (src/candidates "va" *ns* (ctx/parse-context '(__prefix__ foo)))
     => [{:candidate "var", :type :special-form}]
 
-    (src/candidates "c" *ns* (ctx/parse-context '(__prefix__ Exception ex nil)))
-    => (strip-tags (just ["catch"]))
+    (strip-tags (src/candidates "c" *ns* (ctx/parse-context '(__prefix__ Exception ex nil))))
+    => (just ["catch"])
 
-    (src/candidates "mo-e" *ns* (ctx/parse-context '(__prefix__)))
-    => (strip-tags (just ["monitor-enter" "monitor-exit"]))
+    (strip-tags (src/candidates "mo-e" *ns* (ctx/parse-context '(__prefix__))))
+    => (just ["monitor-enter" "monitor-exit"] :in-any-order)
 
     (src/candidates "" *ns* (ctx/parse-context '(str __prefix__ 42)))
     => nil
@@ -27,5 +28,5 @@
     (src/literal-candidates "n"  *ns* nil) => [{:candidate "nil", :type :special-form}])
 
   (fact "there are docs for special forms too"
-    (src/doc "try" *ns*) => string?
+    (src/doc "try" *ns*) => (checker string?)
     (src/doc "not-a-form" *ns*) => nil))

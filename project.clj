@@ -4,18 +4,17 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
-                                  [midje "1.9.1"]
                                   [criterium "0.4.4"]
-                                  [cloverage "1.0.10"]]
-                   :plugins [[lein-midje "3.2.1"]
-                             [jonase/eastwood "0.2.5"]
+                                  [cloverage "1.0.10"]
+                                  [fudje "0.9.7"]]
+                   :plugins [[jonase/eastwood "0.2.5"]
                              [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 
-                   :aliases {"test" ["do" ["check"] ["midje" ":filters" "-bench"]]
-                             "test-all" ["do" ["check"] ["midje" ":filters" "-fullbench"]]
-                             "bench" ["midje" ":filters" "quickbench"]
-                             "fullbench" ["midje" ":filters" "fullbench"]
+                   :aliases {"test" ["do" ["check"] ["test"]]
+                             ;; "test-all" ["do" ["check"] ["midje" ":filters" "-fullbench"]]
+                             "bench" ["run" "-m" "compliment.t-benchmark" "true"]
+                             "fullbench" ["run" "-m" "compliment.t-benchmark"]
                              "coverage" ["do" ["run" "-m" "compliment.t-coverage" "--coveralls"]
                                          ["shell" "curl" "-F"
                                           "json_file=@target/coverage/coveralls.json"

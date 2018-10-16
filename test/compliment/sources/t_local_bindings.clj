@@ -1,94 +1,95 @@
 (ns compliment.sources.t-local-bindings
-  (:require [midje.sweet :refer :all]
+  (:require [fudje.sweet :refer :all]
+            [clojure.test :refer :all]
             [compliment.sources.local-bindings :as src]
             [compliment.context :as ctx]
             [compliment.t-helpers :refer :all]))
 
-(facts "about local bindings completion"
+(deftest local-bindings
   (fact "local bindings are looked for in the context inside let-like forms"
     (src/candidates "" *ns* (ctx/parse-context '(let [a 1, b 2] __prefix__)))
-    => (just #{{:candidate "a", :type :local} {:candidate "b", :type :local}})
+    => (just [{:candidate "a", :type :local} {:candidate "b", :type :local}] :in-any-order)
 
-    (src/candidates "f-ba" *ns* (ctx/parse-context
-                                 '(when-let [foo-bar 10, foo-baz 20, bar-baz 30]
-                                    __prefix__)))
-    => (strip-tags (just #{"foo-bar" "foo-baz"}))
+    (strip-tags (src/candidates "f-ba" *ns* (ctx/parse-context
+                                             '(when-let [foo-bar 10, foo-baz 20, bar-baz 30]
+                                                __prefix__))))
+    => (just ["foo-bar" "foo-baz"] :in-any-order)
 
-    (src/candidates "it" *ns* (ctx/parse-context
-                               '(for [item (map inc items), part item]
-                                  __prefix__)))
-    => (strip-tags (just #{"item"}))
+    (strip-tags (src/candidates "it" *ns* (ctx/parse-context
+                                           '(for [item (map inc items), part item]
+                                              __prefix__))))
+    => (just ["item"])
 
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(with-open [f (io/reader file)]
-                                __prefix__)))
-    => (strip-tags (just #{"f"}))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(with-open [f (io/reader file)]
+                                            __prefix__))))
+    => (just ["f"])
 
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(dotimes [i 10]
-                                __prefix__)))
-    => (strip-tags (just #{"i"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(dotimes [i 10]
+                                            __prefix__))))
+    => (just ["i"]))
 
   (fact "inside defn and defmacro forms the name and the arglist is returned"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(defmacro amacro [bindings & body] __prefix__)))
-    => (strip-tags (just #{"amacro" "bindings" "body"}))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(defmacro amacro [bindings & body] __prefix__))))
+    => (just ["amacro" "bindings" "body"] :in-any-order)
 
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(defn afunction "docstring" {:meta data}
-                                [foo bar & rest] __prefix__)))
-    => (strip-tags (just #{"afunction" "foo" "bar" "rest"}))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(defn afunction "docstring" {:meta data}
+                                            [foo bar & rest] __prefix__))))
+    => (just ["afunction" "foo" "bar" "rest"] :in-any-order)
 
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(defn multiarg-fn "docstring"
-                                ([arg] (multiarg-fn arg nil))
-                                ([arg1 arg2] (do-stuff __prefix__)))))
-    => (strip-tags (just #{"multiarg-fn" "arg" "arg1" "arg2"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(defn multiarg-fn "docstring"
+                                            ([arg] (multiarg-fn arg nil))
+                                            ([arg1 arg2] (do-stuff __prefix__))))))
+    => (just ["multiarg-fn" "arg" "arg1" "arg2"] :in-any-order))
 
   (fact "letfn is supported"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(letfn [(local-fn [foo bar & rest] __prefix__)
-                                      (f-2 ([[a b]] a) ([c] c))])))
-    => (strip-tags (just #{"local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(letfn [(local-fn [foo bar & rest] __prefix__)
+                                                  (f-2 ([[a b]] a) ([c] c))]))))
+    => (just ["local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"] :in-any-order))
 
   (fact "as-> is supported"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(as-> (+ 1 2) number
-                                (even? number) __prefix__)))
-    => (strip-tags (just #{"number"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(as-> (+ 1 2) number
+                                            (even? number) __prefix__))))
+    => (just ["number"]))
 
   (fact "destructuring is also supported"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(let [foo 42,
-                                    [bar baz] lst
-                                    {a :a, {b :b :as c} :b, [d] :d} m
-                                    {:keys [key1 key2]} m2
-                                    [_ rec {urs :ive :as total}] val]
-                                __prefix__)))
-    => (strip-tags (just #{"foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2"
-                           "rec" "urs" "total"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(let [foo 42,
+                                                [bar baz] lst
+                                                {a :a, {b :b :as c} :b, [d] :d} m
+                                                {:keys [key1 key2]} m2
+                                                [_ rec {urs :ive :as total}] val]
+                                            __prefix__))))
+    => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2"
+              "rec" "urs" "total"] :in-any-order))
 
   (fact "in doseq and for :let bindings are supported"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(doseq [a b
-                                      :let [c (first a)]
-                                      {:keys [d]} e
-                                      :let [{g :g} f, [h i] j]]
-                                __prefix__)))
-    => (strip-tags (just #{"a" "c" "d" "g" "h" "i"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(doseq [a b
+                                                  :let [c (first a)]
+                                                  {:keys [d]} e
+                                                  :let [{g :g} f, [h i] j]]
+                                            __prefix__))))
+    => (just ["a" "c" "d" "g" "h" "i"] :in-any-order))
 
   (fact "bindings are scanned recursively"
-    (src/candidates "" *ns* (ctx/parse-context
-                             '(defn afunction [arg1 arg2]
-                                (distinct (let [foo 13, arg2 14]
-                                            __prefix__)))))
-    => (strip-tags (just #{"afunction" "arg1" "arg2" "foo"})))
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(defn afunction [arg1 arg2]
+                                            (distinct (let [foo 13, arg2 14]
+                                                        __prefix__))))))
+    => (just ["afunction" "arg1" "arg2" "foo"] :in-any-order))
 
   (fact "source silently fails if context is malformed"
-    (src/candidates "" *ns* "(let __prefix__)") => empty?
-    (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => empty?
+    (src/candidates "" *ns* "(let __prefix__)") => []
+    (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => []
     (src/candidates "" *ns* "(defn resources
                                \"Build api functions for resources\"
                                [{:keys [resources] :as discovery-doc}]
                                (for [[_ {:keys __prefix__}] resources]
-                                 (generate-schema s)))") => empty?))
+                                 (generate-schema s)))") => []))

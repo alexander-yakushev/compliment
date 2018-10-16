@@ -1,5 +1,5 @@
 (ns compliment.t-benchmark
-  (:require [midje.sweet :refer :all]
+  (:require [clojure.test :refer :all]
             [compliment.core :refer [completions]]
             [compliment.utils :as utils]
             [criterium.core :as crit]))
@@ -37,12 +37,12 @@
       (crit/bench (execute-completions)
                   :supress-jvm-option-warnings true))))
 
-(facts "about performance" :bench :quickbench
+(deftest quick-benchmark
   (let [res (benchmark true)]
-    (fact "simple benchmark suite shouldn't take longer than specified limit"
-      (first (:mean res)) => (partial > 100))
+    (testing "simple benchmark suite shouldn't take longer than specified limit"
+      (is (< (first (:mean res)) 0.1)))
 
     (crit/report-result res)))
 
-(fact "this is a full benchmark" :bench :fullbench
-  (benchmark false))
+(defn -main [& [quick?]]
+  (crit/report-result (benchmark (= quick? "true"))))
