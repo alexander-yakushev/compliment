@@ -32,11 +32,11 @@
 
   (fact "if context is provided and the class of first arg can be
   resolved, select candidates only for that class (works only for vars)"
-    (strip-tags (src/members-candidates ".st" (-ns) nil))
-    => (just [".start" ".startsWith" ".stop" ".stripTrailingZeros"] :in-any-order)
+    (strip-tags (src/members-candidates ".sta" (-ns) nil))
+    => (just [".start" ".startsWith"] :in-any-order)
 
     (do (def a-str "a string")
-        (strip-tags (src/members-candidates ".st" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
+        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
     => (just [".startsWith"]))
 
   (fact "completion should work with vars on different namespaces"
