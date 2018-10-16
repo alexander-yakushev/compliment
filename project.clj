@@ -5,9 +5,9 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [criterium "0.4.4"]
-                                  [cloverage "1.0.10"]
+                                  [cloverage "1.0.13"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "0.2.5"]
+                   :plugins [[jonase/eastwood "0.3.1"]
                              [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 
