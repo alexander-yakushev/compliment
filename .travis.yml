@@ -5,12 +5,11 @@ script:
   - lein with-profile +1.8 test
   - lein with-profile +1.10 test
 jdk:
-  - oraclejdk7
-  - oraclejdk8
+  - openjdk8
   - openjdk11
 matrix:
   include:
     - script: lein coverage
-      jdk:    oraclejdk8
+      jdk:    openjdk8
     - script: lein eastwood
-      jdk:    oraclejdk8
+      jdk:    openjdk8
