@@ -7,7 +7,7 @@
                                   [criterium "0.4.4"]
                                   [cloverage "1.0.13"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "0.3.1"]
+                   :plugins [[jonase/eastwood "0.3.3"]
                              [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 
