@@ -164,8 +164,9 @@
         classes (transient [])
         consumer (reify Consumer (accept [_ v] (conj! classes v)))]
     (doseq [mref mrefs
-            :let [mrdr (.invoke open-method mref (object-array 0))]]
-      (-> (.list mrdr) (.forEach consumer))
+            :let [mrdr (.invoke open-method mref (object-array 0))
+                  ^java.util.stream.Stream stream (.list mrdr)]]
+      (.forEach stream consumer)
       (.close mrdr))
 
     (persistent! classes)))
