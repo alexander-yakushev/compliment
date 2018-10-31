@@ -59,7 +59,8 @@
     (core/completions "remo" {:sort-order :by-name})
     => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
                   {:ns "clojure.core", :type :function, :candidate "remove-ns"}
-                  {:ns "clojure.core", :type :function, :candidate "remove-watch"}]))
+                  {:ns "clojure.core", :type :function, :candidate "remove-watch"}]
+                 :gaps-ok))
 
 
   (fact "context can help some sources to give better candidates list"
