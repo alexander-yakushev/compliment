@@ -1,8 +1,8 @@
 * Compliment [[https://travis-ci.org/alexander-yakushev/compliment/][https://travis-ci.org/alexander-yakushev/compliment.svg?branch=master]] [[https://coveralls.io/r/alexander-yakushev/compliment?branch=master][https://coveralls.io/repos/alexander-yakushev/compliment/badge.svg?branch=master]] [[https://clojars.org/compliment][https://versions.deps.co/alexander-yakushev/compliment/downloads.svg]] [[https://versions.deps.co/alexander-yakushev/compliment][https://versions.deps.co/images/up-to-date.svg]] [[CHANGELOG.md][https://img.shields.io/badge/-changelog-blue.svg]]
 
-  Compliment is a state-of-the-art Clojure completion library. It provides a
-  fast, smart and extensible solution to complete vars, namespaces, class
-  members, local bindings, and whatever else custom sources might implement.
+  Compliment is an ultimate Clojure completion library. It provides a fast and
+  smart solution to complete vars, namespaces, class members, keywords, locals.
+  It also allows users to implement custom completion sources.
 
   Compliment is used as a completion backend in the following editors/IDEs:
 
@@ -34,7 +34,7 @@
 
 ** Installation
 
-   If you use Nightcode, vim-fireplace, or Atom then you don't have to install
+   If you use Nightcode, vim-fireplace, or Atom, then you don't have to install
    anything at all --- Compliment will already be there for you. In case you are
    an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
    [[https://github.com/expez/company-quickhelp][company-quickhelp]]. This [[https://cider.readthedocs.io/en/latest/code_completion/][guide]] will help you configure it.
@@ -58,11 +58,7 @@
 
    How to write your own sources is explained on [[https://github.com/alexander-yakushev/compliment/wiki/Custom-sources][Custom sources]] page.
 
-** Changelog
-
-   You can view the significant changes on the [[https://github.com/alexander-yakushev/compliment/releases][Releases]] page.
-
 ** License
 
-   Copyright © 2013-2015 Alexander Yakushev. Distributed under the Eclipse
+   Copyright © 2013-2018 Alexander Yakushev. Distributed under the Eclipse
    Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
