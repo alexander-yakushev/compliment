@@ -1,6 +1,6 @@
 # Changelog
 
-### 0.3.7-SNAPSHOT (unreleased)
+### 0.3.7 (2018-11-22)
 
 - Fix completion of unimported classes on JDK9+.
 - Drop support for JDK1.7 and Clojure 1.7. They might still work for some time
