@@ -1,5 +1,10 @@
 # Changelog
 
+### master (unreleased)
+
+- [#37](https://github.com/alexander-yakushev/compliment/issues/37) Fix not
+  completing methods/fields for freshly imported classes.
+
 ### 0.3.7 (2018-11-22)
 
 - Fix completion of unimported classes on JDK9+.

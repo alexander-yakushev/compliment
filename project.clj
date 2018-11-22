@@ -1,4 +1,4 @@
-(defproject compliment "0.3.7"
+(defproject compliment "0.3.8-SNAPSHOT"
   :description "The Clojure completion library you deserve"
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"

@@ -46,7 +46,7 @@
 (defn update-cache
   "Updates members cache for a given namespace if necessary."
   [ns]
-  (let [imported-cls-cnt (count (filter class? (vals (ns-map *ns*))))]
+  (let [imported-cls-cnt (count (filter class? (vals (ns-map ns))))]
     (when (or (nil? (@members-cache ns))
               (not= (get-in @members-cache [ns :classes-cnt])
                     imported-cls-cnt))
