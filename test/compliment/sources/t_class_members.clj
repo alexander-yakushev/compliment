@@ -30,14 +30,26 @@
                    {:candidate ".putAll", :type :method}} :gaps-ok))
 
 
-  (fact "if context is provided and the class of first arg can be
-  resolved, select candidates only for that class (works only for vars)"
+  (fact "if context is provided and the class of first arg can be resolved,
+  select candidates only for that class (works for vars and tagged symbols)"
     (strip-tags (src/members-candidates ".sta" (-ns) nil))
     => (just [".start" ".startsWith"] :in-any-order)
 
     (do (def a-str "a string")
         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
-    => (just [".startsWith"]))
+    => (just [".startsWith"])
+
+    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context
+                                                      '(__prefix__ ^String foo))))
+    => (just [".startsWith"])
+
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
+                                                     '(__prefix__ ^Thread foo))))
+    => (just [".interrupt"])
+
+    (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
+                                                     '(__prefix__ ^java.util.Map foo))))
+    => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order))
 
   (fact "completes members of context object even if its class is not imported"
     (do (def a-bitset (java.util.BitSet.))

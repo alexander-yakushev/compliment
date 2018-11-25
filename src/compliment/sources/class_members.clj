@@ -75,14 +75,19 @@
   (fuzzy-matches-no-skip? prefix member-name #(Character/isUpperCase ^char %)))
 
 (defn try-get-object-class
-  "Tries to get the type of the object from the context, which the
-  member will be applied to. Object should be a Var."
+  "Tries to get the type of the object from the context, which the member will be
+  applied to. Object should be a symbol resolving to a Var or have a type tag."
   [ns context]
   (when (= (:idx (first context)) 0)
     (let [sym (second (:form (first context)))]
-      (when (and (symbol? sym)
-                 (= (type (ns-resolve ns sym)) clojure.lang.Var))
-        (type (deref (ns-resolve ns sym)))))))
+      (when (symbol? sym)
+        (if-let [tag (:tag (meta sym))]
+          ;; Symbol has a tag - try to resolve the class from it.
+          (resolve-class ns tag)
+          ;; Otherwise, try to resolve symbol to a Var.
+          (let [obj (ns-resolve ns sym)]
+            (and (= (class obj) clojure.lang.Var)
+                 (class (deref obj)))))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
