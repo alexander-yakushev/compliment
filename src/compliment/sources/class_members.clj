@@ -12,51 +12,56 @@
 
 ;; ## Regular (non-static) members
 
-(def ^{:doc "Stores cache of all non-static members for every
-  namespace."}
-  members-cache (atom {}))
+(def members-cache
+  "Stores cache of all non-static members for every namespace."
+  (atom {}))
 
 (defn populate-members-cache
-  "Populates members cache for a given namespace. `classes-cnt` is a
-  number that indicates the current number of imported classes in this
-  namespace."
-  [ns classes-cnt]
-  (loop [cache (transient {})
+  "Populate members cache of class members for `ns` from the given list of
+  classes. `imported-classes-cnt` is a number that indicates the current number
+  of imported classes in this namespace."
+  [ns classes imported-classes-cnt]
+  (let [members
+        (for [^Class class classes
+              ^Member member (concat (.getMethods class) (.getFields class))
+              :when (not (static? member))]
+          (let [dc (.getDeclaringClass member)]
+            (if (= dc class)
+              member
+              (if (instance? Method member)
+                (.getMethod dc (.getName member)
+                            (.getParameterTypes ^Method member))
+                (.getField dc (.getName member))))))
 
-         [^Member c & r]
-         (for [^Class class (vals (ns-map ns))
-               :when (class? class)
-               ^Member member (concat (.getMethods class) (.getFields class))
-               :when (not (static? member))]
-           (let [dc (.getDeclaringClass member)]
-             (if (= dc class)
-               member
-               (if (instance? Method member)
-                 (.getMethod dc (.getName member)
-                             (.getParameterTypes ^Method member))
-                 (.getField dc (.getName member))))))]
-    (if c
-      (let [full-name (.getName c)]
-        (if (cache full-name)
-          (recur (assoc! cache full-name (conj (cache (.getName c)) c)) r)
-          (recur (assoc! cache full-name [c]) r)))
-      (swap! members-cache assoc ns {:classes-cnt classes-cnt
-                                     :methods (persistent! cache)}))))
+        cache
+        (reduce (fn [cache, ^Member m]
+                  (let [full-name (.getName m)]
+                    (assoc! cache full-name (conj (cache full-name []) m))))
+                (transient {}) members)]
+    (swap! members-cache assoc ns {:classes (set classes)
+                                   :imported-classes-cnt imported-classes-cnt
+                                   :members (persistent! cache)})))
 
 (defn update-cache
   "Updates members cache for a given namespace if necessary."
-  [ns]
-  (let [imported-cls-cnt (count (filter class? (vals (ns-map ns))))]
-    (when (or (nil? (@members-cache ns))
-              (not= (get-in @members-cache [ns :classes-cnt])
-                    imported-cls-cnt))
-      (populate-members-cache ns imported-cls-cnt))))
+  ([ns] (update-cache ns nil))
+  ([ns context-class]
+   (let [imported-classes (set (filter class? (vals (ns-map ns))))
+         imported-classes-cnt (count imported-classes)
+         cache (@members-cache ns)]
+     (when (or (nil? cache)
+               (not= (:imported-classes-cnt cache) imported-classes-cnt)
+               (and context-class
+                    (not (contains? (:classes cache) context-class))))
+       (let [classes (cond-> (into imported-classes (:classes cache))
+                       context-class (conj context-class))]
+         (populate-members-cache ns classes imported-classes-cnt))))))
 
 (defn get-all-members
   "Returns all non-static members for a given namespace."
-  [ns]
-  (update-cache ns)
-  (get-in @members-cache [ns :methods]))
+  [ns context-class]
+  (update-cache ns context-class)
+  (get-in @members-cache [ns :members]))
 
 (defn class-member-symbol?
   "Tests if a symbol name looks like a non-static class member."
@@ -86,7 +91,7 @@
     (let [prefix (subs prefix 1)
           inparts? (re-find #"[A-Z]" prefix)
           klass (try-get-object-class ns context)]
-      (for [[member-name members] (get-all-members ns)
+      (for [[member-name members] (get-all-members ns klass)
             :when (if inparts?
                     (camel-case-matches? prefix member-name)
                     (.startsWith ^String member-name prefix))
@@ -147,7 +152,7 @@
   [member-str ns]
   (when (class-member-symbol? member-str)
     (update-cache ns)
-    (when-let [member (get-in @members-cache [ns :methods (subs member-str 1)])]
+    (when-let [member (get-in @members-cache [ns :members (subs member-str 1)])]
       (create-members-doc member))))
 
 (defn classname-doc [^Class class]
@@ -167,7 +172,7 @@
   :candidates #'members-candidates
   :doc #'members-doc
   :tag-fn (fn [m {:keys [ns]}]
-            (assoc m :type (if (->> (get-in @members-cache [ns :methods
+            (assoc m :type (if (->> (get-in @members-cache [ns :members
                                                             (subs (:candidate m) 1)])
                                     first
                                     (instance? Method))

@@ -39,6 +39,11 @@
         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
     => (just [".startsWith"]))
 
+  (fact "completes members of context object even if its class is not imported"
+    (do (def a-bitset (java.util.BitSet.))
+        (strip-tags (src/members-candidates ".inter" (-ns) (ctx/parse-context '(__prefix__ a-bitset)))))
+    => (just [".intersects"]))
+
   (fact "completion should work with vars on different namespaces"
     (do (def an-object 1234)
         (strip-tags (src/members-candidates ".int" (-ns) (ctx/parse-context '(__prefix__ an-object)))))
