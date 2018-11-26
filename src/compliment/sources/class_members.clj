@@ -1,6 +1,7 @@
 (ns compliment.sources.class-members
   "Completion for both static and non-static class members."
   (:require [compliment.sources :refer [defsource]]
+            [compliment.sources.local-bindings :refer [bindings-from-context]]
             [compliment.utils :refer [fuzzy-matches-no-skip? resolve-class]]
             [clojure.string :refer [join]])
   (:import [java.lang.reflect Method Field Member Modifier]))
@@ -81,8 +82,13 @@
   (when (= (:idx (first context)) 0)
     (let [sym (second (:form (first context)))]
       (when (symbol? sym)
-        (if-let [tag (:tag (meta sym))]
-          ;; Symbol has a tag - try to resolve the class from it.
+        (if-let [tag (or
+                      ;; Symbol might have an immediate tag...
+                      (:tag (meta sym))
+                      ;; ...or a tag somewhere in local scope. Note how getting
+                      ;; an element from a set can return itself but with meta.
+                      (:tag (meta (get (set (bindings-from-context context)) sym))))]
+          ;; We have a tag - try to resolve the class from it.
           (resolve-class ns tag)
           ;; Otherwise, try to resolve symbol to a Var.
           (let [obj (ns-resolve ns sym)]

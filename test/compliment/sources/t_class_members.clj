@@ -30,14 +30,10 @@
                    {:candidate ".putAll", :type :method}} :gaps-ok))
 
 
-  (fact "if context is provided and the class of first arg can be resolved,
-  select candidates only for that class (works for vars and tagged symbols)"
+  (fact "if context is provided and the first arg is a symbol with type tag
+  (either immediate or anywhere in the local scope)"
     (strip-tags (src/members-candidates ".sta" (-ns) nil))
     => (just [".start" ".startsWith"] :in-any-order)
-
-    (do (def a-str "a string")
-        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
-    => (just [".startsWith"])
 
     (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context
                                                       '(__prefix__ ^String foo))))
@@ -48,8 +44,26 @@
     => (just [".interrupt"])
 
     (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
-                                                     '(__prefix__ ^java.util.Map foo))))
+                                                    '(__prefix__ ^java.util.Map foo))))
+    => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order)
+
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
+                                                     '(let [^Thread foo ...
+                                                            ... ...
+                                                            _ (.start foo)]
+                                                        (__prefix__ foo)))))
+    => (just [".interrupt"])
+
+    (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
+                                                    '(defn bar [{:keys [^java.util.Map foo]}]
+                                                       (__prefix__ foo)))))
     => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order))
+
+  (fact "if context is provided and the first arg is a global var with a
+  resolvable class, use it to filter candidates"
+    (do (def a-str "a string")
+        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
+    => (just [".startsWith"]))
 
   (fact "completes members of context object even if its class is not imported"
     (do (def a-bitset (java.util.BitSet.))

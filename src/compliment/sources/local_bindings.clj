@@ -70,10 +70,22 @@
 
           (= 'as-> (first form)) [(name (nth form 2))])))
 
+(defn- distinct-preserve-tags
+  "Like `distinct` but keeps elements that have type tag with a higher priority."
+  [coll]
+  (->> coll
+       (sort (fn [x y]
+               (let [tx (:tag (meta x))
+                     ty (:tag (meta y))]
+                 (cond (and tx (not ty)) -1
+                       (and (not tx) ty) 1
+                       :else 0))))
+       distinct))
+
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."
   [ctx]
-  (try (distinct (mapcat (comp extract-local-bindings :form) ctx))
+  (try (distinct-preserve-tags (mapcat (comp extract-local-bindings :form) ctx))
        (catch Exception ex ())))
 
 (defn candidates
