@@ -80,20 +80,19 @@
   applied to. Object should be a symbol resolving to a Var or have a type tag."
   [ns context]
   (when (= (:idx (first context)) 0)
-    (let [sym (second (:form (first context)))]
-      (when (symbol? sym)
-        (if-let [tag (or
-                      ;; Symbol might have an immediate tag...
-                      (:tag (meta sym))
-                      ;; ...or a tag somewhere in local scope. Note how getting
-                      ;; an element from a set can return itself but with meta.
-                      (:tag (meta (get (set (bindings-from-context context)) sym))))]
-          ;; We have a tag - try to resolve the class from it.
-          (resolve-class ns tag)
-          ;; Otherwise, try to resolve symbol to a Var.
-          (let [obj (ns-resolve ns sym)]
-            (and (= (class obj) clojure.lang.Var)
-                 (class (deref obj)))))))))
+    (let [form (second (:form (first context)))]
+      (if-let [tag (or
+                    ;; Form might have an immediate tag...
+                    (:tag (meta form))
+                    ;; ...or a tag somewhere in local scope. Note how getting
+                    ;; an element from a set can return itself but with meta.
+                    (:tag (meta (get (set (bindings-from-context context)) form))))]
+        ;; We have a tag - try to resolve the class from it.
+        (resolve-class ns tag)
+        ;; Otherwise, try to resolve symbol to a Var.
+        (let [obj (and (symbol? form) (ns-resolve ns form))]
+          (and (= (class obj) clojure.lang.Var)
+               (class (deref obj))))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."

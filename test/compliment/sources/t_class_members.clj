@@ -43,6 +43,17 @@
                                                      '(__prefix__ ^Thread foo))))
     => (just [".interrupt"])
 
+    ;; read-string is used here because fudje seems to mess up metadata on forms
+    (strip-tags (src/members-candidates ".m" (-ns) (ctx/parse-context
+                                                     (read-string
+                                                      "(__prefix__ ^java.io.File (foo))"))))
+    => (just [".mkdirs" ".mkdir"] :in-any-order)
+
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
+                                                     (read-string
+                                                      "(__prefix__ ^Thread (foo))"))))
+    => (just [".interrupt"])
+
     (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
                                                     '(__prefix__ ^java.util.Map foo))))
     => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order)
