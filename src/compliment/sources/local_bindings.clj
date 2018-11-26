@@ -24,20 +24,20 @@
                                 (remove keyword?)
                                 (mapcat parse-binding))
               keys-binds (if-let [ks (:keys binding-node)]
-                           (mapv str ks) ())
+                           ks ())
               as-binds (if-let [as (:as binding-node)]
-                        [(str as)] ())]
+                        [as] ())]
           (concat normal-binds keys-binds as-binds))
 
         (not (#{'& '_} binding-node))
-        [(str binding-node)]))
+        [binding-node]))
 
 (defn parse-fn-body
   "Extract function name and arglists from the function body, return list of all
   completable variables."
   [fn-body]
   (let [fn-name (when (symbol? (first fn-body))
-                  (name (first fn-body)))
+                  (first fn-body))
         fn-body (if fn-name (rest fn-body) fn-body)]
     (cond->
         (mapcat parse-binding
@@ -81,6 +81,7 @@
   [prefix _ context]
   (when (var-symbol? prefix)
     (for [binding (bindings-from-context context)
+          :let [binding (name binding)]
           :when (dash-matches? prefix binding)]
       {:candidate binding, :type :local})))
 
