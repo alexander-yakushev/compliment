@@ -68,10 +68,10 @@
                            (take-nth 2 right) [left])))
                (mapcat parse-binding))
 
-          (= 'as-> (first form)) [(name (nth form 2))])))
+          (= 'as-> (first form)) [(nth form 2)])))
 
 (defn- distinct-preserve-tags
-  "Like `distinct` but keeps elements that have type tag with a higher priority."
+  "Like `distinct` but keeps symbols that have type tag with a higher priority."
   [coll]
   (->> coll
        (sort (fn [x y]
@@ -85,7 +85,9 @@
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."
   [ctx]
-  (try (distinct-preserve-tags (mapcat (comp extract-local-bindings :form) ctx))
+  (try (->> (mapcat (comp extract-local-bindings :form) ctx)
+            (filter symbol?)
+            distinct-preserve-tags)
        (catch Exception ex ())))
 
 (defn candidates

@@ -87,6 +87,7 @@
 
   (fact "source silently fails if context is malformed"
     (src/candidates "" *ns* "(let __prefix__)") => []
+    (src/candidates "" *ns* "(let [() 1]__prefix__)") => []
     (src/candidates "" *ns* "(defn [args] \"doc\" x (__prefix__))") => []
     (src/candidates "" *ns* "(defn resources
                                \"Build api functions for resources\"

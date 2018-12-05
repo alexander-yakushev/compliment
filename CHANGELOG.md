@@ -5,7 +5,8 @@
 - Fix not completing methods/fields for freshly imported classes.
 - [#58](https://github.com/alexander-yakushev/compliment/issues/58) Complete
   members for unimportant class if the context class is found.
-- Retrieve context class from next symbol's type tag.
+- Retrieve context class from next form's type tag or from type tag of the same
+  symbol if it was tagged in the same lexical scope.
 
 ### 0.3.7 (2018-11-22)
 
