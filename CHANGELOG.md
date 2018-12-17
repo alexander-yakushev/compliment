@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.3.8 (2018-12-17)
+
 - Fix not completing methods/fields for freshly imported classes.
 - [#58](https://github.com/alexander-yakushev/compliment/issues/58) Complete
   members for unimportant class if the context class is found.
