@@ -3,7 +3,7 @@ sudo: false
 script:
   - lein test
   - lein with-profile +1.8 test
-  - lein with-profile +1.10 test
+  - lein with-profile +1.9 test
 jdk:
   - openjdk8
   - openjdk11

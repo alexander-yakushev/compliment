@@ -3,7 +3,7 @@
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.10.0"]
                                   [criterium "0.4.4"]
                                   [cloverage "1.0.13"]
                                   [fudje "0.9.7"]]
@@ -20,4 +20,4 @@
                                           "json_file=@target/coverage/coveralls.json"
                                           "https://coveralls.io/api/v1/jobs"]]}}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.0-beta8"]]}})
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}})
