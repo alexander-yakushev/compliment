@@ -2,6 +2,11 @@
 
 ### master (unreleased)
 
+### 0.3.9 (2019-02-23)
+
+- [#53](https://github.com/alexander-yakushev/compliment/issues/53) Make context
+  scanning more robust to unfinished forms.
+
 ### 0.3.8 (2018-12-17)
 
 - Fix not completing methods/fields for freshly imported classes.
