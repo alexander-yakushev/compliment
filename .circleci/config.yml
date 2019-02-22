@@ -41,7 +41,9 @@ jobs:
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
       - run: lein eastwood
-      - run: lein coverage
+      - run: CIRCLECI=true lein coverage
+      - store_artifacts:
+          path: target/coverage
       - save_cache:
           paths:
             - ~/.m2
