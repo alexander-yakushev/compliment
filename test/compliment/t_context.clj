@@ -50,6 +50,12 @@
     (ctx/parse-context (#'ctx/safe-read-context-string "{:foo __prefix__ :bar}"))
     => '({:idx :foo, :map-role :value, :form {:foo __prefix__, :bar nil}}))
 
+  (fact "failing to parse an unfinished form will try to recover by completing it"
+    (ctx/parse-context (#'ctx/safe-read-context-string "(let [a {:b 1}, c {__prefix__"))
+    => '({:idx nil, :map-role :key, :form {__prefix__ nil}}
+         {:idx 3, :form [a {:b 1} c {__prefix__ nil}]}
+         {:idx 1, :form (let [a {:b 1} c {__prefix__ nil}])}))
+
   (fact "in maps :map-role shows which role in key-value pair the
   __prefix__ (or the form with it) has, and :idx shows the opposite
   element of its key-value pair."

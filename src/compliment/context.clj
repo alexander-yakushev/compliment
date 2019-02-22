@@ -1,24 +1,51 @@
 (ns compliment.context
   "Utilities for parsing and storing the current completion context."
-  (:require [clojure.walk :refer [walk]]))
+  (:require [clojure.string :as str]
+            [clojure.walk :as walk]))
 
 (defn- restore-map-literals [context]
-  (clojure.walk/postwalk (fn [el]
-                           (if (and (sequential? el)
-                                    (= (first el) 'compliment-hashmap))
-                             (apply hash-map
-                                    (if (even? (count el))
-                                      (concat (rest el) [nil])
-                                      (rest el)))
-                             el)) context))
+  (walk/postwalk (fn [el]
+                   (if (and (sequential? el)
+                            (= (first el) 'compliment-hashmap))
+                     (apply hash-map
+                            (if (even? (count el))
+                              (concat (rest el) [nil])
+                              (rest el)))
+                     el)) context))
+
+(defn- try-read-replacing-maps [s]
+  (try (binding [*read-eval* false]
+         (-> s
+             (str/replace "{" "(compliment-hashmap ")
+             (str/replace "}" ")")
+             read-string
+             restore-map-literals))
+       (catch Exception ex)))
+
+(defn- dumb-read-form
+  "Take a presumably unfinished Clojure form and try to \"complete\" it so that it
+  can be read. The algorithm is incredibly stupid, but is better than nothing."
+  [unfinished-form-str]
+  (let [open->close {\( \), \[ \], \{ \}},
+        close->open {\) \(, \] \[, \} \{}]
+    (loop [[c & r] (reverse (filter (set "([{}])") unfinished-form-str))
+           to-append []]
+      (if c
+        (cond (open->close c)
+              (recur r (conj to-append (open->close c)))
+
+              (close->open c)
+              (if (= c (open->close (first r)))
+                (recur (rest r) to-append)
+                ;; Everything is bad - just give up
+                nil))
+        (try-read-replacing-maps (apply str unfinished-form-str to-append))))))
+
+#_(dumb-read-form "(let [a {:b 1}, c {__prefix__")
 
 (defn- safe-read-context-string [^String context]
-  (try (-> context
-           (.replace "{" "(compliment-hashmap ")
-           (.replace "}" ")")
-           read-string
-           restore-map-literals)
-       (catch Exception ex nil)))
+  (or (try-read-replacing-maps context)
+      (dumb-read-form context)))
 
 (def ^{:doc "Stores the last completion context."
        :private true}

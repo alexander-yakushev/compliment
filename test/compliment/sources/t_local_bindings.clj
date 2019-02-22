@@ -85,6 +85,12 @@
                                                         __prefix__))))))
     => (just ["afunction" "arg1" "arg2" "foo"] :in-any-order))
 
+  (fact "bindings will be completed even if the form is unfinished"
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         (#'ctx/safe-read-context-string
+                                          "(let [foo 42, [bar baz] 17, qux __prefix__"))))
+    => (just ["foo" "bar" "baz" "qux"] :in-any-order))
+
   (fact "source silently fails if context is malformed"
     (src/candidates "" *ns* "(let __prefix__)") => []
     (src/candidates "" *ns* "(let [() 1]__prefix__)") => []
