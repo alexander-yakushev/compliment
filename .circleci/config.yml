@@ -1,0 +1,55 @@
+version: 2
+jobs:
+  test-jdk8:
+    working_directory: ~/project
+    docker:
+      - image: clojure:openjdk-8-lein-2.9.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-{{ checksum "project.clj" }}
+      - run: lein test
+      - run: lein with-profile +1.8 test
+      - run: lein with-profile +1.9 test
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: project-{{ checksum "project.clj" }}
+
+  test-jdk11:
+    working_directory: ~/project
+    docker:
+      - image: clojure:openjdk-11-lein-2.9.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-{{ checksum "project.clj" }}
+      - run: lein test
+      - run: lein with-profile +1.8 test
+      - run: lein with-profile +1.9 test
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: project-{{ checksum "project.clj" }}
+
+  lint-and-coverage:
+    working_directory: ~/project
+    docker:
+      - image: clojure:openjdk-8-lein-2.9.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-{{ checksum "project.clj" }}
+      - run: lein eastwood
+      - run: lein coverage
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: project-{{ checksum "project.clj" }}
+workflows:
+  version: 2
+  run_all:
+    jobs:
+      - test-jdk8
+      - test-jdk11
+      - lint-and-coverage
