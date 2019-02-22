@@ -1,4 +1,4 @@
-(defproject compliment "0.3.8"
+(defproject compliment "0.3.9-SNAPSHOT"
   :description "The Clojure completion library you deserve"
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
@@ -7,12 +7,11 @@
                                   [criterium "0.4.4"]
                                   [cloverage "1.0.13"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "0.3.3"]
+                   :plugins [[jonase/eastwood "0.3.5"]
                              [lein-shell "0.5.0"]]
                    :eastwood {:namespaces [:source-paths]}
 
                    :aliases {"test" ["do" ["check"] ["test"]]
-                             ;; "test-all" ["do" ["check"] ["midje" ":filters" "-fullbench"]]
                              "bench" ["run" "-m" "compliment.t-benchmark" "true"]
                              "fullbench" ["run" "-m" "compliment.t-benchmark"]
                              "coverage" ["do" ["run" "-m" "compliment.t-coverage" "--coveralls"]
