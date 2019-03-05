@@ -217,3 +217,43 @@
                            (.endsWith file ".jar") (.endsWith file ".class")))]
         (if (.startsWith file File/separator)
           (.substring file 1) file)))))
+
+
+(defn as-sym [x]
+  (if x (symbol x)))
+
+(defn namespace-sym
+  "Return the namespace of a fully qualified symbol if possible.
+
+  It leaves the symbol untouched if not."
+  [sym]
+  (if-let [ns (and sym (namespace sym))]
+    (as-sym ns)
+    sym))
+
+(defn name-sym
+  "Return the name of a fully qualified symbol if possible.
+
+  It leaves the symbol untouched if not."
+  [sym]
+  (if-let [n (and sym (name sym))]
+    (as-sym n)
+    sym))
+
+(defn unquote-first
+  "Handles some weird double-quoting in the analyzer"
+  [form]
+  (if (= (first form) 'quote)
+    (first (rest form))
+    form))
+
+(defn normalize-arglists
+  "Take metadata arglists and normalize them.
+
+  Normalization being mainly removing the quote of the first element and
+  wrapping in a list."
+  [arglists]
+  (some->> arglists
+           (unquote-first)
+           (map pr-str)
+           (apply list)))

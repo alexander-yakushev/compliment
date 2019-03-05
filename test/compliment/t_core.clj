@@ -25,6 +25,10 @@
     (strip-tags (core/completions "core/doc" {:ns (find-ns 'compliment.t-core)}))
     => (just ["core/documentation"]))
 
+  (fact "ClojureScript default candidates should come from cljs.core"
+    (core/completions "" {:sources [:compliment.sources.cljs/clojurescript]})
+    => (checker (fn [cs] (every? #(= "cljs.core" (:ns %)) cs))))
+
   (fact "in case of non-existing namespace doesn't fail"
     (core/completions "redu" {:ns nil}) => anything
     (core/completions "n-m" {:ns 'foo.bar.baz}) => anything)
