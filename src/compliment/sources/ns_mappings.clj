@@ -2,7 +2,7 @@
   "Completion for vars and classes in the current namespace."
   (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
-                                      *extra-metadata*]])
+                                      normalize-arglists *extra-metadata*]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -97,8 +97,8 @@
                                arglists :function
                                :else :var)
                    :ns (str (or (:ns var-meta) ns))}
-            (and arglists(:arglists *extra-metadata*))
-            (assoc :arglists (apply list (map pr-str arglists)))
+            (and arglists (:arglists *extra-metadata*))
+            (assoc :arglists (normalize-arglists arglists))
 
             (and doc (:doc *extra-metadata*))
             (assoc :doc (generate-docstring var-meta))))))))
