@@ -60,5 +60,5 @@
 
 ** License
 
-   Copyright © 2013-2018 Alexander Yakushev. Distributed under the Eclipse
+   Copyright © 2013-2019 Alexander Yakushev. Distributed under the Eclipse
    Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
