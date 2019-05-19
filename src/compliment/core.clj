@@ -69,10 +69,7 @@
             :or {sort-order :by-length}} options-map
            nspc (ensure-ns (:ns options-map))
            options-map (assoc options-map :ns nspc)
-           ctx (cache-context context)
-           sort-fn (if (= sort-order :by-name)
-                     (partial sort-by :candidate)
-                     (partial sort-by-length true))]
+           ctx (cache-context context)]
        (binding [*extra-metadata* extra-metadata]
          (let [candidate-fns (keep (fn [[_ src]]
                                      (when (:enabled src)
