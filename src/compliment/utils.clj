@@ -161,15 +161,15 @@
         mref-class (Class/forName "java.lang.module.ModuleReference")
         open-method (.getMethod mref-class "open" (into-array Class []))
 
-        classes (transient [])
-        consumer (reify Consumer (accept [_ v] (conj! classes v)))]
+        classes (volatile! (transient []))
+        consumer (reify Consumer (accept [_ v] (vswap! classes conj! v)))]
     (doseq [mref mrefs
             :let [mrdr (.invoke open-method mref (object-array 0))
                   ^java.util.stream.Stream stream (.list mrdr)]]
       (.forEach stream consumer)
       (.close mrdr))
 
-    (persistent! classes)))
+    (persistent! @classes)))
 
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,
