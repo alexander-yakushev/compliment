@@ -23,8 +23,7 @@
         (let [normal-binds (->> (keys binding-node)
                                 (remove keyword?)
                                 (mapcat parse-binding))
-              keys-binds (if-let [ks (:keys binding-node)]
-                           ks ())
+              keys-binds (mapcat binding-node [:keys :strs :syms])
               as-binds (if-let [as (:as binding-node)]
                         [as] ())]
           (concat normal-binds keys-binds as-binds))

@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+- Complete local bindings declared in `:strs` and `:syms` map destructuring.
+
 ### 0.3.9 (2019-02-23)
 
 - [#53](https://github.com/alexander-yakushev/compliment/issues/53) Make context

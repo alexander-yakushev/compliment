@@ -63,10 +63,10 @@
                                          '(let [foo 42,
                                                 [bar baz] lst
                                                 {a :a, {b :b :as c} :b, [d] :d} m
-                                                {:keys [key1 key2]} m2
+                                                {:keys [key1 key2] :strs [key3]} m2
                                                 [_ rec {urs :ive :as total}] val]
                                             __prefix__))))
-    => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2"
+    => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "key3"
               "rec" "urs" "total"] :in-any-order))
 
   (fact "in doseq and for :let bindings are supported"
