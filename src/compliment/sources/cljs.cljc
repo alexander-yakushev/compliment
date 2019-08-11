@@ -122,8 +122,8 @@
     (candidate-data name ns :macro meta extra-metadata)))
 
 (defn- core-macro-candidates
-  [env ns extra-metadata]
   "Returns candidate data for all cljs.core macros visible in ns."
+  [env ns extra-metadata]
   (macro-candidates (ana/core-macros env ns) extra-metadata))
 
 (defn- import-candidates

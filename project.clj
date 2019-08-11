@@ -1,4 +1,4 @@
-(defproject compliment "0.3.10-SNAPSHOT"
+(defproject compliment "0.4.0-SNAPSHOT"
   :description "The Clojure completion library you deserve"
   :url "https://github.com/alexander-yakushev/compliment"
   :license {:name "Eclipse Public License"
@@ -23,5 +23,5 @@
                                    [org.clojure/clojurescript "1.10.520" :scope "test"]]}
              :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]
                                    [org.clojure/clojurescript "1.10.520" :scope "test"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]
                                    [org.clojure/clojurescript "1.10.520" :scope "test"]]}})

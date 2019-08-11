@@ -8,9 +8,9 @@ jobs:
       - checkout
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
-      - run: lein test
       - run: lein with-profile +1.8 test
       - run: lein with-profile +1.9 test
+      - run: lein with-profile +1.10 test
       - save_cache:
           paths:
             - ~/.m2
@@ -24,9 +24,9 @@ jobs:
       - checkout
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
-      - run: lein test
       - run: lein with-profile +1.8 test
       - run: lein with-profile +1.9 test
+      - run: lein with-profile +1.10 test
       - save_cache:
           paths:
             - ~/.m2
@@ -41,7 +41,7 @@ jobs:
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
       - run: lein eastwood
-      - run: CIRCLECI=true lein coverage
+      - run: CIRCLECI=true lein with-profile +1.10 coverage
       - store_artifacts:
           path: target/coverage
       - save_cache:
