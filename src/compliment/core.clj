@@ -12,7 +12,8 @@
                                 keywords
                                 special-forms
                                 local-bindings
-                                resources)
+                                resources
+                                cljs)
             [compliment.sources :refer [all-sources]]
             [compliment.context :refer [cache-context]]
             [compliment.utils :refer [*extra-metadata*]]

@@ -288,7 +288,6 @@
        :else nil)
      (vars/generate-docstring))))
 
-;; TBD do we want to include it by default?
-;; (defsource ::all
-;;   :candidates #'candidates
-;;   :doc #'doc))
+(defsource ::cljs-completions
+  :candidates #'candidates
+  :doc #'doc)
