@@ -106,3 +106,17 @@
             docstr)
           (interpose "\n\n")
           join))))
+
+(def clj-sources
+  "Source keywords for Clojure completions."
+  [:compliment.sources.ns-mappings/ns-mappings
+   :compliment.sources.namespaces-and-classes/namespaces-and-classes
+   :compliment.sources.class-members/static-members
+   :compliment.sources.keywords/keywords
+   :compliment.sources.special-forms/literals
+   :compliment.sources.local-bindings/local-bindings
+   :compliment.sources.resources/resources])
+
+(def cljs-sources
+  "Source keywords for ClojureScript completions."
+  [:compliment.sources.cljs/cljs-completions])
