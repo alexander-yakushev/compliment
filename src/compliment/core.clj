@@ -52,14 +52,15 @@
         :else *ns*))
 
 (defn completions
-  "Returns a list of completions for the given prefix. Options map can contain
-  the following options:
-  - :ns - namespace where completion is initiated;
-  - :context - code form around the prefix;
-  - :sort-order (either :by-length or :by-name);
-  - :plain-candidates - if true, returns plain strings instead of maps;
-  - :extra-metadata - set of extra fields to add to the maps;
-  - :sources - list of source keywords to use."
+  "Returns a list of completions for the given prefix.
+
+  Options map can contain the following options:
+   - :ns - namespace where completion is initiated;
+   - :context - code form around the prefix;
+   - :sort-order (either :by-length or :by-name);
+   - :plain-candidates - if true, returns plain strings instead of maps;
+   - :extra-metadata - set of extra fields to add to the maps;
+   - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
   ([prefix options-map]
@@ -93,16 +94,24 @@
            (doall cands)))))))
 
 (defn documentation
-  "Returns a documentation string that describes the given symbol."
+  "Returns a documentation string that describes the given symbol.
+
+  Options map can contain the following options:
+   - :sources - list of source keywords to use."
   ([symbol-str]
    (documentation symbol-str *ns*))
   ([symbol-str ns]
-   (if (empty? symbol-str)
-     ""
-     (->> (for [[_ {:keys [doc enabled]}] (all-sources)
-                :when enabled
-                :let [docstr (doc symbol-str (ensure-ns ns))]
-                :when docstr]
-            docstr)
-          (interpose "\n\n")
-          join))))
+   (documentation symbol-str *ns* nil))
+  ([symbol-str ns options-map]
+   (let [{:keys [sources]} options-map]
+     (if (empty? symbol-str)
+       ""
+       (->> (for [[_ {:keys [doc enabled]}] (if sources
+                                              (all-sources sources)
+                                              (all-sources))
+                  :when enabled
+                  :let [docstr (doc symbol-str (ensure-ns ns))]
+                  :when docstr]
+              docstr)
+            (interpose "\n\n")
+            join)))))
