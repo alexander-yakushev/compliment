@@ -267,7 +267,10 @@
 
 (defn candidates
   "Returns a sequence of candidate data for completions matching the given
-  prefix string and options in the ClojureScript compiler env."
+  prefix string and options.
+
+  It requires the compliment.sources.cljs/*compiler-env* var to be dynamically
+  bound to the ClojureScript compiler env."
   [prefix ns context]
   (let [context-ns (try (ns-name ns) (catch Exception _ nil))]
     (->> (potential-candidates *compiler-env* context-ns prefix *extra-metadata*)
