@@ -1,8 +1,7 @@
 (ns compliment.sources.cljs
   "Standalone auto-complete library based on cljs analyzer state"
   (:refer-clojure :exclude [meta])
-  (:require [clojure.pprint :as pprint]
-            [clojure.set :as set]
+  (:require [clojure.set :as set]
             [compliment.sources :refer [defsource]]
             [compliment.sources.cljs.analysis :as ana]
             [compliment.sources.ns-mappings :as vars]
