@@ -9,7 +9,6 @@
                                   [fudje "0.9.7"]]
                    :plugins [[jonase/eastwood "0.3.5"]
                              [lein-shell "0.5.0"]]
-                   :resource-paths ["test-resources"]
                    :eastwood {:namespaces [:source-paths]}
 
                    :aliases {"test" ["do" ["check"] ["test"]]
@@ -19,9 +18,6 @@
                                          ["shell" "curl" "-F"
                                           "json_file=@target/coverage/coveralls.json"
                                           "https://coveralls.io/api/v1/jobs"]]}}
-             :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]
-                                   [org.clojure/clojurescript "1.10.520" :scope "test"]]}
-             :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]
-                                   [org.clojure/clojurescript "1.10.520" :scope "test"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]
-                                   [org.clojure/clojurescript "1.10.520" :scope "test"]]}})
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}})
