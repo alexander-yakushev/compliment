@@ -4,6 +4,10 @@
            (java.util.jar JarFile JarEntry)
            java.util.function.Consumer))
 
+;; Disable reflection warnings in this file because we must use reflection to
+;; support both JDK8 and JDK9+.
+(set! *warn-on-reflection* false)
+
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
   candidates they should attach . Should be a set of keywords."
