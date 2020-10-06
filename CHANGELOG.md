@@ -2,6 +2,14 @@
 
 ### master (unreleased)
 
+### 0.3.11 (2020-10-06)
+
+- Silence reflection Complete local bindings declared in `:strs` and `:syms` map destructuring.
+- [#75](https://github.com/alexander-yakushev/compliment/issues/75) Suppress
+  reflection warnings in JDK9-related code.
+
+### 0.3.10 (2020-01-18)
+
 - Complete local bindings declared in `:strs` and `:syms` map destructuring.
 - [#71](https://github.com/alexander-yakushev/compliment/issues/71) Allow to
   explicitly filter sources when calling `compliment.core/documentation`.
