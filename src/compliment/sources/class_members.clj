@@ -86,7 +86,7 @@
                     (:tag (meta form))
                     ;; ...or a tag somewhere in local scope. Note how getting
                     ;; an element from a set can return itself but with meta.
-                    (:tag (meta (get (set (bindings-from-context context)) form))))]
+                    (:tag (meta (get (set (bindings-from-context context ns)) form))))]
         ;; We have a tag - try to resolve the class from it.
         (resolve-class ns tag)
         ;; Otherwise, try to resolve symbol to a Var.

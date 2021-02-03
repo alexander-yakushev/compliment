@@ -105,6 +105,12 @@
   Returns a map from distinct items in coll to the number of times
   they appear.\n"}])
 
+  (defn should-appear [])
+  (defn ^:completion/hide shouldnt-appear [])
+  (fact "when :completion/hide true metadata is present, don't suggest"
+    (strip-tags (src/candidates "should" (-ns) nil))
+    => (just ["should-appear"]))
+
   (fact "inside (ns ...) vars are looked up only from :used namespace"
     (strip-tags
      (src/candidates "ins-" (-ns)
