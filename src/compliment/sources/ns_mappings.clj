@@ -83,7 +83,8 @@
       (for [[var-sym var] vars
             :let [var-name (name var-sym)
                   {:keys [arglists doc] :as var-meta} (meta var)]
-            :when (dash-matches? prefix var-name)]
+            :when (and (dash-matches? prefix var-name)
+                       (not (:completion/hidden var-meta)))]
         (if (= (type var) Class)
           {:candidate var-name, :type :class,
            :package (when-let [pkg (.getPackage ^Class var)]
