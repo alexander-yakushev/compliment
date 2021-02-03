@@ -5,7 +5,10 @@
             [compliment.context :as ctx]
             [compliment.t-helpers :refer :all]))
 
+(defn- -ns [] (find-ns 'compliment.sources.t-local-bindings))
+
 (deftest local-bindings
+  (defmacro ^{:completion/locals :let} like-let [& _])
   (fact "local bindings are looked for in the context inside let-like forms"
     (src/candidates "" *ns* (ctx/parse-context '(let [a 1, b 2] __prefix__)))
     => (just [{:candidate "a", :type :local} {:candidate "b", :type :local}] :in-any-order)
@@ -28,11 +31,21 @@
     (strip-tags (src/candidates "" *ns* (ctx/parse-context
                                          '(dotimes [i 10]
                                             __prefix__))))
+    => (just ["i"])
+
+    (strip-tags (src/candidates "" (-ns) (ctx/parse-context
+                                          '(like-let [i 10]
+                                                     __prefix__))))
     => (just ["i"]))
 
+  (defmacro ^{:completion/locals :defn} like-defn [& _])
   (fact "inside defn and defmacro forms the name and the arglist is returned"
     (strip-tags (src/candidates "" *ns* (ctx/parse-context
                                          '(defmacro amacro [bindings & body] __prefix__))))
+    => (just ["amacro" "bindings" "body"] :in-any-order)
+
+    (strip-tags (src/candidates "" (-ns) (ctx/parse-context
+                                          '(like-defn amacro [bindings & body] __prefix__))))
     => (just ["amacro" "bindings" "body"] :in-any-order)
 
     (strip-tags (src/candidates "" *ns* (ctx/parse-context
@@ -46,10 +59,16 @@
                                             ([arg1 arg2] (do-stuff __prefix__))))))
     => (just ["multiarg-fn" "arg" "arg1" "arg2"] :in-any-order))
 
+  (defmacro ^{:completion/locals :letfn} like-letfn [& _])
   (fact "letfn is supported"
     (strip-tags (src/candidates "" *ns* (ctx/parse-context
                                          '(letfn [(local-fn [foo bar & rest] __prefix__)
                                                   (f-2 ([[a b]] a) ([c] c))]))))
+    => (just ["local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"] :in-any-order)
+
+    (strip-tags (src/candidates "" (-ns) (ctx/parse-context
+                                          '(like-letfn [(local-fn [foo bar & rest] __prefix__)
+                                                        (f-2 ([[a b]] a) ([c] c))]))))
     => (just ["local-fn" "foo" "bar" "rest" "f-2" "a" "b" "c"] :in-any-order))
 
   (fact "as-> is supported"
@@ -69,6 +88,7 @@
     => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "key3"
               "rec" "urs" "total"] :in-any-order))
 
+  (defmacro ^{:completion/locals :doseq} like-doseq [& _])
   (fact "in doseq and for :let bindings are supported"
     (strip-tags (src/candidates "" *ns* (ctx/parse-context
                                          '(doseq [a b
@@ -76,6 +96,14 @@
                                                   {:keys [d]} e
                                                   :let [{g :g} f, [h i] j]]
                                             __prefix__))))
+    => (just ["a" "c" "d" "g" "h" "i"] :in-any-order)
+
+    (strip-tags (src/candidates "" (-ns) (ctx/parse-context
+                                          '(like-doseq [a b
+                                                        :let [c (first a)]
+                                                        {:keys [d]} e
+                                                        :let [{g :g} f, [h i] j]]
+                                                       __prefix__))))
     => (just ["a" "c" "d" "g" "h" "i"] :in-any-order))
 
   (fact "bindings are scanned recursively"

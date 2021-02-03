@@ -24,9 +24,9 @@
                                 (remove keyword?)
                                 (mapcat parse-binding))
               keys-binds (mapcat binding-node [:keys :strs :syms])
-              as-binds (if-let [as (:as binding-node)]
-                        [as] ())]
-          (concat normal-binds keys-binds as-binds))
+              as-bind (:as binding-node)]
+          (cond-> (concat normal-binds keys-binds)
+            as-bind (conj as-bind)))
 
         (not (#{'& '_} binding-node))
         [binding-node]))
@@ -50,24 +50,28 @@
 (defn extract-local-bindings
   "When given a form that has a binding vector traverses that binding vector and
   returns the list of all local bindings."
-  [form]
+  [form ns]
   (when (list? form)
-    (cond (let-like-forms (first form))
-          (mapcat parse-binding (take-nth 2 (second form)))
+    (let [sym (first form)
+          locals-meta (when (symbol? sym)
+                        (:completion/locals (meta (ns-resolve ns sym))))]
+      (cond (or (let-like-forms sym) (= locals-meta :let))
+            (mapcat parse-binding (take-nth 2 (second form)))
 
-          (defn-like-forms (first form)) (parse-fn-body (rest form))
+            (or (defn-like-forms sym) (= locals-meta :defn))
+            (parse-fn-body (rest form))
 
-          (letfn-like-forms (first form))
-          (mapcat parse-fn-body (second form))
+            (or (letfn-like-forms sym) (= locals-meta :letfn))
+            (mapcat parse-fn-body (second form))
 
-          (doseq-like-forms (first form))
-          (->> (partition 2 (second form))
-               (mapcat (fn [[left right]]
-                         (if (= left :let)
-                           (take-nth 2 right) [left])))
-               (mapcat parse-binding))
+            (or (doseq-like-forms sym) (= locals-meta :doseq))
+            (->> (partition 2 (second form))
+                 (mapcat (fn [[left right]]
+                           (if (= left :let)
+                             (take-nth 2 right) [left])))
+                 (mapcat parse-binding))
 
-          (= 'as-> (first form)) [(nth form 2)])))
+            (= sym 'as->) [(nth form 2)]))))
 
 (defn- distinct-preserve-tags
   "Like `distinct` but keeps symbols that have type tag with a higher priority."
@@ -83,17 +87,17 @@
 
 (defn bindings-from-context
   "Returns all local bindings that are established inside the given context."
-  [ctx]
-  (try (->> (mapcat (comp extract-local-bindings :form) ctx)
+  [ctx ns]
+  (try (->> (mapcat #(extract-local-bindings (:form %) ns) ctx)
             (filter symbol?)
             distinct-preserve-tags)
        (catch Exception ex ())))
 
 (defn candidates
   "Returns a list of local bindings inside the context that match prefix."
-  [prefix _ context]
+  [prefix ns context]
   (when (var-symbol? prefix)
-    (for [binding (bindings-from-context context)
+    (for [binding (bindings-from-context context ns)
           :let [binding (name binding)]
           :when (dash-matches? prefix binding)]
       {:candidate binding, :type :local})))
