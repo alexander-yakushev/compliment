@@ -196,6 +196,8 @@
              (.. (if (.startsWith file File/separator)
                    (.substring file 1) file)
                  (replace ".class" "") (replace File/separator ".")
+                 ;; Address the issue #79 , on Windows, for prefix such
+                 ;; as "java.util.", the list of candidates was empty.
                  (replace "/" ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
