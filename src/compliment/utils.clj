@@ -195,7 +195,8 @@
                             (not (.contains file "$")))]
              (.. (if (.startsWith file File/separator)
                    (.substring file 1) file)
-                 (replace ".class" "") (replace File/separator ".")))
+                 (replace ".class" "") (replace File/separator ".")
+                 (replace "/" ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
 (defn namespaces-on-classpath
