@@ -13,6 +13,12 @@
   candidates they should attach . Should be a set of keywords."
   nil)
 
+(def resource-separator
+  "The path separator used within resources and .jar files.
+
+Note that should always have the same value, regardless of OS."
+  "/")
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."
@@ -198,7 +204,7 @@
                  (replace ".class" "")
                  ;; Address the issue #79 , on Windows, for prefix such
                  ;; as "java.util.", the list of candidates was empty.
-                 (replace "/" ".")))
+                 (replace resource-separator ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
 (defn namespaces-on-classpath
@@ -211,7 +217,7 @@
                             (not (.startsWith file "META-INF")))
                  :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
                  :when nsname]
-             (.. nsname (replace "/" ".") (replace "_" "-")))))))
+             (.. nsname (replace resource-separator ".") (replace "_" "-")))))))
 
 (defn project-resources
   "Returns a list of all non-code files in the current project."
@@ -225,4 +231,4 @@
         ;; resource pathes always use "/" regardless of platform
         (.. (if (.startsWith file File/separator)
               (.substring file 1) file)
-            (replace File/separator "/"))))))
+            (replace File/separator resource-separator))))))
