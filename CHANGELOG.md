@@ -2,6 +2,13 @@
 
 ### master (unreleased)
 
+### 0.3.12 (2021-10-21)
+
+- [#77](https://github.com/alexander-yakushev/compliment/issues/77) Add ability
+  to tune Compliment behavior with var's metadata
+- [#79](https://github.com/alexander-yakushev/compliment/issues/79) Fix
+  completion of Java packages/classes on Windows.
+
 ### 0.3.11 (2020-10-06)
 
 - Silence reflection Complete local bindings declared in `:strs` and `:syms` map destructuring.

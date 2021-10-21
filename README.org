@@ -50,6 +50,9 @@
    [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios
    Compliment supports so far.
 
+   You can advise Compliment to provide special treatment for certain Vars by
+   attaching metadata to them. See [[https://github.com/alexander-yakushev/compliment/wiki/Metadata][Metadata]] page for details.
+
 ** For developers
 
    See the test files to get an idea how public API and completion sources work.
