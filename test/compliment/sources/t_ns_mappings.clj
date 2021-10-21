@@ -101,9 +101,11 @@
       (doall (src/candidates "freq" (-ns) nil)))
     => [{:candidate "frequencies", :type :function, :ns "clojure.core"
          :arglists ["[coll]"]
-         :doc "clojure.core/frequencies\n([coll])
-  Returns a map from distinct items in coll to the number of times
-  they appear.\n"}])
+         :doc (clojure.string/join
+               (System/lineSeparator)
+               ["clojure.core/frequencies" "([coll])"
+                "  Returns a map from distinct items in coll to the number of times
+  they appear." ""])}])
 
   (fact "inside (ns ...) vars are looked up only from :used namespace"
     (strip-tags
