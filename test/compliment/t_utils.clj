@@ -42,3 +42,13 @@
   (require '[compliment.context :as user])
   (fact "can resolve a namespace aliased as user"
     (resolve-namespace 'user *ns*) => (find-ns 'compliment.context)))
+
+(deftest classes-on-classpath-test
+  (let [all-classes (->> (classes-on-classpath)
+                         (vals)
+                         (reduce into)
+                         (set))]
+    (is (< 3000 (count all-classes)))
+    (is (contains? all-classes "java.lang.Thread"))
+    (is (contains? all-classes "java.io.File"))
+    (is (contains? all-classes "java.nio.channels.FileChannel"))))
