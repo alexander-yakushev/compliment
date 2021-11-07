@@ -7,9 +7,14 @@
                                   [criterium "0.4.4"]
                                   [cloverage "1.0.13"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "0.3.5"]
+                   :plugins [[jonase/eastwood "1.2.3"]
                              [lein-shell "0.5.0"]]
-                   :eastwood {:namespaces [:source-paths]}
+                   :eastwood {:ignored-faults {:reflection {compliment.utils true}
+                                               :bad-arglists {compliment.sources.t-local-bindings true}
+                                               :def-in-def {compliment.sources.t-class-members true
+                                                            compliment.sources.t-ns-mappings true
+                                                            compliment.t-core true
+                                                            compliment.sources.t-local-bindings true}}}
 
                    :aliases {"test" ["do" ["check"] ["test"]]
                              "bench" ["run" "-m" "compliment.t-benchmark" "true"]

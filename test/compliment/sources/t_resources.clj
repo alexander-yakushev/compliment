@@ -20,6 +20,6 @@
 
   (fact "there are docs for resources too"
     (src/doc "META-INF/maven/compliment/compliment/pom.properties" *ns*)
-    => (checker #(.startsWith % "File type: application/unknown, size:"))
+    => (checker #(.startsWith ^String % "File type: application/unknown, size:"))
 
     (src/doc "not-a-resource" *ns*) => nil))
