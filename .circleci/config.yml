@@ -32,6 +32,22 @@ jobs:
             - ~/.m2
           key: project-{{ checksum "project.clj" }}
 
+  test-jdk17:
+    working_directory: ~/project
+    docker:
+      - image: circleci/clojure:openjdk-17-lein-2.9.5-buster
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-{{ checksum "project.clj" }}
+      - run: lein with-profile +1.8 test
+      - run: lein with-profile +1.9 test
+      - run: lein with-profile +1.10 test
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: project-{{ checksum "project.clj" }}
+
   lint-and-coverage:
     working_directory: ~/project
     docker:
@@ -54,4 +70,5 @@ workflows:
     jobs:
       - test-jdk8
       - test-jdk11
+      - test-jdk17
       - lint-and-coverage
