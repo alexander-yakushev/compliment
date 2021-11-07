@@ -13,7 +13,7 @@
   candidates they should attach . Should be a set of keywords."
   nil)
 
-(def resource-separator
+(def ^String resource-separator
   "The path separator used within resources and .jar files.
 
 Note that should always have the same value, regardless of OS."
