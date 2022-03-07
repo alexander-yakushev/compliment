@@ -29,19 +29,19 @@
     => (just ["compliment.core/completions"])
 
     (strip-tags (core/completions "'compliment.core/co"))
-    => (just ["compliment.core/completions"])
+    => (just ["'compliment.core/completions"])
 
     (strip-tags (core/completions "#'compliment.core/co"))
-    => (just ["compliment.core/completions"])
+    => (just ["#'compliment.core/completions"])
 
     (strip-tags (core/completions "core/doc" {:ns (find-ns 'compliment.t-core)}))
     => (just ["core/documentation"])
 
     (strip-tags (core/completions "'core/doc" {:ns (find-ns 'compliment.t-core)}))
-    => (just ["core/documentation"])
+    => (just ["'core/documentation"])
 
     (strip-tags (core/completions "#'core/doc" {:ns (find-ns 'compliment.t-core)}))
-    => (just ["core/documentation"]))
+    => (just ["#'core/documentation"]))
 
   (fact "in case of non-existing namespace doesn't fail"
     (core/completions "redu" {:ns nil}) => anything

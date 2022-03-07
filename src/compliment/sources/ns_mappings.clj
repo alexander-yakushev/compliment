@@ -74,7 +74,9 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [prefix (-> prefix
+  (let [quoted-prefix (or (re-find #"^#'" prefix)
+                          (re-find #"^'" prefix))
+        prefix (-> prefix
                    ;; consider var-quote and quote to express the same as the non-quoted equivalent,
                    ;; since that is more useful than offering no completions:
                    (string/replace-first #"^#'" "")
@@ -98,7 +100,7 @@
                         (.getName ^Package pkg))}
 
             (cond-> {:candidate (if scope
-                                  (str scope-name "/" var-name)
+                                  (str quoted-prefix scope-name "/" var-name)
                                   var-name)
                      :type (cond (:macro var-meta) :macro
                                  arglists :function
