@@ -13,6 +13,12 @@
     (strip-tags (core/completions "redu"))
     => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
 
+    (strip-tags (core/completions "'redu"))
+    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+
+    (strip-tags (core/completions "#'redu"))
+    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+
     (strip-tags (core/completions "fac" {:ns (find-ns 'fudje.sweet)}))
     => (just ["fact" "facts"] :in-any-order)
 
@@ -22,7 +28,19 @@
     (strip-tags (core/completions "compliment.core/co"))
     => (just ["compliment.core/completions"])
 
+    (strip-tags (core/completions "'compliment.core/co"))
+    => (just ["compliment.core/completions"])
+
+    (strip-tags (core/completions "#'compliment.core/co"))
+    => (just ["compliment.core/completions"])
+
     (strip-tags (core/completions "core/doc" {:ns (find-ns 'compliment.t-core)}))
+    => (just ["core/documentation"])
+
+    (strip-tags (core/completions "'core/doc" {:ns (find-ns 'compliment.t-core)}))
+    => (just ["core/documentation"])
+
+    (strip-tags (core/completions "#'core/doc" {:ns (find-ns 'compliment.t-core)}))
     => (just ["core/documentation"]))
 
   (fact "in case of non-existing namespace doesn't fail"

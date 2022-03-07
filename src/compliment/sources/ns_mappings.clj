@@ -1,6 +1,7 @@
 (ns compliment.sources.ns-mappings
   "Completion for vars and classes in the current namespace."
-  (:require [compliment.sources :refer [defsource]]
+  (:require [clojure.string :as string]
+            [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
                                       *extra-metadata*]])
   (:import java.io.StringWriter))
@@ -73,36 +74,41 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (when (var-symbol? prefix)
-    (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
-          ns-form-namespace (try-get-ns-from-context context)
-          vars (cond
-                 scope (ns-publics scope)
-                 ns-form-namespace (ns-publics ns-form-namespace)
-                 :else (ns-map ns))]
-      (for [[var-sym var] vars
-            :let [var-name (name var-sym)
-                  {:keys [arglists doc] :as var-meta} (meta var)]
-            :when (and (dash-matches? prefix var-name)
-                       (not (:completion/hidden var-meta)))]
-        (if (= (type var) Class)
-          {:candidate var-name, :type :class,
-           :package (when-let [pkg (.getPackage ^Class var)]
-                      ;; Some classes don't have a package
-                      (.getName ^Package pkg))}
+  (let [prefix (-> prefix
+                   ;; consider var-quote and quote to express the same as the non-quoted equivalent,
+                   ;; since that is more useful than offering no completions:
+                   (string/replace-first #"^#'" "")
+                   (string/replace-first #"^'" ""))]
+    (when (var-symbol? prefix)
+      (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
+            ns-form-namespace (try-get-ns-from-context context)
+            vars (cond
+                   scope (ns-publics scope)
+                   ns-form-namespace (ns-publics ns-form-namespace)
+                   :else (ns-map ns))]
+        (for [[var-sym var] vars
+              :let [var-name (name var-sym)
+                    {:keys [arglists doc] :as var-meta} (meta var)]
+              :when (and (dash-matches? prefix var-name)
+                         (not (:completion/hidden var-meta)))]
+          (if (= (type var) Class)
+            {:candidate var-name, :type :class,
+             :package (when-let [pkg (.getPackage ^Class var)]
+                        ;; Some classes don't have a package
+                        (.getName ^Package pkg))}
 
-          (cond-> {:candidate (if scope
-                                (str scope-name "/" var-name)
-                                var-name)
-                   :type (cond (:macro var-meta) :macro
-                               arglists :function
-                               :else :var)
-                   :ns (str (or (:ns var-meta) ns))}
-            (and arglists(:arglists *extra-metadata*))
-            (assoc :arglists (apply list (map pr-str arglists)))
+            (cond-> {:candidate (if scope
+                                  (str scope-name "/" var-name)
+                                  var-name)
+                     :type (cond (:macro var-meta) :macro
+                                 arglists :function
+                                 :else :var)
+                     :ns (str (or (:ns var-meta) ns))}
+              (and arglists(:arglists *extra-metadata*))
+              (assoc :arglists (apply list (map pr-str arglists)))
 
-            (and doc (:doc *extra-metadata*))
-            (assoc :doc (generate-docstring var-meta))))))))
+              (and doc (:doc *extra-metadata*))
+              (assoc :doc (generate-docstring var-meta)))))))))
 
 (defn doc
   "Documentation function for this sources' completions."
