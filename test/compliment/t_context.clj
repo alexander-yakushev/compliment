@@ -12,6 +12,14 @@
     (is (= '(__prefix__ foo [bar] :baz "with strings")
            (#'ctx/safe-read-context-string "(__prefix__ foo [bar] :baz \"with strings\")"))))
 
+  (testing "aliased namespace keyword is replaced to non-aliased namespace keyword"
+    (is (= '(__prefix__ foo [bar] :my-ns/baz "with strings")
+           (#'ctx/safe-read-context-string "(__prefix__ foo [bar] ::my-ns/baz \"with strings\")")))
+    (is (= '(__prefix__ foo [bar] :my.full.namespace/baz "with strings")
+           (do
+             (alias 'my-ns (create-ns 'my.full.namespace))
+             (#'ctx/safe-read-context-string "(__prefix__ foo [bar] ::my-ns/baz \"with strings\")")))))
+
   (testing "maps with odd number of elements are also handled"
     (is (= '{:foo bar, __prefix__ nil}
            (#'ctx/safe-read-context-string "{:foo bar __prefix__}")))))

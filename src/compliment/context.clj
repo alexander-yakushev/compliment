@@ -15,11 +15,14 @@
 
 (defn- try-read-replacing-maps [s]
   (try (binding [*read-eval* false]
-         (-> s
-             (str/replace "{" "(compliment-hashmap ")
-             (str/replace "}" ")")
-             read-string
-             restore-map-literals))
+         (let [ns-aliases (ns-aliases *ns*)]
+           (-> s
+               (str/replace "{" "(compliment-hashmap ")
+               (str/replace "}" ")")
+               (str/replace #"::([-\w]+)/" (fn [[_ kw-ns]]
+                                             (str ":" (get ns-aliases (symbol kw-ns) kw-ns) "/")))
+               read-string
+               restore-map-literals)))
        (catch Exception ex)))
 
 (defn- dumb-read-form
