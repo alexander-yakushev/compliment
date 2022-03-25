@@ -87,10 +87,14 @@
                                          '(let [foo 42,
                                                 [bar baz] lst
                                                 {a :a, {b :b :as c} :b, [d] :d} m
-                                                {:keys [key1 key2] :strs [key3]} m2
+                                                {:keys [key1 key2] :strs [key3] :syms [key4]} m2
+                                                {:keys [:a/key5 :b/key6 ::src/key7 ::src/key8]} m3
+                                                {:c/keys [key9 key10] :c/syms [key11]} m4
+                                                {::src/keys [key12 key13] ::src/syms [key14]} m5
                                                 [_ rec {urs :ive :as total}] val]
                                             __prefix__))))
-    => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "key3"
+    => (just ["foo" "bar" "baz" "a" "b" "c" "d" "key1" "key2" "key3" "key4" "key5"
+              "key6" "key7" "key8" "key9" "key10" "key11" "key12" "key13" "key14"
               "rec" "urs" "total"] :in-any-order))
 
   (defmacro ^{:completion/locals :doseq} like-doseq [& _])
