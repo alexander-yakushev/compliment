@@ -12,6 +12,10 @@
 
 (def letfn-like-forms '#{letfn})
 
+(def destructuring-keys #{:keys :strs :syms})
+
+(def destructuring-key-names (into #{} (map name destructuring-keys)))
+
 (defn parse-binding
   "Given a binding node returns the list of local bindings introduced by that
   node. Handles vector and map destructuring."
@@ -23,7 +27,12 @@
         (let [normal-binds (->> (keys binding-node)
                                 (remove keyword?)
                                 (mapcat parse-binding))
-              keys-binds (mapcat binding-node [:keys :strs :syms])
+              keys-binds (->> binding-node
+                              (mapcat (fn [[k v]]
+                                        (when (or (destructuring-keys k)
+                                                  (and (keyword? k) (destructuring-key-names (name k))))
+                                          v)))
+                              (map #(if (keyword? %) (symbol (name %)) %)))
               as-bind (:as binding-node)]
           (cond-> (concat normal-binds keys-binds)
             as-bind (conj as-bind)))
