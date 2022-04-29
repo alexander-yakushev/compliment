@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [#84](https://github.com/alexander-yakushev/compliment/pull/84) Enable
+  locals completion for `defmethod` form
+
 ### 0.3.12 (2021-10-21)
 
 - [#77](https://github.com/alexander-yakushev/compliment/issues/77) Add ability
