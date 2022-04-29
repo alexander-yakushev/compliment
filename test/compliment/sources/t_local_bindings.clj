@@ -57,7 +57,12 @@
                                          '(defn multiarg-fn "docstring"
                                             ([arg] (multiarg-fn arg nil))
                                             ([arg1 arg2] (do-stuff __prefix__))))))
-    => (just ["multiarg-fn" "arg" "arg1" "arg2"] :in-any-order))
+    => (just ["multiarg-fn" "arg" "arg1" "arg2"] :in-any-order)
+
+    (strip-tags (src/candidates "" *ns* (ctx/parse-context
+                                         '(defmethod multimethod "dispatch-val"
+                                            [foo bar & rest] __prefix__))))
+    => (just ["multimethod" "foo" "bar" "rest"]))
 
   (defmacro ^{:completion/locals :letfn} like-letfn [& _])
   (fact "letfn is supported"

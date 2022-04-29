@@ -6,7 +6,7 @@
 (def let-like-forms '#{let if-let when-let if-some when-some loop with-open
                        dotimes with-local-vars})
 
-(def defn-like-forms '#{defn defn- fn defmacro})
+(def defn-like-forms '#{defn defn- fn defmacro defmethod})
 
 (def doseq-like-forms '#{doseq for})
 
