@@ -2,10 +2,13 @@
 
 ### master (unreleased)
 
+- [#82](https://github.com/alexander-yakushev/compliment/pull/82): Offer completions for quoted var-quoted symbols.
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Complete
   local bindings declared in map destructuring with namespaced keywords.
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Fix completion
   of local bindings when a context contain namespaced keywords.
+- [#84](https://github.com/alexander-yakushev/compliment/pull/84): Enable
+  locals completion for `defmethod` form.
 
 ### 0.3.12 (2021-10-21)
 
