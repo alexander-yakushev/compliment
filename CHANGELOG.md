@@ -2,6 +2,7 @@
 
 ### master (unreleased)
 
+- [#82](https://github.com/alexander-yakushev/compliment/pull/82): Offer completions for quoted var-quoted symbols.
 - [#84](https://github.com/alexander-yakushev/compliment/pull/84): Enable
   locals completion for `defmethod` form.
 
