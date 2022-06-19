@@ -19,6 +19,8 @@
             [clojure.string :refer [join]])
   (:import java.util.Comparator))
 
+;; TODO: Consider removing/deprecating this, as we've abandoned the efforts
+;; to use compliment in REPLy.
 (def all-files
   "List of all Compliment files in an order they should be loaded. This is
   required by REPLy."
