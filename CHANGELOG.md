@@ -8,7 +8,7 @@
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Complete
   local bindings declared in map destructuring with namespaced keywords.
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Fix completion
-  of local bindings when a context contain namespaced keywords.
+  of local bindings when a context contains namespaced keywords.
 - [#84](https://github.com/alexander-yakushev/compliment/pull/84): Enable
   locals completion for `defmethod` form.
 
