@@ -7,7 +7,8 @@
   Compliment is used as a completion backend in the following editors/IDEs:
 
   - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]] or, now deprecated, [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
-  - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
+  - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]] and [[https://liquidz.github.io/vim-iced/][vim-iced]]
+  - Visual Studio Code --- [[https://calva.io/][Calva]]
   - Neovim --- [[https://github.com/Olical/conjure][Conjure]]
   - Atom --- [[https://atom.io/packages/proto-repl][Proto REPL]] and [[https://atom.io/packages/chlorine][Chlorine]]
   - [[https://sekao.net/nightcode/][Nightcode]]
