@@ -37,7 +37,7 @@
    If you use vim-fireplace, or Atom, then you don't have to install
    anything at all --- Compliment will already be there for you. In case you are
    an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
-   [[https://github.com/expez/company-quickhelp][company-quickhelp]]. This [[https://cider.readthedocs.io/en/latest/code_completion/][guide]] will help you configure it.
+   [[https://github.com/expez/company-quickhelp][company-quickhelp]] for optimal results. This [[https://docs.cider.mx/cider/usage/code_completion.html][guide]] will help you configure it.
 
    If you need Compliment embedded directly into your program then add this to
    the =:dependencies=:
