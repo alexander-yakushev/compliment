@@ -8,11 +8,9 @@
 
   - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]] or, now deprecated, [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
   - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]] and [[https://liquidz.github.io/vim-iced/][vim-iced]]
-  - Visual Studio Code --- [[https://calva.io/][Calva]]
   - Neovim --- [[https://github.com/Olical/conjure][Conjure]]
+  - Visual Studio Code --- [[https://calva.io/][Calva]]
   - Atom --- [[https://atom.io/packages/proto-repl][Proto REPL]] and [[https://atom.io/packages/chlorine][Chlorine]]
-  - [[https://sekao.net/nightcode/][Nightcode]]
-  - [[https://sekao.net/nightlight/][Nightlight]]
   - @bhauman's [[https://github.com/bhauman/rebel-readline/][rebel-readline]]
 
   Also, I am so glad you came here. You look gorgeous today.
