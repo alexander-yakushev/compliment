@@ -1,6 +1,6 @@
 * Compliment [[https://circleci.com/gh/alexander-yakushev/compliment][https://img.shields.io/circleci/project/github/alexander-yakushev/compliment/master.svg]] [[https://coveralls.io/r/alexander-yakushev/compliment?branch=master][https://coveralls.io/repos/alexander-yakushev/compliment/badge.svg?branch=master]] [[https://clojars.org/compliment][https://versions.deps.co/alexander-yakushev/compliment/downloads.svg]] [[https://versions.deps.co/alexander-yakushev/compliment][https://versions.deps.co/images/up-to-date.svg]] [[CHANGELOG.md][https://img.shields.io/badge/-changelog-blue.svg]]
 
-  Compliment is an ultimate Clojure completion library. It provides a fast and
+  Compliment is the ultimate Clojure completion library. It provides a fast and
   smart solution to complete vars, namespaces, class members, keywords, locals.
   It also allows users to implement custom completion sources.
 
@@ -34,7 +34,7 @@
 
 ** Installation
 
-   If you use Nightcode, vim-fireplace, or Atom, then you don't have to install
+   If you use vim-fireplace, or Atom, then you don't have to install
    anything at all --- Compliment will already be there for you. In case you are
    an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
    [[https://github.com/expez/company-quickhelp][company-quickhelp]]. This [[https://cider.readthedocs.io/en/latest/code_completion/][guide]] will help you configure it.
@@ -50,16 +50,16 @@
    Compliment supports so far.
 
    You can advise Compliment to provide special treatment for certain Vars by
-   attaching metadata to them. See [[https://github.com/alexander-yakushev/compliment/wiki/Metadata][Metadata]] page for details.
+   attaching metadata to them. See the [[https://github.com/alexander-yakushev/compliment/wiki/Metadata][Metadata]] page for details.
 
 ** For developers
 
    See the test files to get an idea how public API and completion sources work.
 
-   To understand what is a context and how it works see [[https://github.com/alexander-yakushev/compliment/wiki/Context][Context]] wiki
+   To understand what is a context and how it works see the [[https://github.com/alexander-yakushev/compliment/wiki/Context][Context]] wiki
    page.
 
-   How to write your own sources is explained on [[https://github.com/alexander-yakushev/compliment/wiki/Custom-sources][Custom sources]] page.
+   How to write your own sources is explained on the [[https://github.com/alexander-yakushev/compliment/wiki/Custom-sources][Custom sources]] page.
 
 ** License
 
