@@ -17,6 +17,9 @@
   (try (binding [*read-eval* false]
          (let [ns-aliases (ns-aliases *ns*)]
            (-> s
+               ;; To avoid replacing '\{' and '\}' with '(compliment-hashmap ' and ')'
+               (str/replace "\\{" "(char 123)")
+               (str/replace "\\}" "(char 125)")
                (str/replace "{" "(compliment-hashmap ")
                (str/replace "}" ")")
                (str/replace #"::([-\w]+)/" (fn [[_ kw-ns]]

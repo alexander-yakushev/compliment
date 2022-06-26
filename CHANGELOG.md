@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [#87](https://github.com/alexander-yakushev/compliment/pull/87): Fix completion
+  of local bindings when a context contains '{' or '}' characters.
+
 ### 0.3.13 (2022-06-18)
 
 - [#82](https://github.com/alexander-yakushev/compliment/pull/82): Offer completions for quoted var-quoted symbols.
