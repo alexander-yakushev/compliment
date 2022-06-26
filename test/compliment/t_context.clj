@@ -20,6 +20,10 @@
              (alias 'my-ns (create-ns 'my.full.namespace))
              (#'ctx/safe-read-context-string "(__prefix__ foo [bar] ::my-ns/baz \"with strings\")")))))
 
+  (testing "'{' and '}' is replaced to '(char 123)' and '(char 125)' respectively"
+    (is (= '(__prefix__ foo [bar] (or (= bar (char 123)) (= bar (char 125))))
+           (#'ctx/safe-read-context-string "(__prefix__ foo [bar] (or (= bar \\{) (= bar \\}))))"))))
+
   (testing "maps with odd number of elements are also handled"
     (is (= '{:foo bar, __prefix__ nil}
            (#'ctx/safe-read-context-string "{:foo bar __prefix__}")))))
