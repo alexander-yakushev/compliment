@@ -7,7 +7,7 @@
 
 ### 0.3.13 (2022-06-18)
 
-- [#82](https://github.com/alexander-yakushev/compliment/pull/82): Offer completions for quoted var-quoted symbols.
+- [#82](https://github.com/alexander-yakushev/compliment/pull/82): Offer completions for quoted/var-quoted symbols.
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Complete
   local bindings declared in map destructuring with namespaced keywords.
 - [#83](https://github.com/alexander-yakushev/compliment/pull/83): Fix completion
