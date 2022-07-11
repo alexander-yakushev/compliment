@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.3.14 (2022-07-11)
+
 - [#87](https://github.com/alexander-yakushev/compliment/pull/87): Fix completion
   of local bindings when a context contains '{' or '}' characters.
 
