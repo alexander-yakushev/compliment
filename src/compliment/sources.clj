@@ -5,12 +5,23 @@
        :private true}
   sources (atom nil))
 
+(defn ^:private filter-vals [pred a-map]
+  (into {}
+        (map (fn [[k v]] (when (pred v)
+                           [k v])))
+        a-map))
+
 (defn all-sources
   "Returns the list of all completion sources, or the selected once specified by
-  `source-kws`."
+  `source-selector`.
+
+  `source-selector` is either a list of source keywords or a predicate function
+  operating over source map"
   ([] @sources)
-  ([source-kws]
-   (select-keys @sources source-kws)))
+  ([source-selector]
+   (if (fn? source-selector)
+     (filter-vals source-selector @sources)
+     (select-keys @sources source-selector))))
 
 (defn defsource
   "Defines a source with the given name and argument map. Map must
@@ -23,4 +34,4 @@
   namespace."
   [name & {:as kw-args}]
   {:pre [(every? kw-args [:candidates :doc])]}
-  (swap! sources assoc name (assoc kw-args :enabled true)))
+  (swap! sources assoc name (assoc kw-args :name name :enabled true)))

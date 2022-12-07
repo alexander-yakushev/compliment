@@ -100,6 +100,12 @@
                                         :ns 'compliment.t-core}))
     => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
 
+
+  (fact ":sources predicate can filter the sources to be used during completion"
+    (strip-tags (core/completions "cl" {:sources #(= :compliment.sources.ns-mappings/ns-mappings (:name %))
+                                        :ns 'compliment.t-core}))
+    => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
+
   (fact "different metadata is attached to candidates"
     (core/completions "bound" {}) =>
     (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}

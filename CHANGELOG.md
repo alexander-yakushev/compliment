@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- allow to filter sources considered in `compliment.core`'s `completions` and
+  `documentation` by providing a predicate function as the `:sources` option.
+
 ### 0.3.14 (2022-07-11)
 
 - [#87](https://github.com/alexander-yakushev/compliment/pull/87): Fix completion
