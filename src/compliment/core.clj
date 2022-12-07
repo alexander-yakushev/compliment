@@ -105,7 +105,7 @@
   ([symbol-str]
    (documentation symbol-str *ns*))
   ([symbol-str ns]
-   (documentation symbol-str *ns* nil))
+   (documentation symbol-str ns nil))
   ([symbol-str ns options-map]
    (let [{:keys [sources]} options-map]
      (if (empty? symbol-str)

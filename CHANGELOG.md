@@ -4,6 +4,7 @@
 
 - allow to filter sources considered in `compliment.core`'s `completions` and
   `documentation` by providing a predicate function as the `:sources` option.
+- properly thread the `ns` argument in the 2-arity version of `compliment.core/documentation`
 
 ### 0.3.14 (2022-07-11)
 
