@@ -213,9 +213,9 @@ Note that should always have the same value, regardless of OS."
   (let [classpath (classpath)]
     (cache-last-result ::namespaces-on-classpath classpath
       (set (for [^String file (all-files-on-classpath classpath)
-                 :when (and (.endsWith file ".clj")
+                 :when (and (or (.endsWith file ".clj") (.endsWith file ".cljs"))
                             (not (.startsWith file "META-INF")))
-                 :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
+                 :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.cljs?" file)]
                  :when nsname]
              (.. nsname (replace resource-separator ".") (replace "_" "-")))))))
 
@@ -226,7 +226,7 @@ Note that should always have the same value, regardless of OS."
     (cache-last-result ::project-resources classpath
       (for [path classpath
             ^String file (list-files path false)
-            :when (not (or (empty? file) (.endsWith file ".clj")
+            :when (not (or (empty? file) (.endsWith file ".clj") (.endsWith file ".cljs")
                            (.endsWith file ".jar") (.endsWith file ".class")))]
         ;; resource pathes always use "/" regardless of platform
         (.. (if (.startsWith file File/separator)
