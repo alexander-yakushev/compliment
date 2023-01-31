@@ -1,4 +1,4 @@
-* Compliment [[https://circleci.com/gh/alexander-yakushev/compliment][https://img.shields.io/circleci/project/github/alexander-yakushev/compliment/master.svg]] [[https://coveralls.io/r/alexander-yakushev/compliment?branch=master][https://coveralls.io/repos/alexander-yakushev/compliment/badge.svg?branch=master]] [[https://clojars.org/compliment][https://versions.deps.co/alexander-yakushev/compliment/downloads.svg]] [[https://versions.deps.co/alexander-yakushev/compliment][https://versions.deps.co/images/up-to-date.svg]] [[CHANGELOG.md][https://img.shields.io/badge/-changelog-blue.svg]]
+* Compliment [[https://circleci.com/gh/alexander-yakushev/compliment][https://img.shields.io/circleci/project/github/alexander-yakushev/compliment/master.svg]] [[https://codecov.io/github/alexander-yakushev/compliment][https://img.shields.io/codecov/c/github/alexander-yakushev/compliment.svg?token=FZTqeuK1hQ]] [[https://clojars.org/compliment][https://versions.deps.co/alexander-yakushev/compliment/downloads.svg]] [[https://versions.deps.co/alexander-yakushev/compliment][https://img.shields.io/badge/dependencies-none-brightgreen.svg]] [[CHANGELOG.md][https://img.shields.io/badge/-changelog-blue.svg]]
 
   Compliment is the ultimate Clojure completion library. It provides a fast and
   smart solution to complete vars, namespaces, class members, keywords, locals.
@@ -6,7 +6,7 @@
 
   Compliment is used as a completion backend in the following editors/IDEs:
 
-  - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]] or, now deprecated, [[https://github.com/clojure-emacs/ac-cider][ac-cider]])
+  - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]])
   - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]] and [[https://liquidz.github.io/vim-iced/][vim-iced]]
   - Neovim --- [[https://github.com/Olical/conjure][Conjure]]
   - Visual Studio Code --- [[https://calva.io/][Calva]]
@@ -34,7 +34,7 @@
 
 ** Installation
 
-   If you use vim-fireplace, or Atom, then you don't have to install
+   If you use vim-fireplace or Calva, then you don't have to install
    anything at all --- Compliment will already be there for you. In case you are
    an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
    [[https://github.com/expez/company-quickhelp][company-quickhelp]] for optimal results. This [[https://docs.cider.mx/cider/usage/code_completion.html][guide]] will help you configure it.
@@ -63,5 +63,5 @@
 
 ** License
 
-   Copyright © 2013-2022 Alexander Yakushev. Distributed under the Eclipse
+   Copyright © 2013-2023 Alexander Yakushev. Distributed under the Eclipse
    Public License, the same as Clojure. See [[https://github.com/alexander-yakushev/compliment/blob/master/LICENSE][LICENSE]].
