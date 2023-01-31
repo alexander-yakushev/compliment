@@ -68,6 +68,14 @@
     (strip-tags (src/candidates "java.util.ArrayDeq" (-ns) nil))
     => (just ["java.util.ArrayDeque"]))
 
+  (fact "for prefixes without a period only root package names are suggested"
+    (strip-tags (src/candidates "jd" (-ns) nil))
+    => (just ["jdk."])
+
+    ;; But if the prefix is a full root package name, then suggest classes.
+    (src/candidates "jdk" (-ns) nil)
+    => (checker #(> (count %) 100)))
+
   (fact "inside :import block additional rules apply"
     (src/candidates "Handler" (-ns) (ctx/parse-context '(ns (:require stuff)
                                                           (:import __prefix__))))

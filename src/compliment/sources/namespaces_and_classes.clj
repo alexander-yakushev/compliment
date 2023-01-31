@@ -7,8 +7,9 @@
 
 (defn nscl-symbol?
   "Tests if prefix looks like a namespace or classname."
-  [x]
-  (re-matches #"[^\/\:\.][^\/\:]+" x))
+  [^String x]
+  (and (re-matches #"[^\/\:]+" x)
+       (not (= (.charAt x 0) \.))))
 
 (defn nscl-matches?
   "Tests if prefix partially matches a var name with periods as
@@ -30,9 +31,8 @@
   []
   (let [all-classes (utils/classes-on-classpath)]
     (utils/cache-last-result ::all-classes-short-names all-classes
-      (group-by #(-> (re-matches #"([^\.]+\.)*([^\.]+)" %)
-                     (nth 2))
-                (reduce into [] (vals all-classes))))))
+      (group-by (fn [^String s] (.substring s (inc (.lastIndexOf s "."))))
+                (apply concat (vals all-classes))))))
 
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
@@ -55,10 +55,9 @@
   [prefix]
   (reduce-kv (fn [l, ^String short-name, full-names]
                (if (.startsWith short-name prefix)
-                 (concat l (map (fn [c] {:candidate c, :type :class})
-                                full-names))
+                 (into l (map (fn [c] {:candidate c, :type :class})) full-names)
                  l))
-             ()
+             []
              (all-classes-short-names)))
 
 (defn- get-classes-by-package-name
@@ -69,7 +68,7 @@
                         (some #(.startsWith ^String % pkg-name) full-names))
                  (conj l {:candidate short-name, :type :class})
                  l))
-             ()
+             []
              (all-classes-short-names)))
 
 (defn candidates
@@ -88,23 +87,26 @@
          {:candidate class-str, :type :class})
        (cond (= import-ctx :root) (get-all-full-names prefix)
              import-ctx (get-classes-by-package-name prefix import-ctx))
-       ;; Fuzziness is too slow for all classes, so just startsWith.
-       ;; Also have to do clever tricks to keep the performance high.
-       (if has-dot
-         (concat (for [[root-pkg classes] (utils/classes-on-classpath)
-                       :when (.startsWith prefix root-pkg)
-                       ^String cl-str classes
-                       :when (.startsWith cl-str prefix)]
-                   {:candidate cl-str, :type :class})
-                 (for [ns-str (utils/namespaces-on-classpath)
-                       :when (nscl-matches? prefix ns-str)]
-                   {:candidate ns-str, :type :namespace}))
-         (concat (for [[^String root-pkg _] (utils/classes-on-classpath)
-                       :when (.startsWith root-pkg prefix)]
-                   {:candidate (str root-pkg "."), :type :class})
-                 (for [^String ns-str (utils/namespaces-on-classpath)
-                       :when (.startsWith ns-str prefix)]
-                   {:candidate ns-str, :type :namespace})))))))
+       ;; If prefix doesn't contain a period, using fuziness produces too many
+       ;; irrelevant candidates.
+       (for [^String ns-str (utils/namespaces-on-classpath)
+             :when (if has-dot
+                     (nscl-matches? prefix ns-str)
+                     (.startsWith ns-str prefix))]
+         {:candidate ns-str, :type :namespace})
+       ;; Fuzziness is too slow for all classes, so only startsWith. Also, if no
+       ;; period in prefix, only complete root package names to maintain good
+       ;; performance and not produce too many candidates.
+       (let [all-classes (utils/classes-on-classpath)]
+         (if (or has-dot (contains? all-classes prefix))
+           (for [[root-pkg classes] all-classes
+                 :when (.startsWith prefix root-pkg)
+                 ^String cl-str classes
+                 :when (.startsWith cl-str prefix)]
+             {:candidate cl-str, :type :class})
+           (for [[^String root-pkg _] all-classes
+                 :when (.startsWith root-pkg prefix)]
+             {:candidate (str root-pkg "."), :type :class})))))))
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)
