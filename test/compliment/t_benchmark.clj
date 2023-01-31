@@ -14,30 +14,32 @@
   (str '(jio/resource "__prefix__")))
 
 (defn execute-completions []
-  (do (completions "cji")
-      (completions "c.j.i")
-      (completions "rek")
-      (completions "java")
-      (completions "java.")
-      (completions "compl" {:context ctx})
-      (completions "ba" {:context ctx})
-      (completions "seageseexs")
-      (completions ".geIV")
-      (completions ":req")
-      (completions "META" {:context ctx2})))
+  (reduce into []
+          [(completions "cji")
+           (completions "c.j.i")
+           (completions "rek")
+           (completions "java")
+           (completions "java.")
+           (completions "compl" {:context ctx})
+           (completions "ba" {:context ctx})
+           (completions "seageseexs")
+           (completions ".geIV")
+           (completions ":req")
+           (completions "META" {:context ctx2})]))
 
 (defn benchmark [quick?]
-  (let [;; Don't include initialization into benchmark.
-        _ (do (utils/classes-on-classpath)
-              (utils/namespaces-on-classpath)
-              (utils/project-resources))]
-    (if quick?
-      (crit/quick-benchmark (execute-completions)
-                            {:supress-jvm-option-warnings true})
-      (crit/bench (execute-completions)
-                  :supress-jvm-option-warnings true))))
+  ;; Don't include initialization into benchmark, time it separately.
+  (println "Initialization:")
+  (time (do (utils/classes-on-classpath)
+            (utils/namespaces-on-classpath)
+            (utils/project-resources)))
+  (if quick?
+    (crit/quick-benchmark (execute-completions)
+                          {:supress-jvm-option-warnings true})
+    (crit/bench (execute-completions)
+                :supress-jvm-option-warnings true)))
 
-(deftest quick-benchmark
+(deftest ^:benchmark quick-benchmark
   (let [res (benchmark true)]
     (testing "simple benchmark suite shouldn't take longer than specified limit"
       (is (< (first (:mean res)) 0.1)))
