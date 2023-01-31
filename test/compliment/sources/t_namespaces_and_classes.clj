@@ -76,6 +76,13 @@
     (src/candidates "jdk" (-ns) nil)
     => (checker #(> (count %) 100)))
 
+  (fact "capitalized prefixes are treated as short classnames for completing FQN"
+    (strip-tags (src/candidates "BiPred" (-ns) nil))
+    => (just ["java.util.function.BiPredicate"])
+
+    (sort (strip-tags (src/candidates "Array" (-ns) nil)))
+    => (contains #{"java.util.ArrayList" "java.lang.reflect.Array"} :gaps-ok))
+
   (fact "inside :import block additional rules apply"
     (src/candidates "Handler" (-ns) (ctx/parse-context '(ns (:require stuff)
                                                           (:import __prefix__))))

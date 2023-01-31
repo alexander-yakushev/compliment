@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- Complete fully-qualified classnames by their shortname prefix anywhere in the
+  file (previously worked only in the `:import` section of the `ns` form).
+
 ### 0.3.14 (2022-07-11)
 
 - [#87](https://github.com/alexander-yakushev/compliment/pull/87): Fix completion

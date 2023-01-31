@@ -131,7 +131,7 @@
     (contains [{:type :class, :candidate "java.net.URLEncoder"}])
 
     (compliment.core/completions "RuntimeE" {})
-    => (just [{:package "java.lang", :type :class, :candidate "RuntimeException"}])
+    => (contains #{{:package "java.lang", :type :class, :candidate "RuntimeException"}})
 
     (core/completions ".getName" {}) =>
     (contains #{{:candidate ".getName", :type :method}

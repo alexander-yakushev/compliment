@@ -87,6 +87,10 @@
          {:candidate class-str, :type :class})
        (cond (= import-ctx :root) (get-all-full-names prefix)
              import-ctx (get-classes-by-package-name prefix import-ctx))
+       ;; For capitalized prefixes, try to complete class FQN from a short name.
+       (when (and (Character/isUpperCase (.charAt prefix 0))
+                  (not import-ctx))
+         (get-all-full-names prefix))
        ;; If prefix doesn't contain a period, using fuziness produces too many
        ;; irrelevant candidates.
        (for [^String ns-str (utils/namespaces-on-classpath)
