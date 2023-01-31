@@ -14,8 +14,7 @@
                                   [fudje "0.9.7"]]
                    :plugins [[jonase/eastwood "1.3.0"]
                              [lein-cloverage "1.2.4"]]
-                   :eastwood {:ignored-faults {:reflection {compliment.utils true}
-                                               :bad-arglists {compliment.sources.t-local-bindings true}
+                   :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
                                                :def-in-def {compliment.sources.t-class-members true
                                                             compliment.sources.t-ns-mappings true
                                                             compliment.t-core true

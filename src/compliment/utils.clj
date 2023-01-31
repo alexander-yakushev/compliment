@@ -97,26 +97,13 @@ Note that should always have the same value, regardless of OS."
 
 ;; Classpath inspection
 
-(def android-vm?
-  "Signifies if the application is running on Android."
-  (.contains ^String (System/getProperty "java.vendor") "Android"))
-
-(def jdk9+?
-  "Signifies if the application is running on JDK 9 or higher."
-  (try (let [major (re-find #"^\d+" (System/getProperty "java.version"))
-             major (Integer/parseInt major)]
-         (>= major 9))
-       (catch Exception _ false)))
-
 (defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
-  (if android-vm?
-    ()
-    (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
-            ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
-             ;; This is where Boot keeps references to dependencies.
-             "fake.class.path"])))
+  (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
+          ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
+           ;; This is where Boot keeps references to dependencies.
+           "fake.class.path"]))
 
 (defn- symlink?
   "Checks if the given file is a symlink."
@@ -157,37 +144,32 @@ Note that should always have the same value, regardless of OS."
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
 
-(defn- list-jdk9-base-classfiles
+(defmacro list-jdk9-base-classfiles
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
   modules, we have to do extra work to extract them."
   []
-  ;; We have to do a lot of manual reflection here because otherwise JDK9+ barks
-  ;; at us or illegally accessing internal classes. Bah.
-  (let [mf-class (Class/forName "java.lang.module.ModuleFinder")
-        of-system (.getMethod mf-class "ofSystem" (into-array Class []))
-        mfinder (.invoke of-system nil (object-array 0))
-
-        mrefs (.findAll mfinder)
-        mref-class (Class/forName "java.lang.module.ModuleReference")
-        open-method (.getMethod mref-class "open" (into-array Class []))
-
-        classes (volatile! (transient []))
-        consumer (reify Consumer (accept [_ v] (vswap! classes conj! v)))]
-    (doseq [mref mrefs
-            :let [mrdr (.invoke open-method mref (object-array 0))
-                  ^java.util.stream.Stream stream (.list mrdr)]]
-      (.forEach stream consumer)
-      (.close mrdr))
-
-    (persistent! @classes)))
+  (if (try (resolve 'java.lang.module.ModuleFinder)
+           (catch ClassNotFoundException _))
+    `(let [classes# (volatile! (transient []))]
+       (->> (try (.findAll (java.lang.module.ModuleFinder/ofSystem))
+                 ;; Due to a bug in Clojure before 1.10, the above may fail.
+                 (catch IncompatibleClassChangeError _# []))
+            (run! (fn [^java.lang.module.ModuleReference mref#]
+                    (let [mrdr# (.open mref#)
+                          ^java.util.stream.Stream stream# (.list mrdr#)]
+                      (.forEach stream#
+                                (reify Consumer
+                                  (accept [_ v#] (vswap! classes# conj! v#))))))))
+       (persistent! @classes#))
+    ()))
 
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,
   including those located inside jar files."
   [classpath]
   (cache-last-result ::all-files-on-classpath classpath
-    (cond-> (vec (mapcat #(list-files % true) classpath))
-      jdk9+? (into (list-jdk9-base-classfiles)))))
+    (into (vec (mapcat #(list-files % true) classpath))
+          (list-jdk9-base-classfiles))))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
