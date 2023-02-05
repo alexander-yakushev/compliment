@@ -14,10 +14,10 @@
     => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
 
     (strip-tags (core/completions "'redu"))
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+    => (contains ["'reduce" "'reduce-kv" "'reductions"] :gaps-ok)
 
     (strip-tags (core/completions "#'redu"))
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+    => (contains ["#'reduce" "#'reduce-kv" "#'reductions"] :gaps-ok)
 
     (strip-tags (core/completions "fac" {:ns (find-ns 'fudje.sweet)}))
     => (just ["fact" "facts"] :in-any-order)

@@ -4,6 +4,7 @@
 
 - Complete fully-qualified classnames by their shortname prefix anywhere in the
   file (previously worked only in the `:import` section of the `ns` form).
+- Fix ' and #' being swallowed when completing vars prefixed by them.
 
 ### 0.3.14 (2022-07-11)
 

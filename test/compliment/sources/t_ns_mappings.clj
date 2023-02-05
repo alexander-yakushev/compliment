@@ -84,6 +84,25 @@
         (strip-tags (src/candidates "c.str/cap" (-ns) nil)))
     => (just ["c.str/capitalize"]))
 
+  (fact "var can be prefixed by ' or #'"
+    (strip-tags (src/candidates "'redu" (-ns) nil))
+    => (contains ["'reduce" "'reductions" "'reduce-kv"] :gaps-ok)
+
+    (strip-tags (src/candidates "#'redu" (-ns) nil))
+    => (contains ["#'reduce" "#'reductions" "#'reduce-kv"] :gaps-ok)
+
+    (strip-tags (src/candidates "'clojure.string/i" (-ns) nil))
+    => (just ["'clojure.string/includes?" "'clojure.string/index-of"])
+
+    (strip-tags (src/candidates "#'clojure.string/i" (-ns) nil))
+    => (just ["#'clojure.string/includes?" "#'clojure.string/index-of"])
+
+    (strip-tags (src/candidates "'s/cap" (-ns) nil))
+    => (just ["'s/capitalize"])
+
+    (strip-tags (src/candidates "#'s/cap" (-ns) nil))
+    => (just ["#'s/capitalize"]))
+
   (def foo:bar 1)
   (def foo:baz 2)
   (fact "handles vars with semicolons in them"

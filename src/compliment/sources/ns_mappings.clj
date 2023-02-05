@@ -74,13 +74,7 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [quoted-prefix (or (re-find #"^#'" prefix)
-                          (re-find #"^'" prefix))
-        prefix (-> prefix
-                   ;; consider var-quote and quote to express the same as the non-quoted equivalent,
-                   ;; since that is more useful than offering no completions:
-                   (string/replace-first #"^#'" "")
-                   (string/replace-first #"^'" ""))]
+  (let [[_ quoted prefix] (re-matches #"(#?')?(.+)" prefix)]
     (when (var-symbol? prefix)
       (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
             ns-form-namespace (try-get-ns-from-context context)
@@ -99,9 +93,10 @@
                         ;; Some classes don't have a package
                         (.getName ^Package pkg))}
 
-            (cond-> {:candidate (if scope
-                                  (str quoted-prefix scope-name "/" var-name)
-                                  var-name)
+            (cond-> {:candidate (str quoted
+                                     (if scope
+                                       (str scope-name "/" var-name)
+                                       var-name))
                      :type (cond (:macro var-meta) :macro
                                  arglists :function
                                  :else :var)
