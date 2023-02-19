@@ -30,7 +30,7 @@
 
 ### 0.3.11 (2020-10-06)
 
-- Silence reflection Complete local bindings declared in `:strs` and `:syms` map destructuring.
+- Complete local bindings declared in `:strs` and `:syms` map destructuring.
 - [#75](https://github.com/alexander-yakushev/compliment/issues/75): Suppress
   reflection warnings in JDK9-related code.
 
@@ -49,7 +49,7 @@
 
 - Fix not completing methods/fields for freshly imported classes.
 - [#58](https://github.com/alexander-yakushev/compliment/issues/58): Complete
-  members for unimportant class if the context class is found.
+  members for unimported class if the context class is found.
 - Retrieve context class from next form's type tag or from type tag of the same
   symbol if it was tagged in the same lexical scope.
 
