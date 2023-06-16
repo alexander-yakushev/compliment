@@ -52,3 +52,9 @@
     (is (contains? all-classes "java.lang.Thread"))
     (is (contains? all-classes "java.io.File"))
     (is (contains? all-classes "java.nio.channels.FileChannel"))))
+
+(deftest namespaces&files-on-classpath-test
+  (is (contains? (set (namespaces&files-on-classpath))
+                 {:ns-str "compliment.t-utils" :file "compliment/t_utils.clj"}))
+  (is (contains? (set (namespaces&files-on-classpath))
+                 {:ns-str "dummy" :file "dummy.cljs"})))

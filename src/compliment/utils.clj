@@ -19,6 +19,10 @@
 Note that should always have the same value, regardless of OS."
   "/")
 
+(defn- ensure-no-leading-slash [file]
+  (if (.startsWith file File/separator)
+    (.substring file 1) file))
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."
@@ -181,25 +185,28 @@ Note that should always have the same value, regardless of OS."
       (->> (for [^String file (all-files-on-classpath classpath)
                  :when (and (.endsWith file ".class") (not (.contains file "__"))
                             (not (.contains file "$")))]
-             (.. (if (.startsWith file File/separator)
-                   (.substring file 1) file)
+             (.. (ensure-no-leading-slash file)
                  (replace ".class" "")
                  ;; Address the issue #79 , on Windows, for prefix such
                  ;; as "java.util.", the list of candidates was empty.
                  (replace resource-separator ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
-(defn namespaces-on-classpath
-  "Returns the list of all Clojure namespaces obtained by classpath scanning."
+(defn namespaces&files-on-classpath
+  "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file \"some/ns.cljs\"}`) of all clj/cljc/cljs namespaces obtained by classpath scanning."
   []
   (let [classpath (classpath)]
     (cache-last-result ::namespaces-on-classpath classpath
-      (set (for [^String file (all-files-on-classpath classpath)
-                 :when (and (.endsWith file ".clj")
-                            (not (.startsWith file "META-INF")))
-                 :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-                 :when nsname]
-             (.. nsname (replace resource-separator ".") (replace "_" "-")))))))
+      ;; TODO deduplicate these results by ns-str
+      (for [file (all-files-on-classpath classpath)
+            :let [file (ensure-no-leading-slash file)
+                  [_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj[sc]?$" file)]
+            :when nsname]
+        (let [ns-str (.. nsname (replace resource-separator ".") (replace "_" "-"))]
+          {:ns-str ns-str, :file file})))))
+
+(defn ^:deprecated namespaces-on-classpath []
+  (transduce (map :ns-str) conj #{} (namespaces&files-on-classpath)))
 
 (defn project-resources
   "Returns a list of all non-code files in the current project."
@@ -208,9 +215,8 @@ Note that should always have the same value, regardless of OS."
     (cache-last-result ::project-resources classpath
       (for [path classpath
             ^String file (list-files path false)
-            :when (not (or (empty? file) (.endsWith file ".clj")
-                           (.endsWith file ".jar") (.endsWith file ".class")))]
+            :when (not (or (empty? file)
+                           (re-find #"\.(clj[cs]?|jar|class)$" file)))]
         ;; resource pathes always use "/" regardless of platform
-        (.. (if (.startsWith file File/separator)
-              (.substring file 1) file)
+        (.. (ensure-no-leading-slash file)
             (replace File/separator resource-separator))))))

@@ -118,7 +118,7 @@
 
     ;; Test for not required namespaces
     (core/completions "cl.test.ta" {}) =>
-    (just [{:type :namespace, :candidate "clojure.test.tap"}])
+    (just [{:type :namespace, :candidate "clojure.test.tap" :file "clojure/test/tap.clj"}])
 
     ;; Test for aliases
     (core/completions "cor" {:ns 'compliment.t-core})
