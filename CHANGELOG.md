@@ -5,6 +5,8 @@
 - Complete fully-qualified classnames by their shortname prefix anywhere in the
   file (previously worked only in the `:import` section of the `ns` form).
 - Fix ' and #' being swallowed when completing vars prefixed by them.
+- [#91](https://github.com/alexander-yakushev/compliment/pull/91): `compliment.utils/namespaces-on-classpath` (now deprecated) takes cljc files into account.
+  Add replacement `compliment.utils/namespaces&files-on-classpath` that yields a collection of maps containing the filename.
 
 ### 0.3.14 (2022-07-11)
 

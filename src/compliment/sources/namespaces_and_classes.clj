@@ -94,11 +94,12 @@
                (get-all-full-names prefix))
              ;; If prefix doesn't contain a period, using fuziness produces too many
              ;; irrelevant candidates.
-             (for [^String ns-str (utils/namespaces-on-classpath)
-                   :when (if has-dot
-                           (nscl-matches? prefix ns-str)
-                           (.startsWith ns-str prefix))]
-               {:candidate ns-str, :type :namespace})
+             (for [{:keys [^String ns-str, ^String file]} (utils/namespaces&files-on-classpath)
+                   :when (and (re-find #"\.cljc?$" file)
+                              (if has-dot
+                                (nscl-matches? prefix ns-str)
+                                (.startsWith ns-str prefix)))]
+               {:candidate ns-str, :type :namespace, :file file})
              ;; Fuzziness is too slow for all classes, so only startsWith. Also, if no
              ;; period in prefix, only complete root package names to maintain good
              ;; performance and not produce too many candidates.

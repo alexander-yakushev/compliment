@@ -37,8 +37,8 @@
     => (just ["src"])
 
     (src/candidates "clojure.java." (-ns) nil)
-    => (contains #{{:candidate "clojure.java.browse", :type :namespace}
-                   {:candidate "clojure.java.shell", :type :namespace}} :gaps-ok)
+    => (contains #{{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
+                   {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}} :gaps-ok)
 
     (src/candidates "java.io.Stri" (-ns) nil)
     => (contains #{{:candidate "java.io.StringReader", :type :class}
