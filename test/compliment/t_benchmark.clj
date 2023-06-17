@@ -31,7 +31,7 @@
   ;; Don't include initialization into benchmark, time it separately.
   (println "Initialization:")
   (time (do (utils/classes-on-classpath)
-            (utils/namespaces-on-classpath)
+            (utils/namespaces&files-on-classpath)
             (utils/project-resources)))
   (if quick?
     (crit/quick-benchmark (execute-completions)

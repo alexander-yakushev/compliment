@@ -19,7 +19,7 @@
 Note that should always have the same value, regardless of OS."
   "/")
 
-(defn- ensure-no-leading-slash [file]
+(defn- ensure-no-leading-slash ^String [^String file]
   (if (.startsWith file File/separator)
     (.substring file 1) file))
 
