@@ -99,4 +99,5 @@
 
   (fact "namespaces and classes have documentation"
     (src/doc "clojure.core" (-ns)) => (checker string?)
-    (src/doc "java.lang.Runnable" (-ns)) => (checker string?)))
+    (src/doc "java.lang.Runnable" (-ns)) => (checker string?)
+    (src/doc "utils" (-ns)) => (checker string?)))

@@ -7,6 +7,7 @@
 - Fix ' and #' being swallowed when completing vars prefixed by them.
 - [#91](https://github.com/alexander-yakushev/compliment/pull/91): `compliment.utils/namespaces-on-classpath` (now deprecated) takes cljc files into account.
   Add replacement `compliment.utils/namespaces&files-on-classpath` that yields a collection of maps containing the filename.
+  - [#94](https://github.com/alexander-yakushev/compliment/issues/94): `compliment.sources.namespaces-and-classes/doc` accepts ns-aliases as well.
 
 ### 0.3.14 (2022-07-11)
 
