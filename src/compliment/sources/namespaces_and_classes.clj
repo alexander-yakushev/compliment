@@ -2,8 +2,7 @@
   "Completion for namespace and class names."
   (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches?] :as utils]
-            [compliment.sources.class-members :refer [classname-doc]])
-  (:import java.io.File))
+            [compliment.sources.class-members :refer [classname-doc]]))
 
 (defn nscl-symbol?
   "Tests if prefix looks like a namespace or classname."
@@ -116,12 +115,14 @@
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)
-    (if-let [ns (find-ns (symbol ns-or-class-str))]
-      (str ns "\n" (:doc (meta ns)) "\n")
-      (when-let [class (try (ns-resolve curr-ns (symbol ns-or-class-str))
-                            (catch Exception ex nil))]
-        (when (= (type class) Class)
-          (classname-doc class))))))
+    (let [ns-or-class-sym (symbol ns-or-class-str)]
+      (if-let [ns (or (find-ns ns-or-class-sym)
+                      (get (ns-aliases curr-ns) ns-or-class-sym))]
+        (str ns "\n" (:doc (meta ns)) "\n")
+        (when-let [class (try (ns-resolve curr-ns ns-or-class-sym)
+                              (catch Exception ex nil))]
+          (when (= (type class) Class)
+            (classname-doc class)))))))
 
 (defsource ::namespaces-and-classes
   :candidates #'candidates
