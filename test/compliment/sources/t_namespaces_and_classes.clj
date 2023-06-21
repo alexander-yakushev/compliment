@@ -56,6 +56,8 @@
     )
 
   (fact "aliases are completed by this source too"
+    (strip-tags (src/candidates "#'clojure.co" (-ns) nil)) => (contains ["#'clojure.core"])
+
     (do (require '[clojure.string :as str])
         (strip-tags (src/candidates "st" (-ns) nil)))
     => (contains ["str"])
@@ -100,4 +102,10 @@
   (fact "namespaces and classes have documentation"
     (src/doc "clojure.core" (-ns)) => (checker string?)
     (src/doc "java.lang.Runnable" (-ns)) => (checker string?)
-    (src/doc "utils" (-ns)) => (checker string?)))
+    ;; aliases
+    (src/doc "utils" (-ns)) => (checker string?)
+    ;; literals
+    (src/doc "'utils" (-ns)) => (checker string?)
+    (src/doc "#'utils" (-ns)) => (checker string?)
+    (src/doc "@#'clojure.core" (-ns)) => (checker string?)
+    (src/doc "@@#'utils" (-ns)) => (checker string?)))

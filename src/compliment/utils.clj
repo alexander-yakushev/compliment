@@ -19,6 +19,20 @@
 Note that should always have the same value, regardless of OS."
   "/")
 
+(defn split-by-leading-literals
+  "Meant for symbol-strings that might have leading @, #', or '.
+
+  Examples:
+  \"@some-atom\" => '(\"@\" \"some-atom\")
+  \"@#'a\" => '(\"@#'\" \"a\")
+  \"#'some.ns/some-var\" => '(\"#'\" \"some.ns/some-var\")
+
+  \" @wont-work\" => '(nil \" @wont-work\")
+  \"nothing-todo\" => '(nil \"nothing-todo\")
+  "
+  [symbol-str]
+  (next (re-matches #"(@{0,2}#'|'|@)?(.+)" symbol-str)))
+
 (defn- ensure-no-leading-slash ^String [^String file]
   (if (.startsWith file File/separator)
     (.substring file 1) file))

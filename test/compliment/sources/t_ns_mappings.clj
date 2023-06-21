@@ -84,7 +84,9 @@
         (strip-tags (src/candidates "c.str/cap" (-ns) nil)))
     => (just ["c.str/capitalize"]))
 
-  (fact "var can be prefixed by ' or #'"
+  (def some-atom (atom nil))
+
+  (fact "var can be prefixed by ', #' or @"
     (strip-tags (src/candidates "'redu" (-ns) nil))
     => (contains ["'reduce" "'reductions" "'reduce-kv"] :gaps-ok)
 
@@ -101,7 +103,10 @@
     => (just ["'s/capitalize"])
 
     (strip-tags (src/candidates "#'s/cap" (-ns) nil))
-    => (just ["#'s/capitalize"]))
+    => (just ["#'s/capitalize"])
+
+    (strip-tags (src/candidates "@some-a" (-ns) nil))
+    => (just ["@some-atom"]))
 
   (def foo:bar 1)
   (def foo:baz 2)
@@ -145,4 +150,12 @@
                      (ctx/parse-context '(ns foo.bar
                                            (:require [clojure.string
                                                       :refer [__prefix__]])))))
-    => (just ["split" "split-lines"] :in-any-order)))
+    => (just ["split" "split-lines"] :in-any-order))
+
+  (fact "ns-mappings have documentation"
+    (src/doc "map" (-ns)) => (checker string?)
+    (src/doc "clojure.core/map" (-ns)) => (checker string?)
+    (src/doc "#'clojure.core/map" (-ns)) => (checker string?)
+    (src/doc "#'src/var-symbol?" (-ns)) => (checker string?)
+    (src/doc "bogus" (-ns)) => nil
+    (src/doc "bo/gus" (-ns)) => nil))

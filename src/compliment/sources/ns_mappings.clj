@@ -3,7 +3,7 @@
   (:require [clojure.string :as string]
             [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
-                                      *extra-metadata*]])
+                                      *extra-metadata* split-by-leading-literals]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -74,7 +74,7 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [[_ quoted prefix] (re-matches #"(#?')?(.+)" prefix)]
+  (let [[literals prefix] (split-by-leading-literals prefix)]
     (when (var-symbol? prefix)
       (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
             ns-form-namespace (try-get-ns-from-context context)
@@ -93,7 +93,7 @@
                         ;; Some classes don't have a package
                         (.getName ^Package pkg))}
 
-            (cond-> {:candidate (str quoted
+            (cond-> {:candidate (str literals
                                      (if scope
                                        (str scope-name "/" var-name)
                                        var-name))
@@ -101,17 +101,21 @@
                                  arglists :function
                                  :else :var)
                      :ns (str (or (:ns var-meta) ns))}
-              (and arglists(:arglists *extra-metadata*))
+              (and arglists (:arglists *extra-metadata*))
               (assoc :arglists (apply list (map pr-str arglists)))
 
               (and doc (:doc *extra-metadata*))
               (assoc :doc (generate-docstring var-meta)))))))))
 
+(defn- resolve-var [symbol-str ns]
+  (let [strip-literals (comp second split-by-leading-literals)]
+    (ns-resolve ns (symbol (strip-literals symbol-str)))))
+
 (defn doc
   "Documentation function for this sources' completions."
   [symbol-str ns]
-  (if (var-symbol? symbol-str)
-    (when-let [var (ns-resolve ns (symbol symbol-str))]
+  (when (var-symbol? symbol-str)
+    (when-let [var (resolve-var symbol-str ns)]
       (when (meta var)
         (generate-docstring (meta var))))))
 
