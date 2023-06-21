@@ -80,8 +80,9 @@
             (comp cat (distinct))
             [(for [ns-str (concat (map (comp name ns-name) (all-ns))
                                   (map name (keys (ns-aliases ns))))
+                   :let [[literals prefix] (utils/split-by-leading-literals prefix)]
                    :when (nscl-matches? prefix ns-str)]
-               {:candidate ns-str, :type :namespace})
+               {:candidate (str literals ns-str), :type :namespace})
              (for [class-str (imported-classes ns)
                    :when (nscl-matches? prefix class-str)]
                {:candidate class-str, :type :class})
@@ -94,11 +95,12 @@
              ;; If prefix doesn't contain a period, using fuziness produces too many
              ;; irrelevant candidates.
              (for [{:keys [^String ns-str, ^String file]} (utils/namespaces&files-on-classpath)
+                   :let [[literals prefix] (utils/split-by-leading-literals prefix)]
                    :when (and (re-find #"\.cljc?$" file)
                               (if has-dot
                                 (nscl-matches? prefix ns-str)
                                 (.startsWith ns-str prefix)))]
-               {:candidate ns-str, :type :namespace, :file file})
+               {:candidate (str literals ns-str), :type :namespace, :file file})
              ;; Fuzziness is too slow for all classes, so only startsWith. Also, if no
              ;; period in prefix, only complete root package names to maintain good
              ;; performance and not produce too many candidates.
@@ -115,7 +117,8 @@
 
 (defn doc [ns-or-class-str curr-ns]
   (when (nscl-symbol? ns-or-class-str)
-    (let [ns-or-class-sym (symbol ns-or-class-str)]
+    (let [strip-literals (comp second utils/split-by-leading-literals)
+          ns-or-class-sym (symbol (strip-literals ns-or-class-str))]
       (if-let [ns (or (find-ns ns-or-class-sym)
                       (get (ns-aliases curr-ns) ns-or-class-sym))]
         (str ns "\n" (:doc (meta ns)) "\n")

@@ -1,5 +1,9 @@
 # Change log
 
+### Unreleased
+
+- Extend completion and getting docs for symbol-strings with leading literals.
+
 ### 0.3.15 (2023-06-22)
 
 - Complete fully-qualified classnames by their shortname prefix anywhere in the
