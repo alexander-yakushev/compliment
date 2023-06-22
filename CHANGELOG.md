@@ -1,6 +1,6 @@
 # Change log
 
-### master (unreleased)
+### 0.3.15 (2023-06-22)
 
 - Complete fully-qualified classnames by their shortname prefix anywhere in the
   file (previously worked only in the `:import` section of the `ns` form).
