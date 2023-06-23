@@ -1,8 +1,9 @@
 # Change log
 
-### Unreleased
+### 0.3.16 (2023-06-23)
 
-- Extend completion and getting docs for symbol-strings with leading literals.
+- [#91](https://github.com/alexander-yakushev/compliment/pull/97): Extend
+  completion and getting docs for symbol-strings with leading literals.
 
 ### 0.3.15 (2023-06-22)
 
