@@ -31,7 +31,7 @@ Note that should always have the same value, regardless of OS."
   \"nothing-todo\" => '(nil \"nothing-todo\")
   "
   [symbol-str]
-  (next (re-matches #"(@{0,2}#'|'|@)?(.+)" symbol-str)))
+  (next (re-matches #"(@{0,2}#'|'|@)?(.*)" symbol-str)))
 
 (defn- ensure-no-leading-slash ^String [^String file]
   (if (.startsWith file File/separator)

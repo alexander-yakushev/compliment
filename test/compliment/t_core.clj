@@ -100,6 +100,9 @@
                                         :ns 'compliment.t-core}))
     => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
 
+  (fact "empty prefix returns a list of candidates"
+    (core/completions "") => (checker not-empty))
+
   (fact "different metadata is attached to candidates"
     (core/completions "bound" {}) =>
     (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
