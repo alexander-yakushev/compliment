@@ -40,15 +40,16 @@
 (deftest vars-completion-test
   (fact "unqualified vars are looked up in the given namespace"
     (src/candidates "redu" (-ns) nil)
-    => (contains #{{:candidate "reduce", :type :function, :ns "clojure.core"}
-                   {:candidate "reductions", :type :function, :ns "clojure.core"}
-                   {:candidate "reduce-kv", :type :function, :ns "clojure.core"}} :gaps-ok)
+    => (contains #{{:candidate "reduce", :type :function, :ns "clojure.core", :private false}
+                   {:candidate "reductions", :type :function, :ns "clojure.core", :private false}
+                   {:candidate "reduce-kv", :type :function, :ns "clojure.core", :private false}}
+                 :gaps-ok)
 
     (strip-tags (src/candidates "re-ma" (-ns) nil))
     => (just ["re-matches" "re-matcher" "ref-max-history"] :in-any-order)
 
     (src/candidates "bindi" (-ns) nil)
-    => [{:candidate "binding", :type :macro, :ns "clojure.core"}])
+    => [{:candidate "binding", :type :macro, :ns "clojure.core", :private false}])
 
   (fact "imported classes are looked up in the given namespace"
     (src/candidates "Runt" (-ns) nil)
@@ -108,6 +109,16 @@
     (strip-tags (src/candidates "@some-a" (-ns) nil))
     => (just ["@some-atom"]))
 
+  (fact "private vars will be suggested when prefixed with var quote"
+    ;; no candidate for a non-public var
+    (strip-tags (src/candidates "clojure.core/print-tagged-object" (-ns) nil))
+    => (just [])
+    ;; var quote works though
+    (strip-tags (src/candidates "#'clojure.core/print-tagged-object" (-ns) nil))
+    => (just [ "#'clojure.core/print-tagged-object"])
+    (strip-tags (src/candidates "#'src/resolve-var" (-ns) nil))
+    => (just ["#'src/resolve-var"]))
+
   (def foo:bar 1)
   (def foo:baz 2)
   (fact "handles vars with semicolons in them"
@@ -123,8 +134,7 @@
   (fact "extra metadata can be requested from this completion source"
     (binding [*extra-metadata* #{:doc :arglists}]
       (doall (src/candidates "freq" (-ns) nil)))
-    => [{:candidate "frequencies", :type :function, :ns "clojure.core"
-         :arglists ["[coll]"]
+    => [{:candidate "frequencies", :type :function, :ns "clojure.core", :private false, :arglists ["[coll]"]
          :doc (clojure.string/join
                (System/lineSeparator)
                ["clojure.core/frequencies" "([coll])"

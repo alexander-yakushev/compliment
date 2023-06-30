@@ -75,9 +75,9 @@
     => (contains ["map-indexed" "map?" "mapcat" "mapv"] :gaps-ok)
 
     (core/completions "remo" {:sort-order :by-name})
-    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
-                  {:ns "clojure.core", :type :function, :candidate "remove-ns"}
-                  {:ns "clojure.core", :type :function, :candidate "remove-watch"}]
+    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method", :private false}
+                  {:ns "clojure.core", :type :function, :candidate "remove-ns", :private false}
+                  {:ns "clojure.core", :type :function, :candidate "remove-watch", :private false}]
                  :gaps-ok))
 
 
@@ -102,16 +102,17 @@
 
   (fact "different metadata is attached to candidates"
     (core/completions "bound" {}) =>
-    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
-                {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
+    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*", :private false}
+                {:ns "clojure.core", :type :macro, :candidate "bound-fn", :private false}}
+              :gaps-ok)
 
     (core/completions "fac" {:ns (find-ns 'fudje.sweet)})
-    => (just [{:candidate "fact", :type :macro, :ns "fudje.sweet"}
-              {:candidate "facts", :type :macro, :ns "fudje.sweet"}]
+    => (just [{:candidate "fact", :type :macro, :ns "fudje.sweet", :private false}
+              {:candidate "facts", :type :macro, :ns "fudje.sweet", :private false}]
              :in-any-order)
 
     (core/completions "a-big-" {:ns 'compliment.t-core})
-    => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int"}])
+    => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int", :private false}])
 
     (core/completions "cl.se" {}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
@@ -167,7 +168,7 @@
 
   (fact "extra-metadata arglists"
     (core/completions "apply" {:extra-metadata #{:arglists}})
-    => (contains #{{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
+    => (contains #{{:ns "clojure.core", :type :function, :private false, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
                  :gaps-ok))
 
   (fact "extra-metadata doc"

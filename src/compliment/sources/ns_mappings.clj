@@ -74,17 +74,18 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [[literals prefix] (split-by-leading-literals prefix)]
+  (let [[literals prefix] (split-by-leading-literals prefix)
+        var-quote? (when literals (re-find #"#'$" literals))]
     (when (var-symbol? prefix)
       (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
             ns-form-namespace (try-get-ns-from-context context)
             vars (cond
-                   scope (ns-publics scope)
+                   scope (if var-quote? (ns-interns scope) (ns-publics scope))
                    ns-form-namespace (ns-publics ns-form-namespace)
                    :else (ns-map ns))]
         (for [[var-sym var] vars
               :let [var-name (name var-sym)
-                    {:keys [arglists doc] :as var-meta} (meta var)]
+                    {:keys [arglists doc private] :as var-meta} (meta var)]
               :when (and (dash-matches? prefix var-name)
                          (not (:completion/hidden var-meta)))]
           (if (= (type var) Class)
@@ -100,6 +101,7 @@
                      :type (cond (:macro var-meta) :macro
                                  arglists :function
                                  :else :var)
+                     :private (boolean private)
                      :ns (str (or (:ns var-meta) ns))}
               (and arglists (:arglists *extra-metadata*))
               (assoc :arglists (apply list (map pr-str arglists)))
