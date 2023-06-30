@@ -130,16 +130,16 @@
     (strip-tags (src/candidates "foo:b" (-ns) nil))
     => (contains #{"foo:bar" "foo:baz"} :gaps-ok))
 
+  (defn ^:deprecated ^:private some-deprecated-private-fn "Some doc" [])
   (fact "extra metadata can be requested from this completion source"
-    (binding [*extra-metadata* #{:doc :arglists}]
-      (doall (src/candidates "freq" (-ns) nil)))
-    => [{:candidate "frequencies", :type :function, :ns "clojure.core"
-         :arglists ["[coll]"]
+    (binding [*extra-metadata* #{:doc :arglists :private :deprecated}]
+      (doall (src/candidates "some-deprecated-private-fn" (-ns) nil)))
+    => [{:candidate "some-deprecated-private-fn", :type :function, :ns "compliment.sources.t-ns-mappings"
+         :private true, :deprecated true, :arglists ["[]"]
          :doc (clojure.string/join
                (System/lineSeparator)
-               ["clojure.core/frequencies" "([coll])"
-                "  Returns a map from distinct items in coll to the number of times
-  they appear." ""])}])
+               ["compliment.sources.t-ns-mappings/some-deprecated-private-fn" "([])"
+                "  Some doc" ""])}])
 
   (defn should-appear [])
   (defn ^:completion/hidden shouldnt-appear [])
