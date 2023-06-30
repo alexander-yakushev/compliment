@@ -4,6 +4,7 @@
 
 - Extend completion and getting docs for symbol-strings with leading literals.
 - Find private vars when using var quote literal.
+- Add `:deprecated` key to vars and functions.
 
 ### 0.3.15 (2023-06-22)
 

@@ -85,7 +85,7 @@
                    :else (ns-map ns))]
         (for [[var-sym var] vars
               :let [var-name (name var-sym)
-                    {:keys [arglists doc private] :as var-meta} (meta var)]
+                    {:keys [arglists doc private deprecated] :as var-meta} (meta var)]
               :when (and (dash-matches? prefix var-name)
                          (not (:completion/hidden var-meta)))]
           (if (= (type var) Class)
@@ -102,6 +102,7 @@
                                  arglists :function
                                  :else :var)
                      :private (boolean private)
+                     :deprecated (boolean deprecated)
                      :ns (str (or (:ns var-meta) ns))}
               (and arglists (:arglists *extra-metadata*))
               (assoc :arglists (apply list (map pr-str arglists)))

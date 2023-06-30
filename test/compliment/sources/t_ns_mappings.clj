@@ -40,16 +40,16 @@
 (deftest vars-completion-test
   (fact "unqualified vars are looked up in the given namespace"
     (src/candidates "redu" (-ns) nil)
-    => (contains #{{:candidate "reduce", :type :function, :ns "clojure.core", :private false}
-                   {:candidate "reductions", :type :function, :ns "clojure.core", :private false}
-                   {:candidate "reduce-kv", :type :function, :ns "clojure.core", :private false}}
+    => (contains #{{:candidate "reduce", :type :function, :ns "clojure.core", :private false, :deprecated false}
+                   {:candidate "reductions", :type :function, :ns "clojure.core", :private false, :deprecated false}
+                   {:candidate "reduce-kv", :type :function, :ns "clojure.core", :private false, :deprecated false}}
                  :gaps-ok)
 
     (strip-tags (src/candidates "re-ma" (-ns) nil))
     => (just ["re-matches" "re-matcher" "ref-max-history"] :in-any-order)
 
     (src/candidates "bindi" (-ns) nil)
-    => [{:candidate "binding", :type :macro, :ns "clojure.core", :private false}])
+    => [{:candidate "binding", :type :macro, :ns "clojure.core", :private false, :deprecated false}])
 
   (fact "imported classes are looked up in the given namespace"
     (src/candidates "Runt" (-ns) nil)
@@ -134,7 +134,8 @@
   (fact "extra metadata can be requested from this completion source"
     (binding [*extra-metadata* #{:doc :arglists}]
       (doall (src/candidates "freq" (-ns) nil)))
-    => [{:candidate "frequencies", :type :function, :ns "clojure.core", :private false, :arglists ["[coll]"]
+    => [{:candidate "frequencies", :type :function, :ns "clojure.core", :private false, :deprecated false
+         :arglists ["[coll]"]
          :doc (clojure.string/join
                (System/lineSeparator)
                ["clojure.core/frequencies" "([coll])"

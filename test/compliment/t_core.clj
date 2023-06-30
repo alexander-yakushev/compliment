@@ -75,9 +75,9 @@
     => (contains ["map-indexed" "map?" "mapcat" "mapv"] :gaps-ok)
 
     (core/completions "remo" {:sort-order :by-name})
-    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method", :private false}
-                  {:ns "clojure.core", :type :function, :candidate "remove-ns", :private false}
-                  {:ns "clojure.core", :type :function, :candidate "remove-watch", :private false}]
+    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method", :private false, :deprecated false}
+                  {:ns "clojure.core", :type :function, :candidate "remove-ns", :private false, :deprecated false}
+                  {:ns "clojure.core", :type :function, :candidate "remove-watch", :private false, :deprecated false}]
                  :gaps-ok))
 
 
@@ -102,17 +102,17 @@
 
   (fact "different metadata is attached to candidates"
     (core/completions "bound" {}) =>
-    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*", :private false}
-                {:ns "clojure.core", :type :macro, :candidate "bound-fn", :private false}}
+    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*", :private false, :deprecated false}
+                {:ns "clojure.core", :type :macro, :candidate "bound-fn", :private false, :deprecated false}}
               :gaps-ok)
 
     (core/completions "fac" {:ns (find-ns 'fudje.sweet)})
-    => (just [{:candidate "fact", :type :macro, :ns "fudje.sweet", :private false}
-              {:candidate "facts", :type :macro, :ns "fudje.sweet", :private false}]
+    => (just [{:candidate "fact", :type :macro, :ns "fudje.sweet", :private false, :deprecated false}
+              {:candidate "facts", :type :macro, :ns "fudje.sweet", :private false, :deprecated false}]
              :in-any-order)
 
     (core/completions "a-big-" {:ns 'compliment.t-core})
-    => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int", :private false}])
+    => (just [{:ns "compliment.t-core", :type :var, :candidate "a-big-int", :private false, :deprecated false}])
 
     (core/completions "cl.se" {}) =>
     (contains [{:candidate "clojure.set", :type :namespace}])
@@ -168,7 +168,7 @@
 
   (fact "extra-metadata arglists"
     (core/completions "apply" {:extra-metadata #{:arglists}})
-    => (contains #{{:ns "clojure.core", :type :function, :private false, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
+    => (contains #{{:ns "clojure.core", :type :function, :private false, :deprecated false, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
                  :gaps-ok))
 
   (fact "extra-metadata doc"
