@@ -3,6 +3,7 @@
 ### Unreleased
 
 - [#98](https://github.com/alexander-yakushev/compliment/pull/98): Find private vars when using var quote literal.
+- [#98](https://github.com/alexander-yakushev/compliment/pull/98): Support `:private` and `:deprecated` as extra-metadata.
 
 ### 0.3.16 (2023-06-23)
 
