@@ -108,6 +108,16 @@
     (strip-tags (src/candidates "@some-a" (-ns) nil))
     => (just ["@some-atom"]))
 
+  (fact "private vars will be suggested when prefixed with var quote"
+    ;; no candidate for a non-public var
+    (strip-tags (src/candidates "clojure.core/print-tagged-object" (-ns) nil))
+    => (just [])
+    ;; var quote works though
+    (strip-tags (src/candidates "#'clojure.core/print-tagged-object" (-ns) nil))
+    => (just [ "#'clojure.core/print-tagged-object"])
+    (strip-tags (src/candidates "#'src/resolve-var" (-ns) nil))
+    => (just ["#'src/resolve-var"]))
+
   (def foo:bar 1)
   (def foo:baz 2)
   (fact "handles vars with semicolons in them"
