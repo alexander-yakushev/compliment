@@ -13,25 +13,9 @@ jobs:
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
       - run: lein with-profile +1.10 test-no-bench
+      - run: lein with-profile +1.12 test-no-bench
       - run: lein with-profile +1.11 test-all
       - run: lein with-profile +1.11 eastwood
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: project-{{ checksum "project.clj" }}
-
-  # Using Clojure on JDK11+ requires fixes from Clojure 1.10 to work correctly,
-  # so 1.8 and 1.9 are effectively deprecated, but still supported with JDK8.
-  test-old-clojure:
-    working_directory: ~/project
-    docker:
-      - image: clojure:temurin-8-lein
-    steps:
-      - checkout
-      - restore_cache:
-          key: project-{{ checksum "project.clj" }}
-      - run: lein with-profile +1.8 test-no-bench
-      - run: lein with-profile +1.9 test-no-bench
       - save_cache:
           paths:
             - ~/.m2
@@ -68,6 +52,5 @@ workflows:
                 - clojure:temurin-11-lein
                 - clojure:openjdk-14-lein
                 - clojure:temurin-17-lein
-                - clojure:temurin-19-lein
-      - test-old-clojure
+                - clojure:temurin-20-lein
       - coverage

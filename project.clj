@@ -26,7 +26,5 @@
                              "fullbench" ["run" "-m" "compliment.t-benchmark"]
                              "coverage" ["cloverage" "--test-ns-regex" ".+\\.t-(?!benchmark)[^.]+$"
                                          "--codecov"]}}
-             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}
-             :1.11 {:dependencies [[org.clojure/clojure "1.11.1"]]}})
+             :1.12 {:dependencies [[org.clojure/clojure "1.12.0-alpha4"]]}})
