@@ -1,7 +1,10 @@
 # Change log
 
-### Unreleased
+### 0.4.0 (2023-07-05)
 
+- Support for Clojure 1.8 and 1.9 is dropped. Compliment will most likely
+  continue to work with them for a while, but the compatibility is no longer
+  guaranteed.
 - [#98](https://github.com/alexander-yakushev/compliment/pull/98): Find private vars when using var quote literal.
 - [#98](https://github.com/alexander-yakushev/compliment/pull/98): Support `:private` and `:deprecated` as extra-metadata.
 
