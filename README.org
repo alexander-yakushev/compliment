@@ -1,19 +1,17 @@
 * Compliment [[https://circleci.com/gh/alexander-yakushev/compliment][https://img.shields.io/circleci/project/github/alexander-yakushev/compliment/master.svg]] [[https://codecov.io/github/alexander-yakushev/compliment][https://img.shields.io/codecov/c/github/alexander-yakushev/compliment.svg?token=FZTqeuK1hQ]] [[https://versions.deps.co/alexander-yakushev/compliment][https://img.shields.io/badge/dependencies-none-brightgreen.svg]] [[https://clojars.org/compliment][https://img.shields.io/clojars/dt/compliment.svg?color=teal]] [[CHANGELOG.md][https://img.shields.io/badge/-changelog-blue.svg]]
 
-  Compliment is the ultimate Clojure completion library. It provides a fast and
-  smart solution to complete vars, namespaces, class members, keywords, locals.
-  It also allows users to implement custom completion sources.
+  Compliment is a fast and smart completion library for Clojure. It can complete
+  [[https://github.com/alexander-yakushev/compliment/wiki/Examples#vars][vars]], [[https://github.com/alexander-yakushev/compliment/wiki/Examples#namespaces][namespaces]], [[https://github.com/alexander-yakushev/compliment/wiki/Examples#classes][classes]], [[https://github.com/alexander-yakushev/compliment/wiki/Examples#static-members][class members]], [[https://github.com/alexander-yakushev/compliment/wiki/Examples#keywords][keywords]], [[https://github.com/alexander-yakushev/compliment/wiki/Examples#local-bindings][locals]]. Users and library
+  authors can also extend Compliment with custom completion sources.
 
   Compliment is used as a completion backend in the following editors/IDEs:
 
-  - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]] (through [[http://company-mode.github.io/][company-mode]])
-  - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]] and [[https://liquidz.github.io/vim-iced/][vim-iced]]
-  - Neovim --- [[https://github.com/Olical/conjure][Conjure]]
+  - Emacs --- [[https://cider.readthedocs.io/en/latest/code_completion/][CIDER]]
+  - Vim --- [[https://github.com/tpope/vim-fireplace][vim-fireplace]]
   - Visual Studio Code --- [[https://calva.io/][Calva]]
-  - Atom --- [[https://atom.io/packages/proto-repl][Proto REPL]] and [[https://atom.io/packages/chlorine][Chlorine]]
   - @bhauman's [[https://github.com/bhauman/rebel-readline/][rebel-readline]]
 
-  Also, I am so glad you came here. You look gorgeous today.
+  Besides, I am so glad you came here. You look gorgeous today.
 
 ** Rationale
 
@@ -34,20 +32,20 @@
 
 ** Installation
 
-   If you use vim-fireplace or Calva, then you don't have to install
-   anything at all --- Compliment will already be there for you. In case you are
-   an Emacs+CIDER user you'll also need to install [[http://company-mode.github.io/][company-mode]] and
-   [[https://github.com/expez/company-quickhelp][company-quickhelp]] for optimal results. This [[https://docs.cider.mx/cider/usage/code_completion.html][guide]] will help you configure it.
+   In most Clojure IDEs that use Compliment, you don't have to install anything
+   at all --- it will already be there for you. In case you are a CIDER user
+   you'll also need to install [[http://company-mode.github.io/][company-mode]] and [[https://github.com/expez/company-quickhelp][company-quickhelp]] for optimal
+   results. This [[https://docs.cider.mx/cider/usage/code_completion.html][guide]] will help you configure it.
 
-   If you need Compliment embedded directly into your program then add this to
-   the =:dependencies=:
+   To embed Compliment directly into your program add this to the
+   =:dependencies=:
 
    [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
 ** Examples
 
-   [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios
-   Compliment supports so far.
+   [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios Compliment
+   supports.
 
    You can advise Compliment to provide special treatment for certain Vars by
    attaching metadata to them. See the [[https://github.com/alexander-yakushev/compliment/wiki/Metadata][Metadata]] page for details.
