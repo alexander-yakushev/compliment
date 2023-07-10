@@ -82,14 +82,6 @@ Note that should always have the same value, regardless of OS."
   [sym ns]
   (or ((ns-aliases ns) sym) (find-ns sym)))
 
-(defmacro ^{:doc "Defines a memoized function."
-            :forms '([name doc-string? [params*] body])}
-  defmemoized [name & fdecl]
-  (let [[doc & fdecl] (if (string? (first fdecl))
-                        [(first fdecl) (rest fdecl)]
-                        ["" fdecl])]
-    `(def ~name ~doc (memoize (fn ~@fdecl)))))
-
 (def primitive-cache (atom {}))
 
 (defmacro cache-last-result
