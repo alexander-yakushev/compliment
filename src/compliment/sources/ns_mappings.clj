@@ -84,10 +84,10 @@
                    ns-form-namespace (ns-publics ns-form-namespace)
                    :else (ns-map ns))]
         (for [[var-sym var] vars
-              :let [var-name (name var-sym)
-                    {:keys [arglists doc private deprecated] :as var-meta} (meta var)]
-              :when (and (dash-matches? prefix var-name)
-                         (not (:completion/hidden var-meta)))]
+              :let [var-name (name var-sym)]
+              :when (dash-matches? prefix var-name)
+              :let [{:keys [arglists doc private deprecated] :as var-meta} (meta var)]
+              :when (not (:completion/hidden var-meta))]
           (if (= (type var) Class)
             {:candidate var-name, :type :class,
              :package (when-let [pkg (.getPackage ^Class var)]

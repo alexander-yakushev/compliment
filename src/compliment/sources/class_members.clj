@@ -47,14 +47,18 @@
   "Updates members cache for a given namespace if necessary."
   ([ns] (update-cache ns nil))
   ([ns context-class]
-   (let [imported-classes (set (filter class? (vals (ns-map ns))))
+   (let [imported-classes (reduce-kv (fn [acc _ mapping]
+                                       (if (class? mapping)
+                                         (conj acc mapping)
+                                         acc))
+                                     [] (ns-map ns))
          imported-classes-cnt (count imported-classes)
          cache (@members-cache ns)]
      (when (or (nil? cache)
                (not= (:imported-classes-cnt cache) imported-classes-cnt)
                (and context-class
                     (not (contains? (:classes cache) context-class))))
-       (let [classes (cond-> (into imported-classes (:classes cache))
+       (let [classes (cond-> (into (set imported-classes) (:classes cache))
                        context-class (conj context-class))]
          (populate-members-cache ns classes imported-classes-cnt))))))
 
