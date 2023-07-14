@@ -22,8 +22,11 @@
                (str/replace "\\}" "(char 125)")
                (str/replace "{" "(compliment-hashmap ")
                (str/replace "}" ")")
-               (str/replace #"::([-\w]+)/" (fn [[_ kw-ns]]
-                                             (str ":" (get ns-aliases (symbol kw-ns) kw-ns) "/")))
+               ;; The reader breaks on aliased keywords if the respective
+               ;; namespace isn't imported into the current ns.
+               (str/replace #"::([-!?+*_<>.\w]+)/"
+                            (fn [[_ kw-ns]]
+                              (str ":" (get ns-aliases (symbol kw-ns) kw-ns) "/")))
                read-string
                restore-map-literals)))
        (catch Exception ex)))

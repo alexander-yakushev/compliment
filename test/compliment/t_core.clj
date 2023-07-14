@@ -90,7 +90,12 @@
     (do (def a-big-int 42M)
         (strip-tags (core/completions ".sub" {:context "(__prefix__ a-big-int)"
                                               :ns 'compliment.t-core})))
-    => (just [".subtract"]))
+    => (just [".subtract"])
+
+    ;; Aliased keywords don't break context parsing.
+    (strip-tags (core/completions "" {:context "(let [bar ::ex.data/id] __prefix__)"
+                                      :sources [:compliment.sources.local-bindings/local-bindings]}))
+    => (just ["bar"]))
 
   (fact ":sources list can filter the sources to be used during completion"
     (core/completions "cl")
