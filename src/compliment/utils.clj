@@ -37,36 +37,51 @@ Note that should always have the same value, regardless of OS."
   (if (.startsWith file File/separator)
     (.substring file 1) file))
 
+(set! *unchecked-math* true)
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."
-  [prefix, ^String symbol, separator]
-  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
-    (loop [pre (rest prefix), sym (rest symbol), skipping false]
-      (cond (empty? pre) true
-            (empty? sym) false
-            skipping (if (= (first sym) separator)
-                       (recur (if (= (first pre) separator)
-                                (rest pre) pre)
-                              (rest sym) false)
-                       (recur pre (rest sym) true))
-            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
-            :else (recur pre (rest sym) (not= (first sym) separator))))))
+  [^String prefix, ^String symbol, ^Character separator]
+  (let [pn (.length prefix), sn (.length symbol)]
+    (or (= pn 0)
+        (and (> sn 0)
+             (= (.charAt prefix 0) (.charAt symbol 0))
+             (loop [pi 1, si 1, skipping false]
+               (cond (>= pi pn) true
+                     (>= si sn) false
+                     :else
+                     (let [pc (.charAt prefix pi)
+                           sc (.charAt symbol si)
+                           match (= pc sc)]
+                       (cond skipping (if (= sc separator)
+                                        (recur (if match (inc pi) pi) (inc si) false)
+                                        (recur pi (inc si) true))
+                             match (recur (inc pi) (inc si) false)
+                             :else (recur pi (inc si) (not (= pc separator)))))))))))
 
 (defn fuzzy-matches-no-skip?
   "Tests if symbol matches the prefix where separator? checks whether character
   is a separator. Unlike `fuzzy-matches?` requires separator characters to be
   present in prefix."
-  [prefix, ^String symbol, separator?]
-  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
-    (loop [pre prefix, sym symbol, skipping false]
-      (cond (empty? pre) true
-            (empty? sym) false
-            skipping (if (separator? (first sym))
-                       (recur pre sym false)
-                       (recur pre (rest sym) true))
-            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
-            :else (recur pre (rest sym) true)))))
+  [^String prefix, ^String symbol, separator?]
+  (let [pn (.length prefix), sn (.length symbol)]
+    (or (= pn 0)
+        (and (> sn 0)
+             (= (.charAt prefix 0) (.charAt symbol 0))
+             (loop [pi 1, si 1, skipping false]
+               (cond (>= pi pn) true
+                     (>= si sn) false
+                     :else
+                     (let [pc (.charAt prefix pi)
+                           sc (.charAt symbol si)]
+                       (cond skipping (if (separator? sc)
+                                        (recur pi si false)
+                                        (recur pi (inc si) true))
+                             (= pc sc) (recur (inc pi) (inc si) false)
+                             :else (recur pi (inc si) true)))))))))
+
+(set! *unchecked-math* false)
 
 (defn resolve-class
   "Tries to resolve a classname from the given symbol, or returns nil
