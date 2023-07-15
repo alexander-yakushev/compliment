@@ -12,7 +12,7 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.11.1"]
                                   [criterium "0.4.6"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "1.3.0"]
+                   :plugins [[jonase/eastwood "1.4.0"]
                              [lein-cloverage "1.2.4"]]
                    :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
                                                :def-in-def {compliment.sources.t-class-members true

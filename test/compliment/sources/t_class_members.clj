@@ -1,11 +1,59 @@
 (ns compliment.sources.t-class-members
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
-            [compliment.sources.class-members :as src]
+  (:require [clojure.test :refer :all]
             [compliment.context :as ctx]
-            [compliment.t-helpers :refer :all]))
+            [compliment.sources.class-members :as src]
+            [compliment.t-helpers :refer :all]
+            [fudje.sweet :refer :all]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-class-members))
+
+(def ^Thread thread (Thread.))
+
+(deftest thread-first-test
+  (in-ns 'compliment.sources.t-class-members)
+  (fact "`->` works with Compliment"
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> thread __prefix__)")))
+    => (just '(".suspend"))
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> thread __prefix__ FOO)")))
+    => (just '(".suspend"))
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> \"\" clojure.string/trim __prefix__)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> \"\" clojure.string/trim __prefix__ FOO)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> [] (clojure.string/join) __prefix__)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> [] (clojure.string/join) __prefix__ FOO)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> x ^Thread (anything) __prefix__)")))
+    => (just '(".suspend"))
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(-> x ^Thread (anything) __prefix__ FOO)")))
+    => (just '(".suspend"))))
+
+(deftest doto-test
+  (in-ns 'compliment.sources.t-class-members)
+  (fact "`doto` works with Compliment"
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(doto thread __prefix__)")))
+    => (just '(".suspend"))
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(doto thread (__prefix__))")))
+    => (just '(".suspend"))))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
@@ -35,60 +83,61 @@
     (strip-tags (src/members-candidates ".sta" (-ns) nil))
     => (just [".start" ".startsWith"] :in-any-order)
 
-    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context
-                                                      '(__prefix__ ^String foo))))
+    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                      "(__prefix__ ^String foo)")))
     => (just [".startsWith"])
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
-                                                     '(__prefix__ ^Thread foo))))
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                     "(__prefix__ ^Thread foo)")))
     => (just [".interrupt"])
 
-    ;; read-string is used here because fudje seems to mess up metadata on forms
-    (strip-tags (src/members-candidates ".m" (-ns) (ctx/parse-context
-                                                     (read-string
-                                                      "(__prefix__ ^java.io.File (foo))"))))
+    (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
+                                                    "(__prefix__ ^java.io.File (foo))")))
     => (just [".mkdirs" ".mkdir"] :in-any-order)
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
-                                                     (read-string
-                                                      "(__prefix__ ^Thread (foo))"))))
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                     "(__prefix__ ^Thread (foo))")))
     => (just [".interrupt"])
 
-    (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
-                                                    '(__prefix__ ^java.util.Map foo))))
+    (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
+                                                    "(__prefix__ ^java.util.Map foo)")))
     => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order)
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/parse-context
-                                                     '(let [^Thread foo ...
-                                                            ... ...
-                                                            _ (.start foo)]
-                                                        (__prefix__ foo)))))
+    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                     "(let [^Thread foo ...
+                                                             ... ...
+                                                             _ (.start foo)]
+                                                         (__prefix__ foo))")))
     => (just [".interrupt"])
 
-    (strip-tags (src/members-candidates ".p" (-ns) (ctx/parse-context
-                                                    '(defn bar [{:keys [^java.util.Map foo]}]
-                                                       (__prefix__ foo)))))
+    (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
+                                                    "(defn bar [{:keys [^java.util.Map foo]}]
+                                                        (__prefix__ foo))")))
     => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order))
 
   (fact "if context is provided and the first arg is a global var with a
   resolvable class, use it to filter candidates"
     (do (def a-str "a string")
-        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/parse-context '(__prefix__ a-str)))))
+        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                          "(__prefix__ a-str)"))))
     => (just [".startsWith"]))
 
   (fact "completes members of context object even if its class is not imported"
     (do (def a-bitset (java.util.BitSet.))
-        (strip-tags (src/members-candidates ".inter" (-ns) (ctx/parse-context '(__prefix__ a-bitset)))))
+        (strip-tags (src/members-candidates ".inter" (-ns) (ctx/cache-context
+                                                            "(__prefix__ a-bitset)"))))
     => (just [".intersects"]))
 
   (fact "completion should work with vars on different namespaces"
     (do (def an-object 1234)
-        (strip-tags (src/members-candidates ".int" (-ns) (ctx/parse-context '(__prefix__ an-object)))))
+        (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                          "(__prefix__ an-object)"))))
     => (just [".intValue"])
 
     (do (create-ns 'another-ns)
         (intern 'another-ns 'an-object "foo")
-        (strip-tags (src/members-candidates ".toUpper" (find-ns 'another-ns) (ctx/parse-context '(__prefix__ an-object)))))
+        (strip-tags (src/members-candidates ".toUpper" (find-ns 'another-ns) (ctx/cache-context
+                                                                              "(__prefix__ an-object)"))))
     => (just [".toUpperCase"]))
 
   (fact "class members have docs"

@@ -1,11 +1,39 @@
 (ns compliment.sources.t-local-bindings
-  (:require [fudje.sweet :refer :all]
+  (:require [clojure.string :as string]
             [clojure.test :refer :all]
-            [compliment.sources.local-bindings :as src]
             [compliment.context :as ctx]
-            [compliment.t-helpers :refer :all]))
+            [compliment.sources.local-bindings :as src]
+            [compliment.t-helpers :refer :all]
+            [fudje.sweet :refer :all]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-local-bindings))
+
+(def thread1
+  "A thread identified as such by its class"
+  (Thread.))
+
+(def ^Thread thread2
+  "A thread identified as such by its :tag"
+  nil)
+
+(deftest bindings-from-context
+  (fact "The class of a given binding can be identified by the class of its bound value"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a thread1] __prefix__))
+                                    (-ns)))
+    => (just [`Thread]))
+
+  (fact "The class of a given binding can be identified by the :tag of its bound value"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a thread2] __prefix__))
+                                    (-ns)))
+    => (just [`Thread]))
+
+  (fact "The class of a given binding can be identified by the :tag of the var from an invocation"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a (string/trim "a")] __prefix__))
+                                    (-ns)))
+    => (just [`String])))
 
 (deftest local-bindings
   (defmacro ^{:completion/locals :let} like-let [& _])

@@ -3,15 +3,36 @@
   (:require [clojure.string :as str]
             [clojure.walk :as walk]))
 
+(defn- walk-meta-preserving
+  "Like `clojure.walk/walk`, but preserves meta. Redundant after
+  https://clojure.atlassian.net/browse/CLJ-2568 is merged."
+  [inner outer form]
+  (let [restore-meta #(if-let [fm (meta form)]
+                        (with-meta %
+                          (merge fm (meta %)))
+                        %)]
+    (cond
+      (list? form) (outer (restore-meta (apply list (map inner form))))
+      (instance? clojure.lang.IMapEntry form)
+      (outer (clojure.lang.MapEntry/create (inner (key form)) (inner (val form))))
+      (seq? form) (outer (restore-meta (doall (map inner form))))
+      (instance? clojure.lang.IRecord form)
+      (outer (restore-meta (reduce (fn [r x] (conj r (inner x))) form form)))
+      (coll? form) (outer (restore-meta (into (empty form) (map inner form))))
+      :else (outer form))))
+
+(defn- postwalk [f form]
+  (walk-meta-preserving (partial postwalk f) identity (f form)))
+
 (defn- restore-map-literals [context]
-  (walk/postwalk (fn [el]
-                   (if (and (sequential? el)
-                            (= (first el) 'compliment-hashmap))
-                     (apply hash-map
-                            (if (even? (count el))
-                              (concat (rest el) [nil])
-                              (rest el)))
-                     el)) context))
+  (postwalk (fn [el]
+              (if (and (sequential? el)
+                       (= (first el) 'compliment-hashmap))
+                (apply hash-map
+                       (if (even? (count el))
+                         (concat (rest el) [nil])
+                         (rest el)))
+                el)) context))
 
 (defn- try-read-replacing-maps [s]
   (try (binding [*read-eval* false]
@@ -63,6 +84,19 @@
 (def ^{:doc "Special symbol which substitutes prefix in the context,
   so the former can be found unambiguously."}
   prefix-placeholder '__prefix__)
+
+(defn macroexpand-form [ns form]
+  (postwalk (fn [x]
+              (if (and (list? x)
+                       (-> x first symbol?)
+                       (contains? #{#'clojure.core/->
+                                    #'clojure.core/->>
+                                    #'clojure.core/..
+                                    #'clojure.core/doto}
+                                  (->> x first (ns-resolve ns))))
+                (macroexpand-1 x)
+                x))
+            form))
 
 (defn parse-context
   "Takes a context which is a Lisp form and returns a transformed context.
@@ -116,5 +150,5 @@
   [context-string]
   (let [context (safe-read-context-string context-string)]
     (when-not (= context :same)
-      (reset! previous-context (parse-context context))))
+      (reset! previous-context (parse-context (macroexpand-form *ns* context)))))
   @previous-context)
