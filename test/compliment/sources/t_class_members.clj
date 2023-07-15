@@ -5,7 +5,40 @@
             [compliment.context :as ctx]
             [compliment.t-helpers :refer :all]))
 
-(defn- -ns [] (find-ns 'compliment.sources.t-class-members))
+(defn- -ns [] (-> ::_ namespace symbol find-ns))
+
+(def blob (javax.sql.rowset.serial.SerialBlob. (byte-array 1)))
+
+(deftest imports-don't-matter-for-package-qualified-classes-0
+  (fact "SerialBlob is not imported into this ns, making the subsequent tests valid"
+    (not-any? #{'SerialBlob} (ns-imports (-ns)))
+    =>
+    truthy))
+
+(deftest imports-don't-matter-for-package-qualified-classes-1
+  (fact "Whether a class has been imported does not matter for a fully-qualified class.
+Reported as https://github.com/alexander-yakushev/compliment/issues/58"
+    (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ blob)))
+    =>
+    (just [{:candidate ".getBinaryStream", :type :method}
+           {:candidate ".getBytes", :type :method}]
+          :in-any-order)))
+
+(deftest imports-don't-matter-for-package-qualified-classes-2
+  (fact "Whether a class has been imported does not matter for a fully-qualified class.
+Reported as https://github.com/alexander-yakushev/compliment/issues/58"
+    (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ (javax.sql.rowset.serial.SerialBlob. (byte-array 1)))))
+    =>
+    (just [{:candidate ".getBinaryStream", :type :method}
+           {:candidate ".getBytes", :type :method}]
+          :in-any-order)))
+
+(deftest imports-don't-matter-for-package-qualified-classes-3
+  (fact "Non-package qualified variant will result in less accurate reports"
+    (> (count (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ (SerialBlob. (byte-array 1))))))
+       99)
+    =>
+    truthy))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
