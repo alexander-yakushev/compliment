@@ -7,6 +7,44 @@
 
 (defn- -ns [] (find-ns 'compliment.sources.t-class-members))
 
+(def blob (javax.sql.rowset.serial.SerialBlob. (byte-array 1)))
+
+(deftest imports-don't-matter-for-package-qualified-classes
+  (testing "Whether a class has been imported does not matter for a fully-qualified class.
+
+Reported as https://github.com/alexander-yakushev/compliment/issues/58"
+    (let [prefix "."
+          this-ns (-> ::_ namespace symbol find-ns)]
+
+      (assert (not-any? #{'SerialBlob} (ns-imports this-ns))
+              "SerialBlob is not imported into this ns, making the subsequent test valid")
+
+      (is (= #{{:candidate ".getBinaryStream", :type :method}
+               {:candidate ".setBytes", :type :method}
+               {:candidate ".free", :type :method}
+               {:candidate ".setBinaryStream", :type :method}
+               {:candidate ".getBytes", :type :method}
+               {:candidate ".position", :type :method}
+               {:candidate ".length", :type :method}
+               {:candidate ".truncate", :type :method}
+               {:candidate ".clone", :type :method}
+               {:candidate ".hashCode", :type :method}
+               {:candidate ".equals", :type :method}}
+
+             (set (src/members-candidates prefix
+                                          this-ns
+                                          (ctx/parse-context '(__prefix__ blob))))
+
+             (set (src/members-candidates prefix
+                                          this-ns
+                                          (ctx/parse-context '(__prefix__ (javax.sql.rowset.serial.SerialBlob. (byte-array 1))))))))
+
+      (is (> (count (src/members-candidates prefix
+                                            this-ns
+                                            (ctx/parse-context '(__prefix__ (SerialBlob. (byte-array 1))))))
+             100)
+          "Non-package qualified variant will result in less accurate reports"))))
+
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "fuzzy matching class members works with camelCase as separator"
