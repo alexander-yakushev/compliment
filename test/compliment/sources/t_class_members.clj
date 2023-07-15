@@ -9,8 +9,11 @@
 
 (def blob (javax.sql.rowset.serial.SerialBlob. (byte-array 1)))
 
-(assert (not-any? #{'SerialBlob} (ns-imports (-ns)))
-        "SerialBlob is not imported into this ns, making the subsequent tests valid")
+(deftest imports-don't-matter-for-package-qualified-classes-0
+  (fact "SerialBlob is not imported into this ns, making the subsequent tests valid"
+    (not-any? #{'SerialBlob} (ns-imports (-ns)))
+    =>
+    truthy))
 
 (deftest imports-don't-matter-for-package-qualified-classes-1
   (fact "Whether a class has been imported does not matter for a fully-qualified class.
@@ -35,7 +38,7 @@ Reported as https://github.com/alexander-yakushev/compliment/issues/58"
     (> (count (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ (SerialBlob. (byte-array 1))))))
        99)
     =>
-    (just true)))
+    truthy))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
