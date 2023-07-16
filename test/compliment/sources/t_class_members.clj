@@ -44,6 +44,24 @@
                                                       "(-> x ^Thread (anything) __prefix__ FOO)")))
     => (just '(".interrupt"))))
 
+(deftest thread-last-test
+  (fact "`->>` works with Compliment"
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(->> [] (clojure.string/join \"a\") __prefix__)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(->> [] (clojure.string/join \"a\") __prefix__ FOO)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(->> [] ^Thread (anything) __prefix__ )")))
+    => (just '(".suspend"))
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(->> thread __prefix__)")))
+    => (just '(".suspend"))))
+
 (deftest doto-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "`doto` works with Compliment"
