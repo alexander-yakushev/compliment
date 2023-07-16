@@ -12,13 +12,13 @@
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "`->` works with Compliment"
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> thread __prefix__)")))
-    => (just '(".suspend"))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(-> thread __prefix__)")))
+    => (just '(".interrupt"))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> thread __prefix__ FOO)")))
-    => (just '(".suspend"))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(-> thread __prefix__ FOO)")))
+    => (just '(".interrupt"))
 
     (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
                                                      "(-> \"\" clojure.string/trim __prefix__)")))
@@ -36,24 +36,24 @@
                                                      "(-> [] (clojure.string/join) __prefix__ FOO)")))
     => (just '(".subSequence" ".substring") :in-any-order)
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> x ^Thread (anything) __prefix__)")))
-    => (just '(".suspend"))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(-> x ^Thread (anything) __prefix__)")))
+    => (just '(".interrupt"))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> x ^Thread (anything) __prefix__ FOO)")))
-    => (just '(".suspend"))))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(-> x ^Thread (anything) __prefix__ FOO)")))
+    => (just '(".interrupt"))))
 
 (deftest doto-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "`doto` works with Compliment"
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(doto thread __prefix__)")))
-    => (just '(".suspend"))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(doto thread __prefix__)")))
+    => (just '(".interrupt"))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(doto thread (__prefix__))")))
-    => (just '(".suspend"))))
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(doto thread (__prefix__))")))
+    => (just '(".interrupt"))))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
