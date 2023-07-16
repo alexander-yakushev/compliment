@@ -91,7 +91,6 @@
                        (-> x first symbol?)
                        (contains? #{#'clojure.core/->
                                     #'clojure.core/->>
-                                    #'clojure.core/..
                                     #'clojure.core/doto}
                                   (ns-resolve ns (first x))))
                 (macroexpand-1 x)
