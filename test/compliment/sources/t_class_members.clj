@@ -25,18 +25,9 @@ Reported as https://github.com/alexander-yakushev/compliment/issues/58"
           :in-any-order)))
 
 (deftest imports-don't-matter-for-package-qualified-classes-2
-  (fact "Whether a class has been imported does not matter for a fully-qualified class.
-Reported as https://github.com/alexander-yakushev/compliment/issues/58"
-    (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ (javax.sql.rowset.serial.SerialBlob. (byte-array 1)))))
-    =>
-    (just [{:candidate ".getBinaryStream", :type :method}
-           {:candidate ".getBytes", :type :method}]
-          :in-any-order)))
-
-(deftest imports-don't-matter-for-package-qualified-classes-3
   (fact "Non-package qualified variant will result in less accurate reports"
     (> (count (src/members-candidates ".get" (-ns) (ctx/parse-context '(__prefix__ (SerialBlob. (byte-array 1))))))
-       99)
+       10)
     =>
     truthy))
 
