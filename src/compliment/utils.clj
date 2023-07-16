@@ -244,12 +244,6 @@ Note that should always have the same value, regardless of OS."
         (.. (ensure-no-leading-slash file)
             (replace File/separator resource-separator))))))
 
-(defn list-like? [form]
-  (or (list? form) ;; normally returned be the reader
-      (instance? Cons form) ;; occasionally returned be the reader
-      (instance? LazySeq form) ;; produced by our macroexpansion business
-      ))
-
 (defn var->class
   "Given a form that may be a var, returns the class that is associated to its :tag or its value (in that precedence order)."
   [ns form]
@@ -267,7 +261,7 @@ Note that should always have the same value, regardless of OS."
   "Given a form that might be an invocation form (i.e. a list),
   return the class that is returned, according to the invoked function's var metadata."
   [ns form]
-  (when-let [var-from-invocation (and (list-like? form)
+  (when-let [var-from-invocation (and (seq? form)
                                       (symbol? (first form))
                                       (ns-resolve ns (first form)))]
     (and (= (class var-from-invocation) Var)

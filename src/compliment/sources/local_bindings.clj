@@ -97,7 +97,7 @@
   "When given a form that has a binding vector traverses that binding vector and
   returns the list of all local bindings."
   [form ns]
-  (when (utils/list-like? form)
+  (when (seq? form)
     (let [sym (first form)
           locals-meta (when (symbol? sym)
                         (:completion/locals (meta (ns-resolve ns sym))))]

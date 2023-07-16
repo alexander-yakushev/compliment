@@ -87,7 +87,7 @@
 
 (defn macroexpand-form [ns form]
   (postwalk (fn [x]
-              (if (and (list? x)
+              (if (and (seq? x)
                        (-> x first symbol?)
                        (contains? #{#'clojure.core/->
                                     #'clojure.core/->>
