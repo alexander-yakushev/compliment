@@ -93,7 +93,7 @@
                                     #'clojure.core/->>
                                     #'clojure.core/..
                                     #'clojure.core/doto}
-                                  (->> x first (ns-resolve ns))))
+                                  (ns-resolve ns (first x))))
                 (macroexpand-1 x)
                 x))
             form))
