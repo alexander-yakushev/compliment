@@ -71,6 +71,14 @@
 
     (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
                                                       "(doto thread (__prefix__))")))
+    => (just '(".interrupt"))
+
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(doto thread .checkAccess (__prefix__))")))
+    => (just '(".interrupt"))
+
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(doto thread (__prefix__) .checkAccess)")))
     => (just '(".interrupt"))))
 
 (deftest class-members-test
