@@ -97,8 +97,7 @@
         (resolve-class ns tag)
         ;; Otherwise, try to resolve symbol to a Var.
         (or (utils/var->class ns form)
-            (utils/invocation-form->class ns form)
-            (utils/java-interop->class ns form))))))
+            (utils/invocation-form->class ns form))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."

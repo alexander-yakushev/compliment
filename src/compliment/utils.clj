@@ -266,9 +266,3 @@ Note that should always have the same value, regardless of OS."
                                       (ns-resolve ns (first form)))]
     (when (= (class var-from-invocation) Var)
       (-> var-from-invocation meta :tag))))
-
-(defn java-interop->class
-  "Given a `form` that may represent a Java interop form (e.g. constructor call, method call), return its class."
-  [ns form]
-  ;; TODO implement
-  nil)
