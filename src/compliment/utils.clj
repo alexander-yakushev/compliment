@@ -264,8 +264,8 @@ Note that should always have the same value, regardless of OS."
   (when-let [var-from-invocation (and (seq? form)
                                       (symbol? (first form))
                                       (ns-resolve ns (first form)))]
-    (and (= (class var-from-invocation) Var)
-         (-> var-from-invocation meta :tag))))
+    (when (= (class var-from-invocation) Var)
+      (-> var-from-invocation meta :tag))))
 
 (defn java-interop->class
   "Given a `form` that may represent a Java interop form (e.g. constructor call, method call), return its class."
