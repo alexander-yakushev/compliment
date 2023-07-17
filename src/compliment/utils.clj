@@ -248,7 +248,7 @@ Note that should always have the same value, regardless of OS."
   "Given a form that may be a var, returns the class that is associated to its :tag or its value (in that precedence order)."
   [ns form]
   (when-let [var-ref (and (symbol? form)
-                          (when-let [found (some->> form (ns-resolve ns))]
+                          (let [found (ns-resolve ns form)]
                             (when (var? found)
                               found)))]
     ;; let :tag take precedence - maybe the :tag says "this is an IFoo" (interface),
