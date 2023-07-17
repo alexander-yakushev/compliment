@@ -76,11 +76,11 @@
 
         (not (#{'& '_} binding-node))
         (let [result binding-node]
-          (if (-> result meta :tag)
-            [result]
-            (if-let [candidate (extract-tag-from-bound-to ns bound-to)]
-              [(vary-meta result assoc :tag candidate)]
-              [result])))))
+          [(if (-> result meta :tag)
+             result
+             (if-let [candidate (extract-tag-from-bound-to ns bound-to)]
+               (vary-meta result assoc :tag candidate)
+               result))])))
 
 (defn parse-fn-body
   "Extract function name and arglists from the function body, return list of all
