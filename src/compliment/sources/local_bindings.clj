@@ -75,8 +75,7 @@
             as-bind (conj as-bind)))
 
         (not (#{'& '_} binding-node))
-        (let [result binding-node
-              candidate (delay (extract-tag-from-bound-to ns bound-to))]
+        (let [result binding-node]
           (if (-> result meta :tag)
             [result]
             (if-let [candidate (extract-tag-from-bound-to ns bound-to)]
