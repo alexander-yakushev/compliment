@@ -4,28 +4,38 @@
             [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]
             [compliment.utils :as utils]))
 
-;; syntax-quoted variants are important for when we perform macroexpansion as part of our processing.
-(def let-like-forms #{'let `let
-                      'if-let `if-let
-                      'when-let `when-let
-                      'if-some `if-some
-                      'when-some `when-some
-                      'loop `loop
-                      'with-open `with-open
-                      'dotimes `dotimes
-                      'with-local-vars `with-local-vars})
+(defn- let-like-form? [x]
+  (and (symbol? x)
+       (contains? #{"let"
+                    "if-let"
+                    "when-let"
+                    "if-some"
+                    "when-some"
+                    "loop"
+                    "with-open"
+                    "dotimes"
+                    "with-local-vars"}
+                  (name x))))
 
-(def defn-like-forms #{'defn `defn
-                       'defn- `defn-
-                       'fn `fn
-                       `fn*
-                       'defmacro `defmacro
-                       'defmethod `defmethod})
+(defn- defn-like-form? [x]
+  (and (symbol? x)
+       (contains? #{"defn"
+                    "defn-"
+                    "fn"
+                    "fn*"
+                    "defmacro"
+                    "defmethod"}
+                  (name x))))
 
-(def doseq-like-forms #{'doseq `doseq
-                        'for `for})
+(defn- doseq-like-form? [x]
+  (and (symbol? x)
+       (contains? #{"doseq" "for"}
+                  (name x))))
 
-(def letfn-like-forms #{'letfn `letfn})
+(defn- letfn-like-form? [x]
+  (and (symbol? x)
+       (contains? #{"letfn"}
+                  (name x))))
 
 (def destructuring-key-names #{"keys" "strs" "syms"})
 
@@ -98,20 +108,20 @@
     (let [sym (first form)
           locals-meta (when (symbol? sym)
                         (:completion/locals (meta (ns-resolve ns sym))))]
-      (cond (or (let-like-forms sym) (= locals-meta :let))
+      (cond (or (let-like-form? sym) (= locals-meta :let))
             (mapcat (fn [[x y]]
                       (parse-binding ns x y))
                     (partition 2 (second form)))
 
-            (or (defn-like-forms sym) (= locals-meta :defn))
+            (or (defn-like-form? sym) (= locals-meta :defn))
             (parse-fn-body ns (rest form))
 
-            (or (letfn-like-forms sym) (= locals-meta :letfn))
+            (or (letfn-like-form? sym) (= locals-meta :letfn))
             (mapcat (fn [fn-body]
                       (parse-fn-body ns fn-body))
                     (second form))
 
-            (or (doseq-like-forms sym) (= locals-meta :doseq))
+            (or (doseq-like-form? sym) (= locals-meta :doseq))
             (->> (partition 2 (second form))
                  (mapcat (fn [[left right]]
                            (if (= left :let)
