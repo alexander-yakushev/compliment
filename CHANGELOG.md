@@ -1,5 +1,12 @@
 # Change log
 
+### unreleased
+
+- allow to filter sources considered in `compliment.core`'s `completions` and
+  `documentation` by providing a predicate function as the `:sources` option.
+- properly thread the `ns` argument in the 2-arity version of `compliment.core/documentation`
+
+
 ### 0.4.0 (2023-07-05)
 
 - Support for Clojure 1.8 and 1.9 is dropped. Compliment will most likely
@@ -21,10 +28,6 @@
 - [#91](https://github.com/alexander-yakushev/compliment/pull/91): `compliment.utils/namespaces-on-classpath` (now deprecated) takes cljc files into account.
   Add replacement `compliment.utils/namespaces&files-on-classpath` that yields a collection of maps containing the filename.
   - [#94](https://github.com/alexander-yakushev/compliment/issues/94): `compliment.sources.namespaces-and-classes/doc` accepts ns-aliases as well.
-
-- allow to filter sources considered in `compliment.core`'s `completions` and
-  `documentation` by providing a predicate function as the `:sources` option.
-- properly thread the `ns` argument in the 2-arity version of `compliment.core/documentation`
 
 ### 0.3.14 (2022-07-11)
 
