@@ -14,10 +14,10 @@
     => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
 
     (strip-tags (core/completions "'redu"))
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+    => (contains ["'reduce" "'reduce-kv" "'reductions"] :gaps-ok)
 
     (strip-tags (core/completions "#'redu"))
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+    => (contains ["#'reduce" "#'reduce-kv" "#'reductions"] :gaps-ok)
 
     (strip-tags (core/completions "fac" {:ns (find-ns 'fudje.sweet)}))
     => (just ["fact" "facts"] :in-any-order)
@@ -90,7 +90,12 @@
     (do (def a-big-int 42M)
         (strip-tags (core/completions ".sub" {:context "(__prefix__ a-big-int)"
                                               :ns 'compliment.t-core})))
-    => (just [".subtract"]))
+    => (just [".subtract"])
+
+    ;; Aliased keywords don't break context parsing.
+    (strip-tags (core/completions "" {:context "(let [bar ::ex.data/id] __prefix__)"
+                                      :sources [:compliment.sources.local-bindings/local-bindings]}))
+    => (just ["bar"]))
 
   (fact ":sources list can filter the sources to be used during completion"
     (core/completions "cl")
@@ -100,11 +105,13 @@
                                         :ns 'compliment.t-core}))
     => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
 
-
   (fact ":sources predicate can filter the sources to be used during completion"
     (strip-tags (core/completions "cl" {:sources #(= :compliment.sources.ns-mappings/ns-mappings (:name %))
                                         :ns 'compliment.t-core}))
     => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
+
+  (fact "empty prefix returns a list of candidates"
+    (core/completions "") => (checker not-empty))
 
   (fact "different metadata is attached to candidates"
     (core/completions "bound" {}) =>
@@ -124,7 +131,7 @@
 
     ;; Test for not required namespaces
     (core/completions "cl.test.ta" {}) =>
-    (just [{:type :namespace, :candidate "clojure.test.tap"}])
+    (just [{:type :namespace, :candidate "clojure.test.tap" :file "clojure/test/tap.clj"}])
 
     ;; Test for aliases
     (core/completions "cor" {:ns 'compliment.t-core})
@@ -137,7 +144,7 @@
     (contains [{:type :class, :candidate "java.net.URLEncoder"}])
 
     (compliment.core/completions "RuntimeE" {})
-    => (just [{:package "java.lang", :type :class, :candidate "RuntimeException"}])
+    => (contains #{{:package "java.lang", :type :class, :candidate "RuntimeException"}})
 
     (core/completions ".getName" {}) =>
     (contains #{{:candidate ".getName", :type :method}

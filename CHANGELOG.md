@@ -1,6 +1,26 @@
 # Change log
 
-### master (unreleased)
+### 0.4.0 (2023-07-05)
+
+- Support for Clojure 1.8 and 1.9 is dropped. Compliment will most likely
+  continue to work with them for a while, but the compatibility is no longer
+  guaranteed.
+- [#98](https://github.com/alexander-yakushev/compliment/pull/98): Find private vars when using var quote literal.
+- [#98](https://github.com/alexander-yakushev/compliment/pull/98): Support `:private` and `:deprecated` as extra-metadata.
+
+### 0.3.16 (2023-06-23)
+
+- [#97](https://github.com/alexander-yakushev/compliment/pull/97): Extend
+  completion and getting docs for symbol-strings with leading literals.
+
+### 0.3.15 (2023-06-22)
+
+- Complete fully-qualified classnames by their shortname prefix anywhere in the
+  file (previously worked only in the `:import` section of the `ns` form).
+- Fix ' and #' being swallowed when completing vars prefixed by them.
+- [#91](https://github.com/alexander-yakushev/compliment/pull/91): `compliment.utils/namespaces-on-classpath` (now deprecated) takes cljc files into account.
+  Add replacement `compliment.utils/namespaces&files-on-classpath` that yields a collection of maps containing the filename.
+  - [#94](https://github.com/alexander-yakushev/compliment/issues/94): `compliment.sources.namespaces-and-classes/doc` accepts ns-aliases as well.
 
 - allow to filter sources considered in `compliment.core`'s `completions` and
   `documentation` by providing a predicate function as the `:sources` option.
@@ -30,7 +50,7 @@
 
 ### 0.3.11 (2020-10-06)
 
-- Silence reflection Complete local bindings declared in `:strs` and `:syms` map destructuring.
+- Complete local bindings declared in `:strs` and `:syms` map destructuring.
 - [#75](https://github.com/alexander-yakushev/compliment/issues/75): Suppress
   reflection warnings in JDK9-related code.
 
@@ -49,7 +69,7 @@
 
 - Fix not completing methods/fields for freshly imported classes.
 - [#58](https://github.com/alexander-yakushev/compliment/issues/58): Complete
-  members for unimportant class if the context class is found.
+  members for unimported class if the context class is found.
 - Retrieve context class from next form's type tag or from type tag of the same
   symbol if it was tagged in the same lexical scope.
 

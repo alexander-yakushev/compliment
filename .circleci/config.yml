@@ -1,53 +1,20 @@
-version: 2
+version: 2.1
+
 jobs:
-  test-jdk8:
+  test:
+    parameters:
+      docker-image:
+        type: string
     working_directory: ~/project
     docker:
-      - image: clojure:openjdk-8-lein-2.9.0
+      - image: << parameters.docker-image >>
     steps:
       - checkout
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
-      - run: lein with-profile +1.8 test
-      - run: lein with-profile +1.9 test
-      - run: lein with-profile +1.10 test
-      - run: lein with-profile +1.11 test
-      - run: lein with-profile +1.11 eastwood
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: project-{{ checksum "project.clj" }}
-
-  test-jdk11:
-    working_directory: ~/project
-    docker:
-      - image: clojure:openjdk-11-lein-2.9.0
-    steps:
-      - checkout
-      - restore_cache:
-          key: project-{{ checksum "project.clj" }}
-      - run: lein with-profile +1.8 test
-      - run: lein with-profile +1.9 test
-      - run: lein with-profile +1.10 test
-      - run: lein with-profile +1.11 test
-      - run: lein with-profile +1.11 eastwood
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: project-{{ checksum "project.clj" }}
-
-  test-jdk17:
-    working_directory: ~/project
-    docker:
-      - image: circleci/clojure:openjdk-17-lein-2.9.5-buster
-    steps:
-      - checkout
-      - restore_cache:
-          key: project-{{ checksum "project.clj" }}
-      - run: lein with-profile +1.8 test
-      - run: lein with-profile +1.9 test
-      - run: lein with-profile +1.10 test
-      - run: lein with-profile +1.11 test
+      - run: lein with-profile +1.10 test-no-bench
+      - run: lein with-profile +1.12 test-no-bench
+      - run: lein with-profile +1.11 test-all
       - run: lein with-profile +1.11 eastwood
       - save_cache:
           paths:
@@ -57,23 +24,33 @@ jobs:
   coverage:
     working_directory: ~/project
     docker:
-      - image: clojure:openjdk-8-lein-2.9.0
+      - image: clojure:temurin-17-lein
     steps:
       - checkout
       - restore_cache:
           key: project-{{ checksum "project.clj" }}
-      - run: CIRCLECI=true lein with-profile +1.11 coverage
+      - run: lein coverage
+      - run: >
+          curl -Os https://uploader.codecov.io/latest/linux/codecov &&
+          chmod +x codecov &&
+          ./codecov -f target/coverage/codecov.json -t ${CODECOV_TOKEN} -R .
       - store_artifacts:
           path: target/coverage
       - save_cache:
           paths:
             - ~/.m2
           key: project-{{ checksum "project.clj" }}
+
 workflows:
-  version: 2
   run_all:
     jobs:
-      - test-jdk8
-      - test-jdk11
-      - test-jdk17
+      - test:
+          matrix:
+            parameters:
+              docker-image:
+                - clojure:temurin-8-lein
+                - clojure:temurin-11-lein
+                - clojure:openjdk-14-lein
+                - clojure:temurin-17-lein
+                - clojure:temurin-20-lein
       - coverage

@@ -37,8 +37,8 @@
     => (just ["src"])
 
     (src/candidates "clojure.java." (-ns) nil)
-    => (contains #{{:candidate "clojure.java.browse", :type :namespace}
-                   {:candidate "clojure.java.shell", :type :namespace}} :gaps-ok)
+    => (contains #{{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
+                   {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}} :gaps-ok)
 
     (src/candidates "java.io.Stri" (-ns) nil)
     => (contains #{{:candidate "java.io.StringReader", :type :class}
@@ -56,6 +56,8 @@
     )
 
   (fact "aliases are completed by this source too"
+    (strip-tags (src/candidates "#'clojure.co" (-ns) nil)) => (contains ["#'clojure.core"])
+
     (do (require '[clojure.string :as str])
         (strip-tags (src/candidates "st" (-ns) nil)))
     => (contains ["str"])
@@ -67,6 +69,21 @@
   (fact "anonymous and inner classes are not suggested"
     (strip-tags (src/candidates "java.util.ArrayDeq" (-ns) nil))
     => (just ["java.util.ArrayDeque"]))
+
+  (fact "for prefixes without a period only root package names are suggested"
+    (strip-tags (src/candidates "jd" (-ns) nil))
+    => (just ["jdk."])
+
+    ;; But if the prefix is a full root package name, then suggest classes.
+    (src/candidates "jdk" (-ns) nil)
+    => (checker #(> (count %) 100)))
+
+  (fact "capitalized prefixes are treated as short classnames for completing FQN"
+    (strip-tags (src/candidates "BiPred" (-ns) nil))
+    => (just ["java.util.function.BiPredicate"])
+
+    (sort (strip-tags (src/candidates "Array" (-ns) nil)))
+    => (contains #{"java.util.ArrayList" "java.lang.reflect.Array"} :gaps-ok))
 
   (fact "inside :import block additional rules apply"
     (src/candidates "Handler" (-ns) (ctx/parse-context '(ns (:require stuff)
@@ -84,4 +101,11 @@
 
   (fact "namespaces and classes have documentation"
     (src/doc "clojure.core" (-ns)) => (checker string?)
-    (src/doc "java.lang.Runnable" (-ns)) => (checker string?)))
+    (src/doc "java.lang.Runnable" (-ns)) => (checker string?)
+    ;; aliases
+    (src/doc "utils" (-ns)) => (checker string?)
+    ;; literals
+    (src/doc "'utils" (-ns)) => (checker string?)
+    (src/doc "#'utils" (-ns)) => (checker string?)
+    (src/doc "@#'clojure.core" (-ns)) => (checker string?)
+    (src/doc "@@#'utils" (-ns)) => (checker string?)))

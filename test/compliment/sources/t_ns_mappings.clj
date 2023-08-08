@@ -84,6 +84,40 @@
         (strip-tags (src/candidates "c.str/cap" (-ns) nil)))
     => (just ["c.str/capitalize"]))
 
+  (def some-atom (atom nil))
+
+  (fact "var can be prefixed by ', #' or @"
+    (strip-tags (src/candidates "'redu" (-ns) nil))
+    => (contains ["'reduce" "'reductions" "'reduce-kv"] :gaps-ok)
+
+    (strip-tags (src/candidates "#'redu" (-ns) nil))
+    => (contains ["#'reduce" "#'reductions" "#'reduce-kv"] :gaps-ok)
+
+    (strip-tags (src/candidates "'clojure.string/i" (-ns) nil))
+    => (just ["'clojure.string/includes?" "'clojure.string/index-of"])
+
+    (strip-tags (src/candidates "#'clojure.string/i" (-ns) nil))
+    => (just ["#'clojure.string/includes?" "#'clojure.string/index-of"])
+
+    (strip-tags (src/candidates "'s/cap" (-ns) nil))
+    => (just ["'s/capitalize"])
+
+    (strip-tags (src/candidates "#'s/cap" (-ns) nil))
+    => (just ["#'s/capitalize"])
+
+    (strip-tags (src/candidates "@some-a" (-ns) nil))
+    => (just ["@some-atom"]))
+
+  (fact "private vars will be suggested when prefixed with var quote"
+    ;; no candidate for a non-public var
+    (strip-tags (src/candidates "clojure.core/print-tagged-object" (-ns) nil))
+    => (just [])
+    ;; var quote works though
+    (strip-tags (src/candidates "#'clojure.core/print-tagged-object" (-ns) nil))
+    => (just [ "#'clojure.core/print-tagged-object"])
+    (strip-tags (src/candidates "#'src/resolve-var" (-ns) nil))
+    => (just ["#'src/resolve-var"]))
+
   (def foo:bar 1)
   (def foo:baz 2)
   (fact "handles vars with semicolons in them"
@@ -96,16 +130,16 @@
     (strip-tags (src/candidates "foo:b" (-ns) nil))
     => (contains #{"foo:bar" "foo:baz"} :gaps-ok))
 
+  (defn ^:deprecated ^:private some-deprecated-private-fn "Some doc" [])
   (fact "extra metadata can be requested from this completion source"
-    (binding [*extra-metadata* #{:doc :arglists}]
-      (doall (src/candidates "freq" (-ns) nil)))
-    => [{:candidate "frequencies", :type :function, :ns "clojure.core"
-         :arglists ["[coll]"]
+    (binding [*extra-metadata* #{:doc :arglists :private :deprecated}]
+      (doall (src/candidates "some-deprecated-private-fn" (-ns) nil)))
+    => [{:candidate "some-deprecated-private-fn", :type :function, :ns "compliment.sources.t-ns-mappings"
+         :private true, :deprecated true, :arglists ["[]"]
          :doc (clojure.string/join
                (System/lineSeparator)
-               ["clojure.core/frequencies" "([coll])"
-                "  Returns a map from distinct items in coll to the number of times
-  they appear." ""])}])
+               ["compliment.sources.t-ns-mappings/some-deprecated-private-fn" "([])"
+                "  Some doc" ""])}])
 
   (defn should-appear [])
   (defn ^:completion/hidden shouldnt-appear [])
@@ -126,4 +160,12 @@
                      (ctx/parse-context '(ns foo.bar
                                            (:require [clojure.string
                                                       :refer [__prefix__]])))))
-    => (just ["split" "split-lines"] :in-any-order)))
+    => (just ["split" "split-lines"] :in-any-order))
+
+  (fact "ns-mappings have documentation"
+    (src/doc "map" (-ns)) => (checker string?)
+    (src/doc "clojure.core/map" (-ns)) => (checker string?)
+    (src/doc "#'clojure.core/map" (-ns)) => (checker string?)
+    (src/doc "#'src/var-symbol?" (-ns)) => (checker string?)
+    (src/doc "bogus" (-ns)) => nil
+    (src/doc "bo/gus" (-ns)) => nil))

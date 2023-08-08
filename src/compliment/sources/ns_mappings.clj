@@ -3,7 +3,7 @@
   (:require [clojure.string :as string]
             [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
-                                      *extra-metadata*]])
+                                      *extra-metadata* split-by-leading-literals]])
   (:import java.io.StringWriter))
 
 (defn var-symbol?
@@ -74,49 +74,55 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [quoted-prefix (or (re-find #"^#'" prefix)
-                          (re-find #"^'" prefix))
-        prefix (-> prefix
-                   ;; consider var-quote and quote to express the same as the non-quoted equivalent,
-                   ;; since that is more useful than offering no completions:
-                   (string/replace-first #"^#'" "")
-                   (string/replace-first #"^'" ""))]
+  (let [[literals prefix] (split-by-leading-literals prefix)
+        var-quote? (when literals (re-find #"#'$" literals))]
     (when (var-symbol? prefix)
       (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
             ns-form-namespace (try-get-ns-from-context context)
             vars (cond
-                   scope (ns-publics scope)
+                   scope (if var-quote? (ns-interns scope) (ns-publics scope))
                    ns-form-namespace (ns-publics ns-form-namespace)
                    :else (ns-map ns))]
         (for [[var-sym var] vars
-              :let [var-name (name var-sym)
-                    {:keys [arglists doc] :as var-meta} (meta var)]
-              :when (and (dash-matches? prefix var-name)
-                         (not (:completion/hidden var-meta)))]
+              :let [var-name (name var-sym)]
+              :when (dash-matches? prefix var-name)
+              :let [{:keys [arglists doc private deprecated] :as var-meta} (meta var)]
+              :when (not (:completion/hidden var-meta))]
           (if (= (type var) Class)
             {:candidate var-name, :type :class,
              :package (when-let [pkg (.getPackage ^Class var)]
                         ;; Some classes don't have a package
                         (.getName ^Package pkg))}
 
-            (cond-> {:candidate (if scope
-                                  (str quoted-prefix scope-name "/" var-name)
-                                  var-name)
+            (cond-> {:candidate (str literals
+                                     (if scope
+                                       (str scope-name "/" var-name)
+                                       var-name))
                      :type (cond (:macro var-meta) :macro
                                  arglists :function
                                  :else :var)
                      :ns (str (or (:ns var-meta) ns))}
-              (and arglists(:arglists *extra-metadata*))
+              (and private (:private *extra-metadata*))
+              (assoc :private (boolean private))
+
+              (and deprecated (:deprecated *extra-metadata*))
+              (assoc :deprecated (boolean deprecated))
+
+              (and arglists (:arglists *extra-metadata*))
               (assoc :arglists (apply list (map pr-str arglists)))
 
               (and doc (:doc *extra-metadata*))
               (assoc :doc (generate-docstring var-meta)))))))))
 
+(defn- resolve-var [symbol-str ns]
+  (let [strip-literals (comp second split-by-leading-literals)]
+    (ns-resolve ns (symbol (strip-literals symbol-str)))))
+
 (defn doc
   "Documentation function for this sources' completions."
   [symbol-str ns]
-  (if (var-symbol? symbol-str)
-    (when-let [var (ns-resolve ns (symbol symbol-str))]
+  (when (var-symbol? symbol-str)
+    (when-let [var (resolve-var symbol-str ns)]
       (when (meta var)
         (generate-docstring (meta var))))))
 

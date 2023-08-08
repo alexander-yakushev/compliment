@@ -19,36 +19,69 @@
 Note that should always have the same value, regardless of OS."
   "/")
 
+(defn split-by-leading-literals
+  "Meant for symbol-strings that might have leading @, #', or '.
+
+  Examples:
+  \"@some-atom\" => '(\"@\" \"some-atom\")
+  \"@#'a\" => '(\"@#'\" \"a\")
+  \"#'some.ns/some-var\" => '(\"#'\" \"some.ns/some-var\")
+
+  \" @wont-work\" => '(nil \" @wont-work\")
+  \"nothing-todo\" => '(nil \"nothing-todo\")
+  "
+  [symbol-str]
+  (next (re-matches #"(@{0,2}#'|'|@)?(.*)" symbol-str)))
+
+(defn- ensure-no-leading-slash ^String [^String file]
+  (if (.startsWith file File/separator)
+    (.substring file 1) file))
+
+(set! *unchecked-math* true)
+
 (defn fuzzy-matches?
   "Tests if symbol matches the prefix when symbol is split into parts on
   separator."
-  [prefix, ^String symbol, separator]
-  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
-    (loop [pre (rest prefix), sym (rest symbol), skipping false]
-      (cond (empty? pre) true
-            (empty? sym) false
-            skipping (if (= (first sym) separator)
-                       (recur (if (= (first pre) separator)
-                                (rest pre) pre)
-                              (rest sym) false)
-                       (recur pre (rest sym) true))
-            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
-            :else (recur pre (rest sym) (not= (first sym) separator))))))
+  [^String prefix, ^String symbol, ^Character separator]
+  (let [pn (.length prefix), sn (.length symbol)]
+    (or (= pn 0)
+        (and (> sn 0)
+             (= (.charAt prefix 0) (.charAt symbol 0))
+             (loop [pi 1, si 1, skipping false]
+               (cond (>= pi pn) true
+                     (>= si sn) false
+                     :else
+                     (let [pc (.charAt prefix pi)
+                           sc (.charAt symbol si)
+                           match (= pc sc)]
+                       (cond skipping (if (= sc separator)
+                                        (recur (if match (inc pi) pi) (inc si) false)
+                                        (recur pi (inc si) true))
+                             match (recur (inc pi) (inc si) false)
+                             :else (recur pi (inc si) (not (= pc separator)))))))))))
 
 (defn fuzzy-matches-no-skip?
   "Tests if symbol matches the prefix where separator? checks whether character
   is a separator. Unlike `fuzzy-matches?` requires separator characters to be
   present in prefix."
-  [prefix, ^String symbol, separator?]
-  (when (or (.startsWith symbol prefix) (= (first prefix) (first symbol)))
-    (loop [pre prefix, sym symbol, skipping false]
-      (cond (empty? pre) true
-            (empty? sym) false
-            skipping (if (separator? (first sym))
-                       (recur pre sym false)
-                       (recur pre (rest sym) true))
-            (= (first pre) (first sym)) (recur (rest pre) (rest sym) false)
-            :else (recur pre (rest sym) true)))))
+  [^String prefix, ^String symbol, separator?]
+  (let [pn (.length prefix), sn (.length symbol)]
+    (or (= pn 0)
+        (and (> sn 0)
+             (= (.charAt prefix 0) (.charAt symbol 0))
+             (loop [pi 1, si 1, skipping false]
+               (cond (>= pi pn) true
+                     (>= si sn) false
+                     :else
+                     (let [pc (.charAt prefix pi)
+                           sc (.charAt symbol si)]
+                       (cond skipping (if (separator? sc)
+                                        (recur pi si false)
+                                        (recur pi (inc si) true))
+                             (= pc sc) (recur (inc pi) (inc si) false)
+                             :else (recur pi (inc si) true)))))))))
+
+(set! *unchecked-math* false)
 
 (defn resolve-class
   "Tries to resolve a classname from the given symbol, or returns nil
@@ -63,14 +96,6 @@ Note that should always have the same value, regardless of OS."
   fully qualified name or an alias in the given namespace."
   [sym ns]
   (or ((ns-aliases ns) sym) (find-ns sym)))
-
-(defmacro ^{:doc "Defines a memoized function."
-            :forms '([name doc-string? [params*] body])}
-  defmemoized [name & fdecl]
-  (let [[doc & fdecl] (if (string? (first fdecl))
-                        [(first fdecl) (rest fdecl)]
-                        ["" fdecl])]
-    `(def ~name ~doc (memoize (fn ~@fdecl)))))
 
 (def primitive-cache (atom {}))
 
@@ -97,26 +122,13 @@ Note that should always have the same value, regardless of OS."
 
 ;; Classpath inspection
 
-(def android-vm?
-  "Signifies if the application is running on Android."
-  (.contains ^String (System/getProperty "java.vendor") "Android"))
-
-(def jdk9+?
-  "Signifies if the application is running on JDK 9 or higher."
-  (try (let [major (re-find #"^\d+" (System/getProperty "java.version"))
-             major (Integer/parseInt major)]
-         (>= major 9))
-       (catch Exception _ false)))
-
 (defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
-  (if android-vm?
-    ()
-    (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
-            ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
-             ;; This is where Boot keeps references to dependencies.
-             "fake.class.path"])))
+  (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
+          ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
+           ;; This is where Boot keeps references to dependencies.
+           "fake.class.path"]))
 
 (defn- symlink?
   "Checks if the given file is a symlink."
@@ -157,37 +169,32 @@ Note that should always have the same value, regardless of OS."
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
 
-(defn- list-jdk9-base-classfiles
+(defmacro list-jdk9-base-classfiles
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
   modules, we have to do extra work to extract them."
   []
-  ;; We have to do a lot of manual reflection here because otherwise JDK9+ barks
-  ;; at us or illegally accessing internal classes. Bah.
-  (let [mf-class (Class/forName "java.lang.module.ModuleFinder")
-        of-system (.getMethod mf-class "ofSystem" (into-array Class []))
-        mfinder (.invoke of-system nil (object-array 0))
-
-        mrefs (.findAll mfinder)
-        mref-class (Class/forName "java.lang.module.ModuleReference")
-        open-method (.getMethod mref-class "open" (into-array Class []))
-
-        classes (volatile! (transient []))
-        consumer (reify Consumer (accept [_ v] (vswap! classes conj! v)))]
-    (doseq [mref mrefs
-            :let [mrdr (.invoke open-method mref (object-array 0))
-                  ^java.util.stream.Stream stream (.list mrdr)]]
-      (.forEach stream consumer)
-      (.close mrdr))
-
-    (persistent! @classes)))
+  (if (try (resolve 'java.lang.module.ModuleFinder)
+           (catch ClassNotFoundException _))
+    `(let [classes# (volatile! (transient []))]
+       (->> (try (.findAll (java.lang.module.ModuleFinder/ofSystem))
+                 ;; Due to a bug in Clojure before 1.10, the above may fail.
+                 (catch IncompatibleClassChangeError _# []))
+            (run! (fn [^java.lang.module.ModuleReference mref#]
+                    (let [mrdr# (.open mref#)
+                          ^java.util.stream.Stream stream# (.list mrdr#)]
+                      (.forEach stream#
+                                (reify Consumer
+                                  (accept [_ v#] (vswap! classes# conj! v#))))))))
+       (persistent! @classes#))
+    ()))
 
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,
   including those located inside jar files."
   [classpath]
   (cache-last-result ::all-files-on-classpath classpath
-    (cond-> (vec (mapcat #(list-files % true) classpath))
-      jdk9+? (into (list-jdk9-base-classfiles)))))
+    (into (vec (mapcat #(list-files % true) classpath))
+          (list-jdk9-base-classfiles))))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
@@ -199,25 +206,28 @@ Note that should always have the same value, regardless of OS."
       (->> (for [^String file (all-files-on-classpath classpath)
                  :when (and (.endsWith file ".class") (not (.contains file "__"))
                             (not (.contains file "$")))]
-             (.. (if (.startsWith file File/separator)
-                   (.substring file 1) file)
+             (.. (ensure-no-leading-slash file)
                  (replace ".class" "")
                  ;; Address the issue #79 , on Windows, for prefix such
                  ;; as "java.util.", the list of candidates was empty.
                  (replace resource-separator ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
-(defn namespaces-on-classpath
-  "Returns the list of all Clojure namespaces obtained by classpath scanning."
+(defn namespaces&files-on-classpath
+  "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file \"some/ns.cljs\"}`) of all clj/cljc/cljs namespaces obtained by classpath scanning."
   []
   (let [classpath (classpath)]
     (cache-last-result ::namespaces-on-classpath classpath
-      (set (for [^String file (all-files-on-classpath classpath)
-                 :when (and (.endsWith file ".clj")
-                            (not (.startsWith file "META-INF")))
-                 :let [[_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj" file)]
-                 :when nsname]
-             (.. nsname (replace resource-separator ".") (replace "_" "-")))))))
+      ;; TODO deduplicate these results by ns-str
+      (for [file (all-files-on-classpath classpath)
+            :let [file (ensure-no-leading-slash file)
+                  [_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj[sc]?$" file)]
+            :when nsname]
+        (let [ns-str (.. nsname (replace resource-separator ".") (replace "_" "-"))]
+          {:ns-str ns-str, :file file})))))
+
+(defn ^:deprecated namespaces-on-classpath []
+  (transduce (map :ns-str) conj #{} (namespaces&files-on-classpath)))
 
 (defn project-resources
   "Returns a list of all non-code files in the current project."
@@ -226,9 +236,8 @@ Note that should always have the same value, regardless of OS."
     (cache-last-result ::project-resources classpath
       (for [path classpath
             ^String file (list-files path false)
-            :when (not (or (empty? file) (.endsWith file ".clj")
-                           (.endsWith file ".jar") (.endsWith file ".class")))]
+            :when (not (or (empty? file)
+                           (re-find #"\.(clj[cs]?|jar|class)$" file)))]
         ;; resource pathes always use "/" regardless of platform
-        (.. (if (.startsWith file File/separator)
-              (.substring file 1) file)
+        (.. (ensure-no-leading-slash file)
             (replace File/separator resource-separator))))))

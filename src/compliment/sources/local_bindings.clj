@@ -12,9 +12,7 @@
 
 (def letfn-like-forms '#{letfn})
 
-(def destructuring-keys #{:keys :strs :syms})
-
-(def destructuring-key-names (into #{} (map name destructuring-keys)))
+(def destructuring-key-names #{"keys" "strs" "syms"})
 
 (defn parse-binding
   "Given a binding node returns the list of local bindings introduced by that
@@ -29,8 +27,10 @@
                                 (mapcat parse-binding))
               keys-binds (->> binding-node
                               (mapcat (fn [[k v]]
-                                        (when (or (destructuring-keys k)
-                                                  (and (keyword? k) (destructuring-key-names (name k))))
+                                        ;; This handles both plain and
+                                        ;; namespaced destructuring keywords.
+                                        (when (and (keyword? k)
+                                                   (destructuring-key-names (name k)))
                                           v)))
                               (map #(if (keyword? %) (symbol (name %)) %)))
               as-bind (:as binding-node)]

@@ -19,31 +19,15 @@
             [clojure.string :refer [join]])
   (:import java.util.Comparator))
 
-;; TODO: Consider removing/deprecating this, as we've abandoned the efforts
-;; to use compliment in REPLy.
-(def all-files
-  "List of all Compliment files in an order they should be loaded. This is
-  required by REPLy."
-  (map (partial format "compliment/%s.clj")
-       ["utils" "context" "sources" "sources/class_members"
-        "sources/ns_mappings" "sources/namespaces_and_classes"
-        "sources/keywords" "sources/special_forms" "sources/local_bindings"
-        "sources/resources"
-        "core"]))
-
 (def ^:private by-length-comparator
+  "Sorts list of strings by their length first, and then alphabetically if length
+  is equal."
   (reify Comparator
     (compare [_ s1 s2]
-      (let [res (compare (count s1) (count s2))]
+      (let [res (Integer/compare (.length ^String s1) (.length ^String s2))]
         (if (zero? res)
-          (compare s1 s2)
+          (.compareTo ^String s1 s2)
           res)))))
-
-(defn sort-by-length
-  "Sorts list of strings by their length first, and then alphabetically if
-  length is equal. Works for tagged and non-tagged results."
-  [candidates]
-  (sort-by :candidate by-length-comparator candidates))
 
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
