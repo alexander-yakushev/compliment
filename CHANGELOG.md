@@ -1,5 +1,12 @@
 # Change log
 
+### unreleased
+
+- allow to filter sources considered in `compliment.core`'s `completions` and
+  `documentation` by providing a predicate function as the `:sources` option.
+- properly thread the `ns` argument in the 2-arity version of `compliment.core/documentation`
+
+
 ### 0.4.0 (2023-07-05)
 
 - Support for Clojure 1.8 and 1.9 is dropped. Compliment will most likely

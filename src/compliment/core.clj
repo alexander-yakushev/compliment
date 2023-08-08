@@ -46,7 +46,8 @@
    - :sort-order (either :by-length or :by-name);
    - :plain-candidates - if true, returns plain strings instead of maps;
    - :extra-metadata - set of extra fields to add to the maps;
-   - :sources - list of source keywords to use."
+   - :sources - list of source keywords to use or a predicate used to filter
+                over source definition maps."
   ([prefix]
    (completions prefix {}))
   ([prefix options-map]
@@ -83,11 +84,12 @@
   "Returns a documentation string that describes the given symbol.
 
   Options map can contain the following options:
-   - :sources - list of source keywords to use."
+   - :sources - list of source keywords to use or a predicate used to filter
+                over source definition maps."
   ([symbol-str]
    (documentation symbol-str *ns*))
   ([symbol-str ns]
-   (documentation symbol-str *ns* nil))
+   (documentation symbol-str ns nil))
   ([symbol-str ns options-map]
    (let [{:keys [sources]} options-map]
      (if (empty? symbol-str)
