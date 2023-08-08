@@ -17,6 +17,15 @@
   "Stores cache of all non-static members for every namespace."
   (atom {}))
 
+(defn- demunge-deftype-field-name
+  "If the member is a deftype field, change .x_y to .x-y for compatibility. See
+  https://github.com/alexander-yakushev/compliment/issues/33."
+  [^Member m, ^Class c, ^String name]
+  (if (and (instance? Field m)
+           (.isAssignableFrom clojure.lang.IType c))
+    (.replaceAll name "_" "-")
+    name))
+
 (defn populate-members-cache
   "Populate members cache of class members for `ns` from the given list of
   classes. `imported-classes-cnt` is a number that indicates the current number
@@ -26,18 +35,19 @@
         (for [^Class class classes
               ^Member member (concat (.getMethods class) (.getFields class))
               :when (not (static? member))]
-          (let [dc (.getDeclaringClass member)]
-            (if (= dc class)
-              member
-              (if (instance? Method member)
-                (.getMethod dc (.getName member)
-                            (.getParameterTypes ^Method member))
-                (.getField dc (.getName member))))))
+          (let [dc (.getDeclaringClass member)
+                name (.getName member)
+                demunged-name (demunge-deftype-field-name member dc name)]
+            [demunged-name
+             (if (= dc class)
+               member
+               (if (instance? Method member)
+                 (.getMethod dc name (.getParameterTypes ^Method member))
+                 (.getField dc name)))]))
 
         cache
-        (reduce (fn [cache, ^Member m]
-                  (let [full-name (.getName m)]
-                    (assoc! cache full-name (conj (cache full-name []) m))))
+        (reduce (fn [cache [full-name m]]
+                  (assoc! cache full-name (conj (cache full-name []) m)))
                 (transient {}) members)]
     (swap! members-cache assoc ns {:classes (set classes)
                                    :imported-classes-cnt imported-classes-cnt
