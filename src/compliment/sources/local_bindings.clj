@@ -29,13 +29,11 @@
 
 (defn- doseq-like-form? [x]
   (and (symbol? x)
-       (contains? #{"doseq" "for"}
-                  (name x))))
+       (contains? #{"doseq" "for"} (name x))))
 
 (defn- letfn-like-form? [x]
   (and (symbol? x)
-       (contains? #{"letfn"}
-                  (name x))))
+       (contains? #{"letfn"} (name x))))
 
 (def destructuring-key-names #{"keys" "strs" "syms"})
 

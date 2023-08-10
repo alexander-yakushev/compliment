@@ -1,10 +1,10 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
-  (:import [clojure.lang Cons LazySeq Var]
-           [java.io File]
-           [java.nio.file Files]
-           [java.util.function Consumer]
-           [java.util.jar JarEntry JarFile]))
+  (:import (clojure.lang Cons LazySeq)
+           java.io.File
+           java.nio.file.Files
+           java.util.function.Consumer
+           (java.util.jar JarEntry JarFile)))
 
 ;; Disable reflection warnings in this file because we must use reflection to
 ;; support both JDK8 and JDK9+.
@@ -245,14 +245,16 @@ Note that should always have the same value, regardless of OS."
             (replace File/separator resource-separator))))))
 
 (defn var->class
-  "Given a form that may be a var, returns the class that is associated to its :tag or its value (in that precedence order)."
+  "Given a form that may be a var, returns the class that is associated
+  to its :tag or its value (in that precedence order)."
   [ns form]
   (when-let [var-ref (and (symbol? form)
                           (let [found (ns-resolve ns form)]
                             (when (var? found)
                               found)))]
     ;; let :tag take precedence - maybe the :tag says "this is an IFoo" (interface),
-    ;; and the class says "this is a FooImpl" (concrete class, which maybe has worse documentation
+    ;; and the class says "this is a FooImpl"
+    ;; (concrete class, which maybe has worse documentation
     ;; or other inheritance intricacies)
     (or (-> var-ref meta :tag)
         (class (deref var-ref)))))
@@ -264,5 +266,5 @@ Note that should always have the same value, regardless of OS."
   (when-let [var-from-invocation (and (seq? form)
                                       (symbol? (first form))
                                       (ns-resolve ns (first form)))]
-    (when (= (class var-from-invocation) Var)
+    (when (var? var-from-invocation)
       (-> var-from-invocation meta :tag))))
