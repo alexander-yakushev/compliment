@@ -1,5 +1,10 @@
 # Change log
 
+### master (unreleased)
+
+- [#33](https://github.com/alexander-yakushev/compliment/issues/33): Demunge
+  deftype field names.
+
 ### 0.4.0 (2023-07-05)
 
 - Support for Clojure 1.8 and 1.9 is dropped. Compliment will most likely

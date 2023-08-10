@@ -81,6 +81,9 @@
                                                       "(doto thread (__prefix__) .checkAccess)")))
     => (just '(".interrupt"))))
 
+(deftype FooType [x-y x-z])
+(definterface SomeIface (foo_bar [this]))
+
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "fuzzy matching class members works with camelCase as separator"
@@ -165,6 +168,13 @@
         (strip-tags (src/members-candidates ".toUpper" (find-ns 'another-ns) (ctx/cache-context
                                                                               "(__prefix__ an-object)"))))
     => (just [".toUpperCase"]))
+
+  (fact "deftype fields are demunged for better compatibility"
+    (strip-tags (src/members-candidates ".x" (-ns) nil))
+    => (just [".x-z" ".x-y" ".xor"])
+
+    (strip-tags (src/members-candidates ".foo" (-ns) nil))
+    => (just [".foo_bar"]))
 
   (fact "class members have docs"
     (src/members-doc ".wait" (-ns)) => (checker string?)))
