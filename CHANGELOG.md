@@ -4,6 +4,9 @@
 
 - [#33](https://github.com/alexander-yakushev/compliment/issues/33): Demunge
   deftype field names.
+- [#61](https://github.com/alexander-yakushev/compliment/issues/61): Introduce
+  support for offering completions within the context of a  `->`, `->>` and
+  `doto` call.
 
 ### 0.4.0 (2023-07-05)
 

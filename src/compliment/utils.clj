@@ -1,8 +1,9 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
-  (:import java.io.File java.nio.file.Files
-           (java.util.jar JarFile JarEntry)
-           java.util.function.Consumer))
+  (:import java.io.File
+           java.nio.file.Files
+           java.util.function.Consumer
+           (java.util.jar JarEntry JarFile)))
 
 ;; Disable reflection warnings in this file because we must use reflection to
 ;; support both JDK8 and JDK9+.
@@ -241,3 +242,28 @@ Note that should always have the same value, regardless of OS."
         ;; resource pathes always use "/" regardless of platform
         (.. (ensure-no-leading-slash file)
             (replace File/separator resource-separator))))))
+
+(defn var->class
+  "Given a form that may be a var, returns the class that is associated
+  to its :tag or its value (in that precedence order)."
+  [ns form]
+  (when-let [var-ref (and (symbol? form)
+                          (let [found (ns-resolve ns form)]
+                            (when (var? found)
+                              found)))]
+    ;; let :tag take precedence - maybe the :tag says "this is an IFoo" (interface),
+    ;; and the class says "this is a FooImpl"
+    ;; (concrete class, which maybe has worse documentation
+    ;; or other inheritance intricacies)
+    (or (-> var-ref meta :tag)
+        (class (deref var-ref)))))
+
+(defn invocation-form->class
+  "Given a form that might be an invocation form (i.e. a list),
+  return the class that is returned, according to the invoked function's var metadata."
+  [ns form]
+  (when-let [var-from-invocation (and (seq? form)
+                                      (symbol? (first form))
+                                      (ns-resolve ns (first form)))]
+    (when (var? var-from-invocation)
+      (-> var-from-invocation meta :tag))))

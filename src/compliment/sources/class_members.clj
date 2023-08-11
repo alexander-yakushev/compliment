@@ -1,10 +1,12 @@
 (ns compliment.sources.class-members
   "Completion for both static and non-static class members."
-  (:require [compliment.sources :refer [defsource]]
+  (:require [clojure.string :refer [join]]
+            [clojure.walk :as walk]
+            [compliment.sources :refer [defsource]]
             [compliment.sources.local-bindings :refer [bindings-from-context]]
             [compliment.utils :refer [fuzzy-matches-no-skip? resolve-class]]
-            [clojure.string :refer [join]])
-  (:import [java.lang.reflect Method Field Member Modifier]))
+            [compliment.utils :as utils])
+  (:import [java.lang.reflect Field Member Method Modifier]))
 
 (defn static?
   "Tests if class member is static."
@@ -104,9 +106,8 @@
         ;; We have a tag - try to resolve the class from it.
         (resolve-class ns tag)
         ;; Otherwise, try to resolve symbol to a Var.
-        (let [obj (and (symbol? form) (ns-resolve ns form))]
-          (and (= (class obj) clojure.lang.Var)
-               (class (deref obj))))))))
+        (or (utils/var->class ns form)
+            (utils/invocation-form->class ns form))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
