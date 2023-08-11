@@ -1,7 +1,6 @@
 (ns compliment.utils
   "Functions and utilities for source implementations."
-  (:import (clojure.lang Cons LazySeq)
-           java.io.File
+  (:import java.io.File
            java.nio.file.Files
            java.util.function.Consumer
            (java.util.jar JarEntry JarFile)))
