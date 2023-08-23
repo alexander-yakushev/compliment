@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.4.1 (2023-08-23)
+
 - [#33](https://github.com/alexander-yakushev/compliment/issues/33): Demunge
   deftype field names.
 - [#61](https://github.com/alexander-yakushev/compliment/issues/61): Introduce
