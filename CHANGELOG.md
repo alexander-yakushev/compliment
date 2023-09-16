@@ -2,7 +2,7 @@
 
 ### master (unreleased)
 
-- Infer the class string and coll literals, giving more accurate completions for those.
+- Infer the class of string and coll literals, giving more accurate completions for those.
 
 ### 0.4.1 (2023-08-23)
 
