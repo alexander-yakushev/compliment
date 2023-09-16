@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+- Infer the class string and coll literals, giving more accurate completions for those.
+
 ### 0.4.1 (2023-08-23)
 
 - [#33](https://github.com/alexander-yakushev/compliment/issues/33): Demunge
