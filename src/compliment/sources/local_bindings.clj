@@ -41,7 +41,8 @@
   (when bound-to
     (when-let [found (or (-> bound-to meta :tag)
                          (utils/var->class ns bound-to)
-                         (utils/invocation-form->class ns bound-to))]
+                         (utils/invocation-form->class ns bound-to)
+                         (utils/literal->class bound-to))]
       (if (class? found)
         (-> ^Class found .getName symbol)
         found))))

@@ -1,5 +1,6 @@
 (ns compliment.sources.t-class-members
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.test :refer :all]
             [compliment.context :as ctx]
             [compliment.sources.class-members :as src]
             [compliment.t-helpers :refer :all]
@@ -106,7 +107,6 @@
     => (contains #{{:candidate ".put", :type :method}
                    {:candidate ".putAll", :type :method}} :gaps-ok))
 
-
   (fact "if context is provided and the first arg is a symbol with type tag
   (either immediate or anywhere in the local scope)"
     (strip-tags (src/members-candidates ".sta" (-ns) nil))
@@ -207,3 +207,30 @@
 
   (fact "static class members have docs"
     (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
+
+(deftest literals-inference-test
+  (testing "Vector literals"
+    (fact "Only returns members of clojure.lang.PersistentVector for the very short \".a\" query"
+      (src/members-candidates ".a" (-ns) (ctx/cache-context
+                                          "(__prefix__ [])"))
+      =>
+      (just [{:candidate ".arrayFor", :type :method}
+             {:candidate ".assocN", :type :method}
+             {:candidate ".asTransient", :type :method}]
+        :in-any-order))
+
+    (fact "A docstring is offered for the previous query"
+      (src/members-doc ".assocN" (-ns)) => (checker string?)))
+
+  (testing "String literals"
+    (fact "Only returns members of String for the very short \".g\" query"
+      (src/members-candidates ".g" (-ns) (ctx/cache-context
+                                          "(__prefix__ \"\")"))
+      =>
+      (just [{:candidate ".getChars", :type :method}
+             {:candidate ".getBytes", :type :method}]
+        :in-any-order))
+    
+    (fact "A docstring is offered for the previous query"
+      (src/members-doc ".codePointBefore" (-ns))
+      => (checker string?))))

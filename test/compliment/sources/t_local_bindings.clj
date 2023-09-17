@@ -33,7 +33,19 @@
     (map (comp :tag meta)
          (src/bindings-from-context (ctx/parse-context '(let [a (string/trim "a")] __prefix__))
                                     (-ns)))
-    => (just [`String])))
+    => (just [`String]))
+
+  (fact "The class of a given binding can be identified by the class of a string literal"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a ""] __prefix__))
+                                    (-ns)))
+    => (just [`String]))
+
+  (fact "The class of a given binding can be identified by the class of a vector literal"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a []] __prefix__))
+                                    (-ns)))
+    => (just ['clojure.lang.PersistentVector])))
 
 (deftest local-bindings
   (defmacro ^{:completion/locals :let} like-let [& _])

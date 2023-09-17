@@ -267,3 +267,11 @@ Note that should always have the same value, regardless of OS."
                                       (ns-resolve ns (first form)))]
     (when (var? var-from-invocation)
       (-> var-from-invocation meta :tag))))
+
+(defn literal->class
+  "Extracts the class from a literal.
+  This is meant to support interop on strings and Clojure collections."
+  [form]
+  (when (or (string? form)
+            (coll? form))
+    (class form)))

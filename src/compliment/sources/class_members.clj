@@ -105,9 +105,11 @@
                     (:tag (meta (get (set (bindings-from-context context ns)) form))))]
         ;; We have a tag - try to resolve the class from it.
         (resolve-class ns tag)
-        ;; Otherwise, try to resolve symbol to a Var.
+        ;; Otherwise, try to resolve symbol to a Var,
+        ;; or literal to class.
         (or (utils/var->class ns form)
-            (utils/invocation-form->class ns form))))))
+            (utils/invocation-form->class ns form)
+            (utils/literal->class form))))))
 
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
@@ -222,7 +224,7 @@
       (if (static? c)
         (let [full-name (.getName c)]
           (if (cache (.getName c))
-            (recur (update-in cache [full-name] conj c) r)
+            (recur (update cache full-name conj c) r)
             (recur (assoc cache full-name [c]) r)))
         (recur cache r))
       (swap! static-members-cache assoc class cache))))
