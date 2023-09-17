@@ -227,7 +227,16 @@ which indicates that the members are an exact match against the class of `[]`"
         candidates-count => expected))
 
     (fact "A docstring is offered for the previous query"
-      (src/members-doc ".assocN" (-ns)) => (checker string?)))
+      (src/members-doc ".assocN" (-ns)) => (checker string?))
+
+    (fact "Only returns members of clojure.lang.PersistentVector for the very short \".a\" query"
+      (src/members-candidates ".a" (-ns) (ctx/cache-context
+                                          "(__prefix__ [])"))
+      =>
+      (just [{:candidate ".arrayFor", :type :method}
+             {:candidate ".assocN", :type :method}
+             {:candidate ".asTransient", :type :method}]
+        :in-any-order)))
 
   (testing "String literals"
     (let [candidates-count (count (src/members-candidates "." (-ns) (ctx/cache-context
@@ -236,10 +245,19 @@ which indicates that the members are an exact match against the class of `[]`"
                      1 35
                      11 43
                      50)]
+
       (fact "Has around 50 candidates (give or take, varies per JDK),
 which indicates that the members are an exact match against the class of `\"\"`"
         candidates-count => expected))
 
     (fact "A docstring is offered for the previous query"
       (src/members-doc ".codePointBefore" (-ns))
-      => (checker string?))))
+      => (checker string?))
+
+    (fact "Only returns members of String for the very short \".g\" query"
+      (src/members-candidates ".g" (-ns) (ctx/cache-context
+                                          "(__prefix__ \"\")"))
+      =>
+      (just [{:candidate ".getChars", :type :method}
+             {:candidate ".getBytes", :type :method}]
+        :in-any-order))))
