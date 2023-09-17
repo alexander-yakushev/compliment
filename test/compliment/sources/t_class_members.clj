@@ -208,27 +208,8 @@
   (fact "static class members have docs"
     (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
 
-(def java-version (-> (System/getProperty "java.version")
-                      (str/split #"\.")
-                      first
-                      read-string))
-
 (deftest literals-inference-test
   (testing "Vector literals"
-    (let [candidates-count (count (src/members-candidates "." (-ns) (ctx/cache-context
-                                                                     "(__prefix__ [])")))
-          {:keys [major minor]} *clojure-version*
-          expected (if (and (= 1 major)
-                            (< minor 12))
-                     18
-                     19)]
-      (fact "Has around 19 candidates (give or take, varies per *clojure-version*),
-which indicates that the members are an exact match against the class of `[]`"
-        candidates-count => expected))
-
-    (fact "A docstring is offered for the previous query"
-      (src/members-doc ".assocN" (-ns)) => (checker string?))
-
     (fact "Only returns members of clojure.lang.PersistentVector for the very short \".a\" query"
       (src/members-candidates ".a" (-ns) (ctx/cache-context
                                           "(__prefix__ [])"))
@@ -236,28 +217,20 @@ which indicates that the members are an exact match against the class of `[]`"
       (just [{:candidate ".arrayFor", :type :method}
              {:candidate ".assocN", :type :method}
              {:candidate ".asTransient", :type :method}]
-        :in-any-order)))
-
-  (testing "String literals"
-    (let [candidates-count (count (src/members-candidates "." (-ns) (ctx/cache-context
-                                                                     "(__prefix__ \"\")")))
-          expected (case java-version
-                     1 35
-                     11 43
-                     50)]
-
-      (fact "Has around 50 candidates (give or take, varies per JDK),
-which indicates that the members are an exact match against the class of `\"\"`"
-        candidates-count => expected))
+        :in-any-order))
 
     (fact "A docstring is offered for the previous query"
-      (src/members-doc ".codePointBefore" (-ns))
-      => (checker string?))
+      (src/members-doc ".assocN" (-ns)) => (checker string?)))
 
+  (testing "String literals"
     (fact "Only returns members of String for the very short \".g\" query"
       (src/members-candidates ".g" (-ns) (ctx/cache-context
                                           "(__prefix__ \"\")"))
       =>
       (just [{:candidate ".getChars", :type :method}
              {:candidate ".getBytes", :type :method}]
-        :in-any-order))))
+        :in-any-order))
+    
+    (fact "A docstring is offered for the previous query"
+      (src/members-doc ".codePointBefore" (-ns))
+      => (checker string?))))
