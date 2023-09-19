@@ -1,5 +1,7 @@
 # Change log
 
+- Don't infer the class of lists.
+
 ### 0.4.2 (2023-09-17)
 
 - [#107](https://github.com/alexander-yakushev/compliment/issues/107): Infer the

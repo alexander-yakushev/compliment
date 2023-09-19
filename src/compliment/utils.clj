@@ -273,5 +273,7 @@ Note that should always have the same value, regardless of OS."
   This is meant to support interop on strings and Clojure collections."
   [form]
   (when (or (string? form)
-            (coll? form))
+            (and (coll? form)
+                 ;; invocations happen to be lists, but that's not relevant here:
+                 (not (seq? form))))
     (class form)))
