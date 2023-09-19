@@ -45,7 +45,13 @@
     (map (comp :tag meta)
          (src/bindings-from-context (ctx/parse-context '(let [a []] __prefix__))
                                     (-ns)))
-    => (just ['clojure.lang.PersistentVector])))
+    => (just ['clojure.lang.PersistentVector]))
+
+  (fact "The class of a given binding cannot be identified by the class of a list"
+    (map (comp :tag meta)
+         (src/bindings-from-context (ctx/parse-context '(let [a ()] __prefix__))
+                                    (-ns)))
+    => (just [nil])))
 
 (deftest local-bindings
   (defmacro ^{:completion/locals :let} like-let [& _])
