@@ -1,11 +1,13 @@
 # Change log
 
-- Don't infer the class of lists.
-
-### 0.4.2 (2023-09-17)
+### 0.4.3 (2023-09-21)
 
 - [#107](https://github.com/alexander-yakushev/compliment/issues/107): Infer the
   class of string and coll literals, giving more accurate completions for those.
+- [#108](https://github.com/alexander-yakushev/compliment/issues/108): Don't
+  infer the class of lists.
+
+### 0.4.2 (2023-09-17) - DO NOT USE
 
 ### 0.4.1 (2023-08-23)
 
