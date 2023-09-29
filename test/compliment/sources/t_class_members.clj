@@ -12,9 +12,13 @@
 
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
-  (fact "`->` works with Compliment"
+  (fact "`->` and `some->` work with Compliment"
     (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
                                                       "(-> thread __prefix__)")))
+    => (just '(".interrupt"))
+
+    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                      "(some-> thread __prefix__)")))
     => (just '(".interrupt"))
 
     (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
@@ -46,9 +50,13 @@
     => (just '(".interrupt"))))
 
 (deftest thread-last-test
-  (fact "`->>` works with Compliment"
+  (fact "`->>` and `some->>` work with Compliment"
     (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
                                                      "(->> [] (clojure.string/join \"a\") __prefix__)")))
+    => (just '(".subSequence" ".substring") :in-any-order)
+
+    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                     "(some->> [] (clojure.string/join \"a\") __prefix__)")))
     => (just '(".subSequence" ".substring") :in-any-order)
 
     (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context

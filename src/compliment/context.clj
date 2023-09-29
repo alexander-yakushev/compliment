@@ -87,14 +87,30 @@
 
 (defn macroexpand-form [ns form]
   (postwalk (fn [x]
-              (if (and (seq? x)
-                       (-> x first symbol?)
+              (let [call? (and (seq? x)
+                               (-> x first symbol?))
+                    resolved (when call?
+                               (ns-resolve ns (first x)))]
+                (cond
+                  (and call?
                        (contains? #{#'clojure.core/->
                                     #'clojure.core/->>
                                     #'clojure.core/doto}
-                                  (ns-resolve ns (first x))))
-                (macroexpand-1 x)
-                x))
+                                  resolved))
+                  (macroexpand-1 x)
+
+                  ;; The macroexpansion of some-> is trickier than that of ->,
+                  ;; so we macroexpand -> instead,
+                  ;; which is equivalent for our purposes:
+                  (and call?
+                       (= resolved #'clojure.core/some->))
+                  (macroexpand-1 (cons `-> (rest x)))
+
+                  (and call?
+                       (= resolved #'clojure.core/some->>))
+                  (macroexpand-1 (cons `->> (rest x)))
+                  
+                  :else x)))
             form))
 
 (defn parse-context
