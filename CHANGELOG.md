@@ -1,5 +1,9 @@
 # Change log
 
+- [#109](https://github.com/alexander-yakushev/compliment/issues/109): Introduce
+  support for offering completions within the context of a `some->`
+  and `some->>` call.
+
 ### 0.4.3 (2023-09-21)
 
 - [#107](https://github.com/alexander-yakushev/compliment/issues/107): Infer the
