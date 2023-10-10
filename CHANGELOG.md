@@ -1,5 +1,7 @@
 # Change log
 
+### 0.4.4 (2023-10-10)
+
 - [#109](https://github.com/alexander-yakushev/compliment/issues/109): Introduce
   support for offering completions within the context of a `some->`
   and `some->>` call.
