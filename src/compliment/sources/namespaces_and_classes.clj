@@ -29,7 +29,7 @@
   package-qualified classnames."
   []
   (let [all-classes (utils/classes-on-classpath)]
-    (utils/cache-last-result ::all-classes-short-names all-classes
+    (utils/cache-last-result :all-classes-short-names all-classes
       (group-by (fn [^String s] (.substring s (inc (.lastIndexOf s "."))))
                 (apply concat (vals all-classes))))))
 

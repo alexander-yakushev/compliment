@@ -1,11 +1,10 @@
 (ns compliment.sources.class-members
   "Completion for both static and non-static class members."
   (:require [clojure.string :refer [join]]
-            [clojure.walk :as walk]
             [compliment.sources :refer [defsource]]
             [compliment.sources.local-bindings :refer [bindings-from-context]]
-            [compliment.utils :refer [fuzzy-matches-no-skip? resolve-class]]
-            [compliment.utils :as utils])
+            [compliment.utils :as utils :refer [fuzzy-matches-no-skip?
+                                                resolve-class]])
   (:import [java.lang.reflect Field Member Method Modifier]))
 
 (defn static?
@@ -197,75 +196,55 @@
 
 (defsource ::members
   :candidates #'members-candidates
-  :doc #'members-doc
-  :tag-fn (fn [m {:keys [ns]}]
-            (assoc m :type (if (->> (get-in @members-cache [ns :members
-                                                            (subs (:candidate m) 1)])
-                                    first
-                                    (instance? Method))
-                             :method :field))))
+  :doc #'members-doc)
 
 ;; ## Static members
 
 (defn static-member-symbol?
-  "Tests if prefix looks like a static member symbol."
+  "Tests if prefix looks like a static member symbol, returns parsed parts."
   [x]
-  (re-matches #"[^\/\:\.][^\:]*\/.*" x))
+  (re-matches #"([^\/\:\.][^\:]*)\/(.*)" x))
 
-(def ^{:doc "Stores cache of all static members for every class."}
-  static-members-cache (atom {}))
+(def static-members-cache
+  "Stores cache of all static members for every class."
+  (atom {}))
 
 (defn populate-static-members-cache
   "Populates static members cache for a given class."
   [^Class class]
-  (loop [cache {}, [^Member c & r] (concat (.getMethods class)
-                                           (.getFields class))]
-    (if c
-      (if (static? c)
-        (let [full-name (.getName c)]
-          (if (cache (.getName c))
-            (recur (update cache full-name conj c) r)
-            (recur (assoc cache full-name [c]) r)))
-        (recur cache r))
-      (swap! static-members-cache assoc class cache))))
-
-(defn update-static-cache
-  "Updates static members cache for a given class if necessary."
-  [class]
-  (when-not (@static-members-cache class)
-    (populate-static-members-cache class)))
+  (swap! static-members-cache assoc class
+         (reduce (fn [cache ^Member c]
+                   (if (static? c)
+                     (update cache (.getName c) (fnil conj []) c)
+                     cache))
+                 {} (concat (.getMethods class) (.getFields class)))))
 
 (defn static-members
   "Returns all static members for a given class."
   [^Class class]
-  (update-static-cache class)
-  (@static-members-cache class))
+  (or (@static-members-cache class)
+      (get (populate-static-members-cache class) class)))
 
 (defn static-members-candidates
   "Returns a list of static member candidates."
   [^String prefix, ns context]
-  (when (static-member-symbol? prefix)
-    (let [[cl-name member-prefix] (.split prefix "/")
-          cl (resolve-class ns (symbol cl-name))
-          member-prefix (or member-prefix "")]
-      (when cl
-        (let [inparts? (re-find #"[A-Z]" member-prefix)]
-          (for [[^String member-name members] (static-members cl)
-                :when  (if inparts?
-                         (camel-case-matches? member-prefix member-name)
-                         (.startsWith member-name member-prefix))]
-            {:candidate (str cl-name "/" member-name)
-             :type (if (instance? Method (first members))
-                     :static-method :static-field)}))))))
+  (when-let [[_ cl-name member-prefix] (static-member-symbol? prefix)]
+    (when-let [cl (resolve-class ns (symbol cl-name))]
+      (let [inparts? (re-find #"[A-Z]" member-prefix)]
+        (for [[^String member-name members] (static-members cl)
+              :when (if inparts?
+                      (camel-case-matches? member-prefix member-name)
+                      (.startsWith member-name member-prefix))]
+          {:candidate (str cl-name "/" member-name)
+           :type (if (instance? Method (first members))
+                   :static-method :static-field)})))))
 
 (defn resolve-static-member
   "Given a string representation of a static member returns Member object."
   [^String member-str ns]
-  (let [[cl-name member-name] (.split member-str "/")
-        cl (resolve-class ns (symbol cl-name))]
-    (when cl
-      (update-static-cache cl)
-      (get-in @static-members-cache [cl member-name]))))
+  (let [[cl-name member-name] (.split member-str "/")]
+    (when-let [cl (resolve-class ns (symbol cl-name))]
+      (get (static-members cl) member-name))))
 
 (defn static-member-doc
   "Given a member name and class returns its docstring."

@@ -1,7 +1,6 @@
 (ns compliment.sources.ns-mappings
   "Completion for vars and classes in the current namespace."
-  (:require [clojure.string :as string]
-            [compliment.sources :refer [defsource]]
+  (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
                                       *extra-metadata* split-by-leading-literals]])
   (:import java.io.StringWriter))

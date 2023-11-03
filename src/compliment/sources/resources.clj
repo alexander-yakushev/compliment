@@ -10,11 +10,11 @@
   "If context is not nil, check if prefix inside the string in a
   clojure.java.io/resource call."
   [ctx]
-  (when (and ctx)
+  (when ctx
     (let [[str call] ctx
           fn (first (:form call))]
       (and (string? (:form str))
-           (list? (:form call))
+           (sequential? (:form call))
            (symbol? fn)
            (= (name fn) "resource")))))
 

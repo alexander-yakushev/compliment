@@ -9,23 +9,8 @@
   candidates they should attach . Should be a set of keywords."
   nil)
 
-(def ^String resource-separator
-  "The path separator used within resources and .jar files.
-
-Note that should always have the same value, regardless of OS."
-  "/")
-
 (defn split-by-leading-literals
-  "Meant for symbol-strings that might have leading @, #', or '.
-
-  Examples:
-  \"@some-atom\" => '(\"@\" \"some-atom\")
-  \"@#'a\" => '(\"@#'\" \"a\")
-  \"#'some.ns/some-var\" => '(\"#'\" \"some.ns/some-var\")
-
-  \" @wont-work\" => '(nil \" @wont-work\")
-  \"nothing-todo\" => '(nil \"nothing-todo\")
-  "
+  "Separate quote/var/deref qualifiers from a var name."
   [symbol-str]
   (next (re-matches #"(@{0,2}#'|'|@)?(.*)" symbol-str)))
 
@@ -121,22 +106,17 @@ Note that should always have the same value, regardless of OS."
 (defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
-  (mapcat #(.split (or (System/getProperty %) "") File/pathSeparator)
+  (mapcat #(some-> (System/getProperty %) (.split File/pathSeparator))
           ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
            ;; This is where Boot keeps references to dependencies.
            "fake.class.path"]))
-
-(defn- symlink?
-  "Checks if the given file is a symlink."
-  [^File f]
-  (Files/isSymbolicLink (.toPath f)))
 
 (defn- file-seq-nonr
   "A tree seq on java.io.Files, doesn't resolve symlinked directories to avoid
   infinite sequence resulting from recursive symlinked directories."
   [dir]
   (tree-seq
-   (fn [^File f] (and (.isDirectory f) (not (symlink? f))))
+   (fn [^File f] (and (.isDirectory f) (not (Files/isSymbolicLink (.toPath f)))))
    (fn [^File d] (seq (.listFiles d)))
    dir))
 
@@ -160,7 +140,7 @@ Note that should always have the same value, regardless of OS."
 
         (= path "") ()
 
-        :else
+        (.exists (File. path))
         (for [^File file (file-seq-nonr (File. path))
               :when (not (.isDirectory file))]
           (.replace ^String (.getPath file) path ""))))
@@ -182,9 +162,10 @@ Note that should always have the same value, regardless of OS."
   "Given a list of files on the classpath, returns the list of all files,
   including those located inside jar files."
   [classpath]
-  (cache-last-result ::all-files-on-classpath classpath
-    (into (vec (mapcat #(list-files % true) classpath))
-          (list-jdk9-base-classfiles))))
+  (cache-last-result :all-files-on-classpath classpath
+    (-> []
+        (into (comp (map #(list-files % true)) cat) classpath)
+        (into (list-jdk9-base-classfiles)))))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
@@ -192,15 +173,14 @@ Note that should always have the same value, regardless of OS."
   for that package."
   []
   (let [classpath (classpath)]
-    (cache-last-result ::classes-on-classpath classpath
+    (cache-last-result :classes-on-classpath classpath
       (->> (for [^String file (all-files-on-classpath classpath)
                  :when (and (.endsWith file ".class") (not (.contains file "__"))
                             (not (.contains file "$")))]
              (.. (ensure-no-leading-slash file)
                  (replace ".class" "")
-                 ;; Address the issue #79 , on Windows, for prefix such
-                 ;; as "java.util.", the list of candidates was empty.
-                 (replace resource-separator ".")))
+                 ;; Resource separator is always /, regardless of OS.
+                 (replace "/" ".")))
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
 (defn namespaces&files-on-classpath
@@ -209,27 +189,26 @@ Note that should always have the same value, regardless of OS."
   scanning."
   []
   (let [classpath (classpath)]
-    (cache-last-result ::namespaces-on-classpath classpath
+    (cache-last-result :namespaces-on-classpath classpath
       ;; TODO deduplicate these results by ns-str
       (for [file (all-files-on-classpath classpath)
             :let [file (ensure-no-leading-slash file)
-                  [_ ^String nsname] (re-matches #"[^\w]?(.+)\.clj[sc]?$" file)]
+                  [_ ^String nsname] (re-matches #"(.+)\.clj[sc]?" file)]
             :when nsname]
-        (let [ns-str (.. nsname (replace resource-separator ".") (replace "_" "-"))]
+        (let [ns-str (.. nsname (replace "/" ".") (replace "_" "-"))]
           {:ns-str ns-str, :file file})))))
 
 (defn project-resources
   "Returns a list of all non-code files in the current project."
   []
   (let [classpath (classpath)]
-    (cache-last-result ::project-resources classpath
+    (cache-last-result :project-resources classpath
       (for [path classpath
             ^String file (list-files path false)
-            :when (not (or (empty? file)
-                           (re-find #"\.(clj[cs]?|jar|class)$" file)))]
+            :when (not (re-find #"\.(clj[cs]?|jar|class)$" file))]
         ;; resource pathes always use "/" regardless of platform
         (.. (ensure-no-leading-slash file)
-            (replace File/separator resource-separator))))))
+            (replace File/separator "/"))))))
 
 (defn var->class
   "Given a form that may be a var, returns the class that is associated

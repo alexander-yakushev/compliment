@@ -34,6 +34,13 @@
       (fuzzy-matches-no-skip? "ImpVen" symbol pred) => falsey
       (fuzzy-matches-no-skip? "getmple" symbol pred) => falsey)))
 
+(deftest split-by-leading-literals-test
+  (fact "separates quote/var/deref qualifiers from a var name"
+    (split-by-leading-literals "@some-atom") => ["@" "some-atom"]
+    (split-by-leading-literals "@#'a") => ["@#'" "a"]
+    (split-by-leading-literals "#'ns/var") => ["#'" "ns/var"]
+    (split-by-leading-literals "nothing") => [nil "nothing"]))
+
 (deftest classpath-test
   (testing "if System/getProperty returns nil, Compliment won't fail"
     (is (= () (#'compliment.utils/list-files "" true)))))
