@@ -49,36 +49,26 @@
    - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
-  ([prefix options-map]
-   (if (string? options-map)
-     (completions prefix {:context options-map})
-     (let [{:keys [context sort-order sources extra-metadata]
-            :or {sort-order :by-length}} options-map
-           nspc (ensure-ns (:ns options-map))
-           options-map (assoc options-map :ns nspc)
-           ctx (binding [*ns* nspc]
-                 (cache-context context))]
-       (binding [*extra-metadata* extra-metadata]
-         (let [candidate-fns (keep (fn [[_ src]]
-                                     (when (:enabled src)
-                                       (:candidates src)))
-                                   (if sources
-                                     (all-sources sources)
-                                     (all-sources)))
-               candidates (mapcat
-                            (fn [f] (f prefix nspc ctx))
-                            candidate-fns)
-               sorted-cands (if (= sort-order :by-name)
-                              (sort-by
-                                :candidate
-                                candidates)
-                              (sort-by
-                                :candidate by-length-comparator
-                                candidates))
-               cands (if (:plain-candidates options-map)
-                       (map :candidate sorted-cands)
-                       sorted-cands)]
-           (doall cands)))))))
+  ([prefix {:keys [ns context sort-order sources extra-metadata plain-candidates]
+            :or {sort-order :by-length}}]
+   (let [nspc (ensure-ns ns)
+         ctx (binding [*ns* nspc]
+               (cache-context context))]
+     (binding [*extra-metadata* extra-metadata]
+       (let [candidate-fns (keep (fn [[_ src]]
+                                   (when (:enabled src)
+                                     (:candidates src)))
+                                 (if sources
+                                   (all-sources sources)
+                                   (all-sources)))
+             candidates (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
+             sorted-cands (if (= sort-order :by-name)
+                            (sort-by :candidate candidates)
+                            (sort-by :candidate by-length-comparator candidates))
+             cands (if plain-candidates
+                     (map :candidate sorted-cands)
+                     sorted-cands)]
+         (doall cands))))))
 
 (defn documentation
   "Returns a documentation string that describes the given symbol.

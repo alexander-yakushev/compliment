@@ -4,6 +4,9 @@
 
 - **BREAKING**: Remove deprecated `compliment.utils/namespaces-on-classpath`.
   Instead, you can use `compliment.utils/namespaces&files-on-classpath`.
+- **BREAKING**: `compliment.core/completions` no longer accepts a string as a
+  second argument instead of a proper options map. This fallback has been
+  deprecated long time ago.
 
 ### 0.4.4 (2023-10-10)
 
