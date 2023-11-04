@@ -2,12 +2,7 @@
   "Functions and utilities for source implementations."
   (:import java.io.File
            java.nio.file.Files
-           java.util.function.Consumer
            (java.util.jar JarEntry JarFile)))
-
-;; Disable reflection warnings in this file because we must use reflection to
-;; support both JDK8 and JDK9+.
-(set! *warn-on-reflection* false)
 
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
@@ -174,19 +169,13 @@ Note that should always have the same value, regardless of OS."
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
   modules, we have to do extra work to extract them."
   []
-  (if (try (resolve 'java.lang.module.ModuleFinder)
-           (catch ClassNotFoundException _))
-    `(let [classes# (volatile! (transient []))]
-       (->> (try (.findAll (java.lang.module.ModuleFinder/ofSystem))
-                 ;; Due to a bug in Clojure before 1.10, the above may fail.
-                 (catch IncompatibleClassChangeError _# []))
-            (run! (fn [^java.lang.module.ModuleReference mref#]
-                    (let [mrdr# (.open mref#)
-                          ^java.util.stream.Stream stream# (.list mrdr#)]
-                      (.forEach stream#
-                                (reify Consumer
-                                  (accept [_ v#] (vswap! classes# conj! v#))))))))
-       (persistent! @classes#))
+  (if (resolve-class *ns* 'java.lang.module.ModuleFinder)
+    `(-> (.findAll (java.lang.module.ModuleFinder/ofSystem))
+         (.stream)
+         (.flatMap (reify java.util.function.Function
+                     (apply [_ mref#]
+                       (.list (.open ^java.lang.module.ModuleReference mref#)))))
+         (.collect (java.util.stream.Collectors/toList)))
     ()))
 
 (defn- all-files-on-classpath
