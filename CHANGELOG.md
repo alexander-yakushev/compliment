@@ -1,5 +1,10 @@
 # Change log
 
+### 0.5.0 (unreleased)
+
+- **BREAKING**: Remove deprecated `compliment.utils/namespaces-on-classpath`.
+  Instead, you can use `compliment.utils/namespaces&files-on-classpath`.
+
 ### 0.4.4 (2023-10-10)
 
 - [#109](https://github.com/alexander-yakushev/compliment/issues/109): Introduce

@@ -204,7 +204,9 @@ Note that should always have the same value, regardless of OS."
            (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
 
 (defn namespaces&files-on-classpath
-  "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file \"some/ns.cljs\"}`) of all clj/cljc/cljs namespaces obtained by classpath scanning."
+  "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file
+  \"some/ns.cljs\"}`) of all clj/cljc/cljs namespaces obtained by classpath
+  scanning."
   []
   (let [classpath (classpath)]
     (cache-last-result ::namespaces-on-classpath classpath
@@ -215,9 +217,6 @@ Note that should always have the same value, regardless of OS."
             :when nsname]
         (let [ns-str (.. nsname (replace resource-separator ".") (replace "_" "-"))]
           {:ns-str ns-str, :file file})))))
-
-(defn ^:deprecated namespaces-on-classpath []
-  (transduce (map :ns-str) conj #{} (namespaces&files-on-classpath)))
 
 (defn project-resources
   "Returns a list of all non-code files in the current project."
