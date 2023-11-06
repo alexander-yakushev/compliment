@@ -2,7 +2,7 @@
   "Completion for Clojure's special forms."
   (:require [clojure.repl :as repl]
             [compliment.sources :refer [defsource]]
-            [compliment.sources.ns-mappings :as vars]))
+            [compliment.sources.vars :as vars]))
 
 (def ^:private special-forms
   (set (map name '[def if do quote var recur throw try catch

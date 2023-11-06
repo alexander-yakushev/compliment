@@ -1,12 +1,12 @@
-(ns compliment.sources.t-ns-mappings
+(ns compliment.sources.t-vars
   (:require [fudje.sweet :refer :all]
             [clojure.test :refer :all]
-            [compliment.sources.ns-mappings :as src]
+            [compliment.sources.vars :as src]
             [compliment.context :as ctx]
             [compliment.utils :refer [*extra-metadata*]]
             [compliment.t-helpers :refer :all]))
 
-(defn- -ns [] (find-ns 'compliment.sources.t-ns-mappings))
+(defn- -ns [] (find-ns 'compliment.sources.t-vars))
 
 (deftest vars-test
   (fact "var symbol is something looking like part of a var, possibly qualified"
@@ -14,9 +14,14 @@
     "merge-wi"             => (checker src/var-symbol?)
     "clojure.core/alter-m" => (checker src/var-symbol?)
     "src/var-sy"           => (checker src/var-symbol?)
+    ""                     => (checker src/var-symbol?)
 
     ":keyword"             => (checker (complement src/var-symbol?))
-    "doesnt/make/sense"    => (checker (complement src/var-symbol?)))
+    "doesnt/make/sense"    => (checker (complement src/var-symbol?))
+
+    ;; Edge cases
+    ;; https://github.com/alexander-yakushev/compliment/pull/40
+    "./foo"                => (checker src/var-symbol?))
 
   (fact "fuzzy matching for vars allows writing only first letters after dashes"
     (src/dash-matches? "me-wi" "merge-with")           => truthy
@@ -25,17 +30,7 @@
     (src/dash-matches? "re-" "reduce-kv")              => truthy
 
     (src/dash-matches? "me-we" "merge-with")           => falsey
-    (src/dash-matches? "upd-i-n" "update-in")          => falsey)
-
-  (fact "if var symbol contains a / then first part is ns qualifier"
-    (src/get-scope-and-prefix "clojure.core/red" (-ns))
-    => ["clojure.core" (find-ns 'clojure.core) "red"]
-
-    (src/get-scope-and-prefix "src/get-s" (-ns))
-    => ["src" (find-ns 'compliment.sources.ns-mappings) "get-s"]
-
-    (src/get-scope-and-prefix "no-qualifier" (-ns))
-    => [nil nil "no-qualifier"]))
+    (src/dash-matches? "upd-i-n" "update-in")          => falsey))
 
 (deftest vars-completion-test
   (fact "unqualified vars are looked up in the given namespace"
@@ -50,37 +45,22 @@
     (src/candidates "bindi" (-ns) nil)
     => [{:candidate "binding", :type :macro, :ns "clojure.core"}])
 
-  (fact "imported classes are looked up in the given namespace"
-    (src/candidates "Runt" (-ns) nil)
-    => (just [{:candidate "Runtime", :type :class, :package "java.lang"}
-              {:candidate "RuntimePermission", :type :class, :package "java.lang"}
-              {:candidate "RuntimeException", :type :class, :package "java.lang"}]
-             :in-any-order))
-
-  (in-ns 'compliment.sources.t-ns-mappings)
-  (defrecord Animal [name])
-  (fact "defrecord produces classes that don't have a package"
-    ;; Since JDK9, they inherit the namespace package
-    (src/candidates "Anim" (-ns) nil)
-    => [{:candidate "Animal", :type :class
-         :package (if (try (resolve 'java.lang.Runtime$Version)
-                           (catch Exception _))
-                    "compliment.sources.t_ns_mappings"
-                    nil)}])
-
   (fact "qualified vars are looked up in the namespace specified in the prefix"
     (strip-tags (src/candidates "clojure.set/su" (-ns) nil))
     => (just ["clojure.set/subset?" "clojure.set/superset?"] :in-any-order)
 
-    (do (require '[clojure.string :as str])
+    (do (in-ns 'compliment.sources.t-vars)
+        (require '[clojure.string :as str])
         (strip-tags (src/candidates "str/re" (-ns) nil)))
     => (contains #{"str/replace" "str/replace-first" "str/reverse"} :gaps-ok)
 
-    (do (require '[clojure.string :as s])
+    (do (in-ns 'compliment.sources.t-vars)
+        (require '[clojure.string :as s])
         (strip-tags (src/candidates "s/cap" (-ns) nil)))
     => (just ["s/capitalize"])
 
-    (do (require '[clojure.string :as c.str])
+    (do (in-ns 'compliment.sources.t-vars)
+        (require '[clojure.string :as c.str])
         (strip-tags (src/candidates "c.str/cap" (-ns) nil)))
     => (just ["c.str/capitalize"]))
 
@@ -134,11 +114,11 @@
   (fact "extra metadata can be requested from this completion source"
     (binding [*extra-metadata* #{:doc :arglists :private :deprecated}]
       (doall (src/candidates "some-deprecated-private-fn" (-ns) nil)))
-    => [{:candidate "some-deprecated-private-fn", :type :function, :ns "compliment.sources.t-ns-mappings"
+    => [{:candidate "some-deprecated-private-fn", :type :function, :ns "compliment.sources.t-vars"
          :private true, :deprecated true, :arglists ["[]"]
          :doc (clojure.string/join
                (System/lineSeparator)
-               ["compliment.sources.t-ns-mappings/some-deprecated-private-fn" "([])"
+               ["compliment.sources.t-vars/some-deprecated-private-fn" "([])"
                 "  Some doc" ""])}])
 
   (defn should-appear [])
@@ -162,7 +142,7 @@
                                                       :refer [__prefix__]])))))
     => (just ["split" "split-lines"] :in-any-order))
 
-  (fact "ns-mappings have documentation"
+  (fact "vars have documentation"
     (src/doc "map" (-ns)) => (checker string?)
     (src/doc "clojure.core/map" (-ns)) => (checker string?)
     (src/doc "#'clojure.core/map" (-ns)) => (checker string?)

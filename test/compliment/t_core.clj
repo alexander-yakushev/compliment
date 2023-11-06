@@ -101,7 +101,7 @@
     (core/completions "cl")
     => (checker #(> (count %) 10) {:ns 'compliment.t-core})
 
-    (strip-tags (core/completions "cl" {:sources [:compliment.sources.ns-mappings/ns-mappings]
+    (strip-tags (core/completions "cl" {:sources [:compliment.sources.vars/vars]
                                         :ns 'compliment.t-core}))
     => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
 

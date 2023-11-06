@@ -16,7 +16,7 @@
                              [lein-cloverage "1.2.4"]]
                    :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
                                                :def-in-def {compliment.sources.t-class-members true
-                                                            compliment.sources.t-ns-mappings true
+                                                            compliment.sources.t-vars true
                                                             compliment.t-core true
                                                             compliment.sources.t-local-bindings true}}}
                    :test-selectors {:no-bench (complement :benchmark)}

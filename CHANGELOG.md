@@ -6,6 +6,9 @@
   Thus, for the purposes of enabling/disabling sources, their keyword names are
   now `:compliment.sources.namespaces/namespaces` and
   `:compliment.sources.classes/classes`.
+- **BREAKING**: Rename `ns-mappings` source to `vars`. Thus, for the purposes of
+  enabling/disabling sources, its keyword name is now
+  `:compliment.sources.vars/vars`.
 - **BREAKING**: Remove deprecated `compliment.utils/namespaces-on-classpath`.
   Instead, you can use `compliment.utils/namespaces&files-on-classpath`.
 - **BREAKING**: `compliment.core/completions` no longer accepts a string as a

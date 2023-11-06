@@ -24,8 +24,7 @@
 
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
-  prefix is inside import vector, return that package name, otherwise return
-  `:root`. If not inside :import, return nil."
+  prefix is inside import list, return that package name, otherwise return nil."
   [ctx]
   (let [ns-decl (:form (last ctx))
         import-list (:form (last (butlast ctx)))
@@ -33,10 +32,9 @@
     (when (and (sequential? ns-decl)
                (= (first ns-decl) 'ns)
                (sequential? import-list)
-               (= (first import-list) :import))
-      (if (= prefix-form import-list)
-        :root
-        (str (first prefix-form))))))
+               (= (first import-list) :import)
+               (not= prefix-form import-list))
+      (str (first prefix-form)))))
 
 (defn- get-all-full-names
   "Returns a list of package-qualified classnames given a short classname."
@@ -63,41 +61,45 @@
   "Returns a list of classname completions."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
-    (let [has-dot (> (.indexOf prefix ".") -1)
-          import-ctx (analyze-import-context context)]
-      (into []
-            (comp cat (distinct))
-            [(for [class-str (imported-classes ns)
-                   :when (nscl-matches? prefix class-str)]
-               {:candidate class-str, :type :class})
-             (cond (= import-ctx :root) (get-all-full-names prefix)
-                   import-ctx (get-classes-by-package-name prefix import-ctx))
-             ;; For capitalized prefixes, try to complete class FQN from a short name.
-             (when (and (Character/isUpperCase (.charAt prefix 0))
-                        (not import-ctx))
-               (get-all-full-names prefix))
-             ;; Fuzziness is too slow for all classes, so only startsWith. Also, if no
-             ;; period in prefix, only complete root package names to maintain good
-             ;; performance and not produce too many candidates.
-             (let [all-classes (utils/classes-on-classpath)]
-               (if (or has-dot (contains? all-classes prefix))
-                 (for [[root-pkg classes] all-classes
-                       :when (.startsWith prefix root-pkg)
-                       ^String cl-str classes
-                       :when (.startsWith cl-str prefix)]
-                   {:candidate cl-str, :type :class})
-                 (for [[^String root-pkg _] all-classes
-                       :when (.startsWith root-pkg prefix)]
-                   {:candidate (str root-pkg "."), :type :class})))]))))
+    (let [has-dot (> (.indexOf prefix ".") -1)]
+      (if-let [import-ctx (analyze-import-context context)]
+        (get-classes-by-package-name prefix import-ctx)
+
+        (into []
+              (comp cat (distinct))
+              [(for [class-str (imported-classes ns)
+                     :when (nscl-matches? prefix class-str)]
+                 {:candidate class-str, :type :class})
+
+               (for [[_ ^Class val] (ns-map ns) :when (class? val)
+                     :let [sname (.getSimpleName val)]
+                     :when (nscl-matches? prefix sname)]
+                 {:candidate sname, :type :class,
+                  :package (when-let [pkg (.getPackage ^Class val)]
+                             ;; Some classes don't have a package
+                             (.getName ^Package pkg))})
+
+               ;; For capitalized prefix, complete class FQN from a short name.
+               (when (Character/isUpperCase (.charAt prefix 0))
+                 (get-all-full-names prefix))
+
+               ;; Fuzziness is too slow for all classes, so only startsWith. Also, if no
+               ;; period in prefix, only complete root package names to maintain good
+               ;; performance and not produce too many candidates.
+               (let [all-classes (utils/classes-on-classpath)]
+                 (if (or has-dot (contains? all-classes prefix))
+                   (for [[root-pkg classes] all-classes
+                         :when (.startsWith prefix root-pkg)
+                         ^String cl-str classes
+                         :when (.startsWith cl-str prefix)]
+                     {:candidate cl-str, :type :class})
+                   (for [[^String root-pkg _] all-classes
+                         :when (.startsWith root-pkg prefix)]
+                     {:candidate (str root-pkg "."), :type :class})))])))))
 
 (defn doc [class-str curr-ns]
   (when (nscl-symbol? class-str)
-    (let [strip-literals (comp second utils/split-by-leading-literals)
-          class-sym (symbol (second (utils/split-by-leading-literals class-str)))]
-      (when-let [class (try (ns-resolve curr-ns class-sym)
-                            (catch Exception ex nil))]
-        (when (class? class)
-          (classname-doc class))))))
+    (some-> (utils/resolve-class curr-ns class-str) classname-doc)))
 
 (defsource ::classes
   :candidates #'candidates

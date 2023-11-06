@@ -1,4 +1,4 @@
-(ns compliment.sources.ns-mappings
+(ns compliment.sources.vars
   "Completion for vars and classes in the current namespace."
   (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches? resolve-namespace
@@ -8,25 +8,13 @@
 (defn var-symbol?
   "Test if prefix resembles a var name."
   [x]
-  (re-matches #"([^\/\:][^\.\/]*([^\/\:]*\/[^\.\/]*)?)?" x))
+  (re-matches #"(?:([^\/\:][^\/]*)\/)?(|[^/:][^/]*)" x))
 
 (defn dash-matches?
   "Tests if prefix partially matches a var name with dashes as
   separators."
   [prefix var]
   (fuzzy-matches? prefix var \-))
-
-(defn get-scope-and-prefix
-  "Tries to get take apart scope namespace and prefix in prefixes like
-  `scope/var`."
-  [^String s, ns]
-  (let [[scope-name sym] (if (> (.indexOf s "/") -1)
-                           (.split s "/") ())
-        scope (when scope-name
-                (resolve-namespace (symbol scope-name) ns))
-        prefix (if scope
-                 (or sym "") s)]
-    [scope-name scope prefix]))
 
 (defn try-get-ns-from-context
   "Tries to extract a namespace name if context is a `ns` definition."
@@ -73,45 +61,42 @@
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
   [^String prefix, ns context]
-  (let [[literals prefix] (split-by-leading-literals prefix)
-        var-quote? (when literals (re-find #"#'$" literals))]
-    (when (var-symbol? prefix)
-      (let [[scope-name scope ^String prefix] (get-scope-and-prefix prefix ns)
+  (let [[literals prefix] (split-by-leading-literals prefix)]
+    (when-let [[_ scope-name prefix] (var-symbol? prefix)]
+      (let [scope (some-> scope-name symbol (resolve-namespace ns))
             ns-form-namespace (try-get-ns-from-context context)
             vars (cond
-                   scope (if var-quote? (ns-interns scope) (ns-publics scope))
+                   scope (if (and literals (re-find #"#'$" literals))
+                           ;; If prefixed with #', suggest private vars too.
+                           (ns-interns scope)
+                           (ns-publics scope))
+                   (and scope-name (nil? scope)) ()
                    ns-form-namespace (ns-publics ns-form-namespace)
                    :else (ns-map ns))]
         (for [[var-sym var] vars
               :let [var-name (name var-sym)]
-              :when (dash-matches? prefix var-name)
+              :when (and (var? var) (dash-matches? prefix var-name))
               :let [{:keys [arglists doc private deprecated] :as var-meta} (meta var)]
               :when (not (:completion/hidden var-meta))]
-          (if (= (type var) Class)
-            {:candidate var-name, :type :class,
-             :package (when-let [pkg (.getPackage ^Class var)]
-                        ;; Some classes don't have a package
-                        (.getName ^Package pkg))}
+          (cond-> {:candidate (str literals
+                                   (if scope
+                                     (str scope-name "/" var-name)
+                                     var-name))
+                   :type (cond (:macro var-meta) :macro
+                               arglists :function
+                               :else :var)
+                   :ns (str (or (:ns var-meta) ns))}
+            (and private (:private *extra-metadata*))
+            (assoc :private (boolean private))
 
-            (cond-> {:candidate (str literals
-                                     (if scope
-                                       (str scope-name "/" var-name)
-                                       var-name))
-                     :type (cond (:macro var-meta) :macro
-                                 arglists :function
-                                 :else :var)
-                     :ns (str (or (:ns var-meta) ns))}
-              (and private (:private *extra-metadata*))
-              (assoc :private (boolean private))
+            (and deprecated (:deprecated *extra-metadata*))
+            (assoc :deprecated (boolean deprecated))
 
-              (and deprecated (:deprecated *extra-metadata*))
-              (assoc :deprecated (boolean deprecated))
+            (and arglists (:arglists *extra-metadata*))
+            (assoc :arglists (apply list (map pr-str arglists)))
 
-              (and arglists (:arglists *extra-metadata*))
-              (assoc :arglists (apply list (map pr-str arglists)))
-
-              (and doc (:doc *extra-metadata*))
-              (assoc :doc (generate-docstring var-meta)))))))))
+            (and doc (:doc *extra-metadata*))
+            (assoc :doc (generate-docstring var-meta))))))))
 
 (defn- resolve-var [symbol-str ns]
   (let [strip-literals (comp second split-by-leading-literals)]
@@ -125,6 +110,6 @@
       (when (meta var)
         (generate-docstring (meta var))))))
 
-(defsource ::ns-mappings
+(defsource ::vars
   :candidates #'candidates
   :doc #'doc)

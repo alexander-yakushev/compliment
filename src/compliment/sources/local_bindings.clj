@@ -1,7 +1,7 @@
 (ns compliment.sources.local-bindings
   "Completion source for local bindings introduced by defn, let and the like."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.sources.ns-mappings :refer [var-symbol? dash-matches?]]
+            [compliment.sources.vars :refer [var-symbol? dash-matches?]]
             [compliment.utils :as utils]))
 
 (defn- let-like-form? [x]

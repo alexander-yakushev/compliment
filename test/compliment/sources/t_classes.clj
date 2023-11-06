@@ -8,6 +8,8 @@
 
 (defn- -ns [] (find-ns 'compliment.sources.t-classes))
 
+(defrecord Animal [name])
+
 (deftest class-completion
   (fact "they are completed either according to the mapping in the given
   namespace, or by classpath scanning results"
@@ -19,11 +21,23 @@
     => [] ;; Because fuzziness works only for classes imported into current ns
 
     (src/candidates "j.i.F" (-ns) nil)
-    => (contains [{:candidate "java.io.File", :type :class}])
+    => (contains [{:candidate "java.io.File", :type :class}]))
 
-    ;; Imported classes without package qualifiers are covered by ns-mappings
-    ;; source, see respective test file.
-    )
+  (fact "imported classes are looked up in the given namespace"
+    (src/candidates "Runt" (-ns) nil)
+    => (contains [{:candidate "Runtime", :type :class, :package "java.lang"}
+                  {:candidate "RuntimePermission", :type :class, :package "java.lang"}
+                  {:candidate "RuntimeException", :type :class, :package "java.lang"}]
+         :gaps-ok))
+
+  (fact "defrecord produces classes that don't have a package"
+        ;; Since JDK9, they inherit the namespace package
+        (src/candidates "Anim" (-ns) nil)
+        => (contains [{:candidate "Animal", :type :class
+                       :package (if (try (resolve 'java.lang.Runtime$Version)
+                                         (catch Exception _))
+                                  "compliment.sources.t_classes"
+                                  nil)}]))
 
   (fact "anonymous and inner classes are not suggested"
     (strip-tags (src/candidates "java.util.ArrayDeq" (-ns) nil))
