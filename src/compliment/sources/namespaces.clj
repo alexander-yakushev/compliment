@@ -19,24 +19,29 @@
   "Returns a list of namespace and classname completions."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
-    (let [has-dot (> (.indexOf prefix ".") -1)]
-      (into []
-            (comp cat (distinct))
-            [;; If prefix doesn't contain a period, using fuziness produces too
-             ;; many irrelevant candidates.
-             (for [{:keys [^String ns-str, ^String file]} (utils/namespaces&files-on-classpath)
-                   :let [[literals prefix] (utils/split-by-leading-literals prefix)]
-                   :when (and (re-find #"\.cljc?$" file)
-                              (if has-dot
-                                (nscl-matches? prefix ns-str)
-                                (.startsWith ns-str prefix)))]
-               {:candidate (str literals ns-str), :type :namespace, :file file})
+    (let [has-dot (> (.indexOf prefix ".") -1)
+          nses-on-classpath
+          (for [{:keys [^String ns-str, file]} (utils/namespaces&files-on-classpath)
+                :let [[literals prefix] (utils/split-by-leading-literals prefix)]
+                :when (and (re-find #"\.cljc?$" file)
+                           ;; If prefix doesn't contain a period, using fuziness
+                           ;; produces too many irrelevant candidates.
+                           (if has-dot
+                             (nscl-matches? prefix ns-str)
+                             (.startsWith ns-str prefix)))]
+            {:candidate (str literals ns-str), :type :namespace, :file file})
 
-             (for [ns-str (concat (map (comp name ns-name) (all-ns))
-                                  (map name (keys (ns-aliases ns))))
-                   :let [[literals prefix] (utils/split-by-leading-literals prefix)]
-                   :when (nscl-matches? prefix ns-str)]
-               {:candidate (str literals ns-str), :type :namespace})]))))
+          ns-names (set (map :candidate nses-on-classpath))]
+      ;; Add aliases and runtime namespaces not found on the classpath.
+      (-> nses-on-classpath
+          (into (for [ns-str (map name (keys (ns-aliases ns)))
+                      :when (nscl-matches? prefix ns-str)]
+                  {:candidate ns-str, :type :namespace}))
+          (into (for [ns-str (map (comp name ns-name) (all-ns))
+                      :let [[literals prefix] (utils/split-by-leading-literals prefix)]
+                      :when (and (nscl-matches? prefix ns-str)
+                                 (not (ns-names ns-str)))]
+                  {:candidate (str literals ns-str), :type :namespace}))))))
 
 (defn doc [ns-str curr-ns]
   (when (nscl-symbol? ns-str)
