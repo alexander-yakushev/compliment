@@ -20,9 +20,10 @@
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
     (let [has-dot (> (.indexOf prefix ".") -1)
-          nses-on-classpath
+          [literals prefix] (utils/split-by-leading-literals prefix)
+
+          cands-from-classpath
           (for [{:keys [^String ns-str, file]} (utils/namespaces&files-on-classpath)
-                :let [[literals prefix] (utils/split-by-leading-literals prefix)]
                 :when (and (re-find #"\.cljc?$" file)
                            ;; If prefix doesn't contain a period, using fuziness
                            ;; produces too many irrelevant candidates.
@@ -31,17 +32,17 @@
                              (.startsWith ns-str prefix)))]
             {:candidate (str literals ns-str), :type :namespace, :file file})
 
-          ns-names (set (map :candidate nses-on-classpath))]
+          ns-names (set (map :candidate cands-from-classpath))
+          ns-sym->cand #(let [ns-str (name %)]
+                          (when (and (nscl-matches? prefix ns-str)
+                                     (not (ns-names ns-str)))
+                            {:candidate (str literals ns-str), :type :namespace}))]
       ;; Add aliases and runtime namespaces not found on the classpath.
-      (-> nses-on-classpath
-          (into (for [ns-str (map name (keys (ns-aliases ns)))
-                      :when (nscl-matches? prefix ns-str)]
-                  {:candidate ns-str, :type :namespace}))
-          (into (for [ns-str (map (comp name ns-name) (all-ns))
-                      :let [[literals prefix] (utils/split-by-leading-literals prefix)]
-                      :when (and (nscl-matches? prefix ns-str)
-                                 (not (ns-names ns-str)))]
-                  {:candidate (str literals ns-str), :type :namespace}))))))
+      (-> cands-from-classpath
+          (into (keep ns-sym->cand) (keys (ns-aliases ns)))
+          (into (comp (map ns-name)
+                      (keep ns-sym->cand))
+                (all-ns))))))
 
 (defn doc [ns-str curr-ns]
   (when (nscl-symbol? ns-str)
