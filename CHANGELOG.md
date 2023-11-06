@@ -2,6 +2,10 @@
 
 ### 0.5.0 (unreleased)
 
+- **BREAKING**: Split `namespaces-and-classes` source into two separate sources.
+  Thus, for the purposes of enabling/disabling sources, their keyword names are
+  now `:compliment.sources.namespaces/namespaces` and
+  `:compliment.sources.classes/classes`.
 - **BREAKING**: Remove deprecated `compliment.utils/namespaces-on-classpath`.
   Instead, you can use `compliment.utils/namespaces&files-on-classpath`.
 - **BREAKING**: `compliment.core/completions` no longer accepts a string as a

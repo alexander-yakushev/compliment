@@ -7,7 +7,8 @@
   "Core namespace. Most interactions with Compliment should happen
   through functions defined here."
   (:require (compliment.sources ns-mappings
-                                namespaces-and-classes
+                                namespaces
+                                classes
                                 class-members
                                 keywords
                                 special-forms
