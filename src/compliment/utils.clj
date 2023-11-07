@@ -3,6 +3,7 @@
   (:import java.io.File
            java.nio.file.Files
            (java.util.function Function Predicate)
+           java.util.concurrent.locks.ReentrantLock
            (java.util.jar JarEntry JarFile)
            java.util.stream.Collectors))
 
@@ -78,20 +79,23 @@
 
 (def primitive-cache (atom {}))
 
+(let [lock (ReentrantLock.)]
+  (defn cache-last-result* [name key value-fn]
+    (try (.lock lock)
+         (let [[cached-key cached-value :as t] (@primitive-cache name)]
+           (if (and t (= cached-key key))
+             cached-value
+             (let [value (value-fn)]
+               (swap! primitive-cache assoc name [key value])
+               value)))
+         (finally (.unlock lock)))))
+
 (defmacro cache-last-result
   "If cache for `name` is absent, or `key` doesn't match the key in the cache,
   calculate `v` and return it. Else return value from cache."
   {:style/indent 2}
   [name key value]
-  (let [ksym ()]
-    `(let [name# ~name
-           key# ~key
-           [cached-key# cached-value#] (@primitive-cache name#)]
-       (if (and (contains? @primitive-cache name#) (= cached-key# key#))
-         cached-value#
-         (let [value# ~value]
-           (swap! primitive-cache assoc name# [key# value#])
-           value#)))))
+  `(cache-last-result* ~name ~key (fn [] ~value)))
 
 (defn flush-caches
   "Removes all cached values, forcing functions that depend on
