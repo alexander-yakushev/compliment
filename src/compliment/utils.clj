@@ -2,7 +2,9 @@
   "Functions and utilities for source implementations."
   (:import java.io.File
            java.nio.file.Files
-           (java.util.jar JarEntry JarFile)))
+           (java.util.function Function Predicate)
+           (java.util.jar JarEntry JarFile)
+           java.util.stream.Collectors))
 
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
@@ -13,10 +15,6 @@
   "Separate quote/var/deref qualifiers from a var name."
   [symbol-str]
   (next (re-matches #"(@{0,2}#'|'|@)?(.*)" symbol-str)))
-
-(defn- ensure-no-leading-slash ^String [^String file]
-  (if (.startsWith file File/separator)
-    (.substring file 1) file))
 
 (set! *unchecked-math* true)
 
@@ -132,18 +130,27 @@
 
         (.endsWith path ".jar")
         (if scan-jars?
-          (try (for [^JarEntry entry (enumeration-seq (.entries (JarFile. path)))
-                     :when (not (.isDirectory entry))]
-                 (.getName entry))
-               (catch Exception e))
+          (try (-> (.stream (JarFile. path))
+                   (.filter (reify Predicate
+                              (test [_ entry]
+                                (not (.isDirectory ^JarEntry entry)))))
+                   (.map (reify Function
+                           (apply [_ entry]
+                             (.getName ^JarEntry entry))))
+                   (.collect (Collectors/toList)))
+               (catch Exception _))
           ())
 
         (= path "") ()
 
         (.exists (File. path))
-        (for [^File file (file-seq-nonr (File. path))
-              :when (not (.isDirectory file))]
-          (.replace ^String (.getPath file) path ""))))
+        (let [root (File. path)
+              root-path (.toPath root)]
+          (for [^File file (file-seq-nonr root)
+                :when (not (.isDirectory file))]
+            (let [filename (str (.relativize root-path (.toPath file)))]
+              (if (.startsWith filename File/separator)
+                (.substring filename 1) filename))))))
 
 (defmacro list-jdk9-base-classfiles
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
@@ -152,10 +159,10 @@
   (if (resolve-class *ns* 'java.lang.module.ModuleFinder)
     `(-> (.findAll (java.lang.module.ModuleFinder/ofSystem))
          (.stream)
-         (.flatMap (reify java.util.function.Function
+         (.flatMap (reify Function
                      (apply [_ mref#]
                        (.list (.open ^java.lang.module.ModuleReference mref#)))))
-         (.collect (java.util.stream.Collectors/toList)))
+         (.collect (Collectors/toList)))
     ()))
 
 (defn- all-files-on-classpath
@@ -163,9 +170,11 @@
   including those located inside jar files."
   [classpath]
   (cache-last-result :all-files-on-classpath classpath
-    (-> []
-        (into (comp (map #(list-files % true)) cat) classpath)
-        (into (list-jdk9-base-classfiles)))))
+    (let [seen (java.util.HashMap.)
+          seen? (fn [x] (.putIfAbsent seen x x))]
+      (-> []
+          (into (comp (map #(list-files % true)) cat (remove seen?)) classpath)
+          (into (remove seen?) (list-jdk9-base-classfiles))))))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key
@@ -174,14 +183,29 @@
   []
   (let [classpath (classpath)]
     (cache-last-result :classes-on-classpath classpath
-      (->> (for [^String file (all-files-on-classpath classpath)
-                 :when (and (.endsWith file ".class") (not (.contains file "__"))
-                            (not (.contains file "$")))]
-             (.. (ensure-no-leading-slash file)
-                 (replace ".class" "")
-                 ;; Resource separator is always /, regardless of OS.
-                 (replace "/" ".")))
-           (group-by #(subs % 0 (max (.indexOf ^String % ".") 0)))))))
+      (let [roots (volatile! #{})
+            classes
+            (vec
+             (for [^String file (all-files-on-classpath classpath)
+                   :when (and (.endsWith file ".class")
+                              (not (.contains file "__"))
+                              (not (.contains file "$"))
+                              (not= file "module-info.class"))
+                   :let [c (-> (subs file 0 (- (.length file) 6)) ;; .class
+                               ;; Resource separator is always / on all OSes.
+                               (.replace "/" "."))
+                         _ (vswap! roots conj
+                                   (subs c 0 (max (.indexOf ^String c ".") 0)))]]
+               c))]
+        (swap! primitive-cache assoc :root-packages-on-classpath
+               (set (remove empty? @roots)))
+        classes))))
+
+(defn root-packages-on-classpath
+  "Return a set of all classname \"TLDs\" on the classpath."
+  []
+  (classes-on-classpath)
+  (@primitive-cache :root-packages-on-classpath))
 
 (defn namespaces&files-on-classpath
   "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file
@@ -191,11 +215,11 @@
   (let [classpath (classpath)]
     (cache-last-result :namespaces-on-classpath classpath
       ;; TODO deduplicate these results by ns-str
-      (for [file (all-files-on-classpath classpath)
-            :let [file (ensure-no-leading-slash file)
-                  [_ ^String nsname] (re-matches #"(.+)\.clj[sc]?" file)]
-            :when nsname]
-        (let [ns-str (.. nsname (replace "/" ".") (replace "_" "-"))]
+      (for [^String file (all-files-on-classpath classpath)
+            :when (or (.endsWith file ".clj") (.endsWith file ".cljs")
+                      (.endsWith file ".cljc"))]
+        (let [ns-str (.. (subs file 0 (.lastIndexOf file "."))
+                         (replace "/" ".") (replace "_" "-"))]
           {:ns-str ns-str, :file file})))))
 
 (defn project-resources
@@ -207,8 +231,7 @@
             ^String file (list-files path false)
             :when (not (re-find #"\.(clj[cs]?|jar|class)$" file))]
         ;; resource pathes always use "/" regardless of platform
-        (.. (ensure-no-leading-slash file)
-            (replace File/separator "/"))))))
+        (.replace file File/separator "/")))))
 
 (defn var->class
   "Given a form that may be a var, returns the class that is associated
