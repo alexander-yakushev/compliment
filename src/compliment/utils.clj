@@ -97,6 +97,7 @@
   [name key value]
   `(cache-last-result* ~name ~key (fn [] ~value)))
 
+^{:lite nil}
 (defn flush-caches
   "Removes all cached values, forcing functions that depend on
   `cache-last-result` to recalculate."
@@ -226,6 +227,7 @@
                          (replace "/" ".") (replace "_" "-"))]
           {:ns-str ns-str, :file file})))))
 
+^{:lite nil}
 (defn project-resources
   "Returns a list of all non-code files in the current project."
   []
@@ -237,6 +239,7 @@
         ;; resource pathes always use "/" regardless of platform
         (.replace file File/separator "/")))))
 
+^{:lite nil}
 (defn var->class
   "Given a form that may be a var, returns the class that is associated
   to its :tag or its value (in that precedence order)."
@@ -252,6 +255,7 @@
     (or (-> var-ref meta :tag)
         (class (deref var-ref)))))
 
+^{:lite nil}
 (defn invocation-form->class
   "Given a form that might be an invocation form (i.e. a list),
   return the class that is returned, according to the invoked function's var metadata."
@@ -262,6 +266,7 @@
     (when (var? var-from-invocation)
       (-> var-from-invocation meta :tag))))
 
+^{:lite nil}
 (defn literal->class
   "Extracts the class from a literal.
   This is meant to support interop on strings and Clojure collections."

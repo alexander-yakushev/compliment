@@ -42,6 +42,8 @@
 
    [[https://clojars.org/compliment][https://clojars.org/compliment/latest-version.svg]]
 
+   If you don't want to pull a dependency, check [[lite][Compliment-lite]].
+
 ** Examples
 
    [[https://github.com/alexander-yakushev/compliment/wiki/Examples][Here]] you can find examples of different completion scenarios Compliment

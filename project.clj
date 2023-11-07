@@ -15,6 +15,13 @@
                    :plugins [[jonase/eastwood "1.4.0"]
                              [lein-cloverage "1.2.4"]]
                    :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
+                                               :unused-meta-on-macro {compliment.utils true
+                                                                      compliment.sources.classes true
+                                                                      compliment.sources.class-members true
+                                                                      compliment.sources.special-forms true
+                                                                      compliment.sources.namespaces true
+                                                                      compliment.sources.vars true
+                                                                      compliment.core true}
                                                :def-in-def {compliment.sources.t-class-members true
                                                             compliment.sources.t-vars true
                                                             compliment.t-core true

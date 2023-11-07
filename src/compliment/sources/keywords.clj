@@ -46,7 +46,7 @@
             :when (.startsWith (name kw) prefix)]
         (tagged-candidate (str "::" alias "/" (name kw)))))))
 
-(defn candidates
+(defn ^{:lite 'keyword-candidates} candidates
   [^String prefix, ns _]
   (let [single-colon? (.startsWith prefix ":")
         double-colon? (.startsWith prefix "::")
@@ -58,6 +58,7 @@
                               :when (.startsWith (str kw) (subs prefix 1))]
                           (tagged-candidate (str ":" kw))))))
 
+^{:lite '(defsource :compliment.lite/keywords :candidates #'keyword-candidates)}
 (defsource ::keywords
   :candidates #'candidates
   :doc (constantly nil))

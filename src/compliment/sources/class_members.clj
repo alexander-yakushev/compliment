@@ -88,8 +88,9 @@
   "Tests if prefix matches the member name following camel case rules.
   Thus, prefix `getDeF` matches member `getDeclaredFields`."
   [prefix member-name]
-  (fuzzy-matches-no-skip? prefix member-name #(Character/isUpperCase ^char %)))
+  (fuzzy-matches-no-skip? prefix member-name (fn [ch] (Character/isUpperCase ^char ch))))
 
+^{:lite nil}
 (defn try-get-object-class
   "Tries to get the type of the object from the context, which the member will be
   applied to. Object should be a symbol resolving to a Var or have a type tag."
@@ -116,20 +117,22 @@
   (when (class-member-symbol? prefix)
     (let [prefix (subs prefix 1)
           inparts? (re-find #"[A-Z]" prefix)
-          klass (try-get-object-class ns context)]
+          klass ^{:lite nil} (try-get-object-class ns context)]
       (for [[member-name members] (get-all-members ns klass)
-            :when (if inparts?
-                    (camel-case-matches? prefix member-name)
-                    (.startsWith ^String member-name prefix))
-            :when
-            (or (not klass)
-                (some #(= klass (.getDeclaringClass ^Member %)) members))]
+            :when (and (if inparts?
+                         (camel-case-matches? prefix member-name)
+                         (.startsWith ^String member-name prefix))
+                       ^{:lite true}
+                       (or (not klass)
+                           (some (fn [m] (= klass (.getDeclaringClass ^Member m)))
+                                 members)))]
         {:candidate (str "." member-name)
          :type (if (instance? Method (first members))
                  :method :field)}))))
 
 ;; ### Member documentation
 
+^{:lite nil}
 (defn type-to-pretty-string
   "Takes a type (either a class or a primitive) and returns it's
   human-readable name."
@@ -139,6 +142,7 @@
     (.getName t)
     (.getSimpleName t)))
 
+^{:lite nil}
 (defn doc-method-parameters
   "Takes a list of method parameters and stringifies it."
   [parameters]
@@ -148,6 +152,7 @@
        join
        (format "(%s)")))
 
+^{:lite nil}
 (defn create-members-doc
   "Takes a list of members (presumably with the same name) and turns
   them into a docstring."
@@ -173,6 +178,7 @@
        (interpose "\n")
        join))
 
+^{:lite nil}
 (defn members-doc
   "Documentation function for non-static members."
   [member-str ns]
@@ -181,6 +187,7 @@
     (when-let [member (get-in @members-cache [ns :members (subs member-str 1)])]
       (create-members-doc member))))
 
+^{:lite nil}
 (defn classname-doc [^Class class]
   (let [members (group-by static? (concat (.getMethods class)
                                           (.getFields class)))
@@ -194,6 +201,7 @@
          " Non-static members:\n  " non-static "\n\n"
          " Static members:\n  " static "\n")))
 
+^{:lite '(defsource :compliment.lite/members :candidates #'members-candidates)}
 (defsource ::members
   :candidates #'members-candidates
   :doc #'members-doc)
@@ -239,6 +247,7 @@
            :type (if (instance? Method (first members))
                    :static-method :static-field)})))))
 
+^{:lite nil}
 (defn resolve-static-member
   "Given a string representation of a static member returns Member object."
   [^String member-str ns]
@@ -246,6 +255,7 @@
     (when-let [cl (resolve-class ns (symbol cl-name))]
       (get (static-members cl) member-name))))
 
+^{:lite nil}
 (defn static-member-doc
   "Given a member name and class returns its docstring."
   [member-str ns]
@@ -254,6 +264,7 @@
       (when member
         (create-members-doc member)))))
 
+^{:lite (defsource :compliment.lite/static-members :candidates #'static-members-candidates)}
 (defsource ::static-members
   :candidates #'static-members-candidates
   :doc #'static-member-doc)

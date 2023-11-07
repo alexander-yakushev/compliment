@@ -41,6 +41,21 @@ jobs:
             - ~/.m2
           key: project-{{ checksum "project.clj" }}
 
+  test-lite:
+    working_directory: ~/project/lite
+    docker:
+      - image: clojure:temurin-21-jammy
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          key: project-lite-{{ checksum "deps.edn" }}
+      - run: clojure -X:test
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: project-lite-{{ checksum "deps.edn" }}
+
 workflows:
   run_all:
     jobs:
@@ -53,4 +68,5 @@ workflows:
                 - clojure:openjdk-14-lein
                 - clojure:temurin-17-lein
                 - clojure:temurin-20-lein
+      - test-lite
       - coverage

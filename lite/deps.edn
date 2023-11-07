@@ -1,0 +1,10 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1" :mvn/scope "provided"}
+        zprint/zprint {:mvn/version "1.2.8"}}
+
+ :aliases
+ {:test {:extra-paths ["test"]
+         :exec-fn cognitect.test-runner.api/test
+         :extra-deps {fudje/fudje {:mvn/version "0.9.7"}
+                      io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
+                                                            :git/sha "dfb30dd"}}}}}

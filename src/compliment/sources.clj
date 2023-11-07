@@ -22,5 +22,5 @@
   Value of `:doc` latter should be a function of symbol name and
   namespace."
   [name & {:as kw-args}]
-  {:pre [(every? kw-args [:candidates :doc])]}
+  {:pre [^{:lite '(:candidates kw-args)} (every? kw-args [:candidates :doc])]}
   (swap! sources assoc name (assoc kw-args :enabled true)))

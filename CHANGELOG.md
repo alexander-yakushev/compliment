@@ -2,6 +2,7 @@
 
 ### 0.5.0 (unreleased)
 
+- Add [Compliment-lite](lite).
 - **BREAKING**: Split `namespaces-and-classes` source into two separate sources.
   Thus, for the purposes of enabling/disabling sources, their keyword names are
   now `:compliment.sources.namespaces/namespaces` and

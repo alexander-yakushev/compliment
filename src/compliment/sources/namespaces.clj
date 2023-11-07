@@ -15,7 +15,7 @@
   [prefix namespace]
   (fuzzy-matches? prefix namespace \.))
 
-(defn candidates
+(defn ^{:lite 'namespaces-candidates} candidates
   "Returns a list of namespace and classname completions."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
@@ -44,6 +44,7 @@
                       (keep ns-sym->cand))
                 (all-ns))))))
 
+^{:lite nil}
 (defn doc [ns-str curr-ns]
   (when (nscl-symbol? ns-str)
     (let [ns-sym (symbol (second (utils/split-by-leading-literals ns-str)))]
@@ -51,6 +52,7 @@
                         (get (ns-aliases curr-ns) ns-sym))]
         (str ns "\n" (:doc (meta ns)) "\n")))))
 
+^{:lite '(defsource :compliment.lite/namespaces :candidates #'namespaces-candidates)}
 (defsource ::namespaces
   :candidates #'candidates
   :doc #'doc)

@@ -15,6 +15,7 @@
       (group-by (fn [^String s] (.substring s (inc (.lastIndexOf s "."))))
                 all-classes))))
 
+^{:lite nil}
 (defn- analyze-import-context
   "Checks if the completion is called from ns import declaration. If so, and the
   prefix is inside import list, return that package name, otherwise return nil."
@@ -44,11 +45,11 @@
 ;; total number of classes can go up to 7 digits, and we must still return the
 ;; result reasonably quickly in such scenarios.
 
-(defn candidates
+(defn ^{:lite 'classes-candidates} candidates
   "Returns a list of classname completions."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
-    (if-let [import-ctx (analyze-import-context context)]
+    (if-let [import-ctx ^{:lite '(get {} :nil)} (analyze-import-context context)]
       (get-classes-by-package-name prefix import-ctx)
 
       (let [has-dot (.contains prefix ".")
@@ -114,10 +115,12 @@
 
           (persistent! result))))))
 
+^{:lite nil}
 (defn doc [class-str curr-ns]
   (when (nscl-symbol? class-str)
     (some-> (utils/resolve-class curr-ns (symbol class-str)) classname-doc)))
 
+^{:lite '(defsource :compliment.lite/classes :candidates #'classes-candidates)}
 (defsource ::classes
   :candidates #'candidates
   :doc #'doc)

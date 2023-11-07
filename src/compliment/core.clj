@@ -53,8 +53,8 @@
   ([prefix {:keys [ns context sort-order sources extra-metadata plain-candidates]
             :or {sort-order :by-length}}]
    (let [nspc (ensure-ns ns)
-         ctx (binding [*ns* nspc]
-               (cache-context context))]
+         ctx ^{:lite nil} (binding [*ns* nspc]
+                            (cache-context context))]
      (binding [*extra-metadata* extra-metadata]
        (let [candidate-fns (keep (fn [[_ src]]
                                    (when (:enabled src)
@@ -71,6 +71,7 @@
                      sorted-cands)]
          (doall cands))))))
 
+^{:lite nil}
 (defn documentation
   "Returns a documentation string that describes the given symbol.
 

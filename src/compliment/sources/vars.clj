@@ -16,6 +16,7 @@
   [prefix var]
   (fuzzy-matches? prefix var \-))
 
+^{:lite nil}
 (defn try-get-ns-from-context
   "Tries to extract a namespace name if context is a `ns` definition."
   [context]
@@ -30,6 +31,7 @@
         (try (require namespace) (catch Exception _))
         (find-ns namespace)))))
 
+^{:lite nil}
 (defn generate-docstring
   "Generates a docstring from a given var metadata. Copied from
   `clojure.repl` with some minor modifications."
@@ -56,7 +58,7 @@
         (println " " (:doc m))))
     (str *out*)))
 
-(defn candidates
+(defn ^{:lite 'vars-candidates} candidates
   "Returns a list of namespace-bound candidates, with namespace being
   either the scope (if prefix is scoped), `ns` arg or the namespace
   extracted from context if inside `ns` declaration."
@@ -64,7 +66,7 @@
   (let [[literals prefix] (split-by-leading-literals prefix)]
     (when-let [[_ scope-name prefix] (var-symbol? prefix)]
       (let [scope (some-> scope-name symbol (resolve-namespace ns))
-            ns-form-namespace (try-get-ns-from-context context)
+            ns-form-namespace ^{:lite '(get {} :nil)} (try-get-ns-from-context context)
             vars (cond
                    scope (if (and literals (re-find #"#'$" literals))
                            ;; If prefixed with #', suggest private vars too.
@@ -96,12 +98,14 @@
             (assoc :arglists (apply list (map pr-str arglists)))
 
             (and doc (:doc *extra-metadata*))
-            (assoc :doc (generate-docstring var-meta))))))))
+            (assoc :doc ^{:lite 'doc} (generate-docstring var-meta))))))))
 
+^{:lite nil}
 (defn- resolve-var [symbol-str ns]
   (let [strip-literals (comp second split-by-leading-literals)]
     (ns-resolve ns (symbol (strip-literals symbol-str)))))
 
+^{:lite nil}
 (defn doc
   "Documentation function for this sources' completions."
   [symbol-str ns]
@@ -110,6 +114,7 @@
       (when (meta var)
         (generate-docstring (meta var))))))
 
+^{:lite '(defsource :compliment.lite/vars :candidates #'vars-candidates)}
 (defsource ::vars
   :candidates #'candidates
   :doc #'doc)
