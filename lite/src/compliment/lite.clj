@@ -1,4 +1,5 @@
 ;; This file was generated at Tue Nov 07 14:24:54 EET 2023
+;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
   (:import java.io.File

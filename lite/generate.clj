@@ -64,6 +64,7 @@
                         (recur))))))]
           (binding [*out* wr]
             (println ";; This file was generated at" (str (java.util.Date.)))
+            (println ";; SPDX-License-Identifier: EPL-1.0")
             (println ";; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite")
             (zprint/zprint (make-header-form @imports))
             (println body)))))
