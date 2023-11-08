@@ -1,8 +1,11 @@
 # Change log
 
-### 0.5.0 (unreleased)
+### 0.5.0 (2023-11-08)
 
 - Add [Compliment-lite](lite).
+- Improve performance and efficiency of initialization and repeated functions.
+  Speed up initialization, reduce memory footprint and allocation rate.
+- Protect initialization with a lock so that multiple inits can't be triggered.
 - **BREAKING**: Split `namespaces-and-classes` source into two separate sources.
   Thus, for the purposes of enabling/disabling sources, their keyword names are
   now `:compliment.sources.namespaces/namespaces` and
