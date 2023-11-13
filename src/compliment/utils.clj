@@ -154,8 +154,10 @@
           (for [^File file (file-seq-nonr root)
                 :when (not (.isDirectory file))]
             (let [filename (str (.relativize root-path (.toPath file)))]
-              (if (.startsWith filename File/separator)
-                (.substring filename 1) filename))))))
+              (cond-> filename
+                ;; Replace Windows backslashes with slashes.
+                (not= File/separator "/") (.replace File/separator "/")
+                (.startsWith filename "/") (.substring filename 1)))))))
 
 (defmacro list-jdk9-base-classfiles
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
@@ -236,8 +238,7 @@
       (for [path classpath
             ^String file (list-files path false)
             :when (not (re-find #"\.(clj[cs]?|jar|class)$" file))]
-        ;; resource pathes always use "/" regardless of platform
-        (.replace file File/separator "/")))))
+        file))))
 
 ^{:lite nil}
 (defn var->class

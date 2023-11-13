@@ -1,4 +1,4 @@
-;; This file was generated at Tue Nov 07 14:24:54 EET 2023
+;; This file was generated at Tue Nov 14 01:00:10 EET 2023
 ;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
@@ -151,9 +151,9 @@
             (for [^File file (file-seq-nonr root)
                   :when (not (.isDirectory file))]
               (let [filename (str (.relativize root-path (.toPath file)))]
-                (if (.startsWith filename File/separator)
-                  (.substring filename 1)
-                  filename))))))
+                (cond-> filename
+                  (not= File/separator "/") (.replace File/separator "/")
+                  (.startsWith filename "/") (.substring filename 1)))))))
 
 (defmacro list-jdk9-base-classfiles
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in

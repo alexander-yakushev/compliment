@@ -23,6 +23,10 @@
     (src/candidates "j.i.F" (-ns) nil)
     => (contains [{:candidate "java.io.File", :type :class}]))
 
+  (fact "local directories are correctly scanned for classes"
+    (src/candidates "compliment.E" (-ns) nil)
+    => [{:candidate "compliment.Example", :type :class}])
+
   (fact "imported classes are looked up in the given namespace"
     (src/candidates "Runt" (-ns) nil)
     => (contains [{:candidate "Runtime", :type :class, :package "java.lang"}

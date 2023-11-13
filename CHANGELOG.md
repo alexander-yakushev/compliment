@@ -1,5 +1,11 @@
 # Change log
 
+### master (unreleased)
+
+- [#113](https://github.com/alexander-yakushev/compliment/issues/113): Suggest
+  members of the superclass for hinted symbols.
+- Fix completing classes from local directory classpath on Windows.
+
 ### 0.5.0 (2023-11-08)
 
 - Add [Compliment-lite](lite).
