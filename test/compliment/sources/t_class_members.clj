@@ -165,6 +165,11 @@
                                                             "(__prefix__ a-bitset)"))))
     => (just [".intersects"]))
 
+  (fact "given a subclass context, superclass members are suggested when not imported"
+    (strip-tags (src/members-candidates "." (-ns) (ctx/cache-context
+                                                   "(__prefix__ ^java.io.LineNumberReader x")))
+    => (contains [".getLineNumber" ".markSupported"] :gaps-ok :in-any-order))
+
   (fact "completion should work with vars on different namespaces"
     (do (def an-object 1234)
         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
@@ -219,12 +224,10 @@
 (deftest literals-inference-test
   (testing "Vector literals"
     (fact "Only returns members of clojure.lang.PersistentVector for the very short \".a\" query"
-      (src/members-candidates ".a" (-ns) (ctx/cache-context
-                                          "(__prefix__ [])"))
+      (strip-tags (src/members-candidates ".a" (-ns) (ctx/cache-context
+                                                      "(__prefix__ [])")))
       =>
-      (just [{:candidate ".arrayFor", :type :method}
-             {:candidate ".assocN", :type :method}
-             {:candidate ".asTransient", :type :method}]
+      (just [".addAll" ".arrayFor" ".assocN" ".applyTo" ".add" ".assoc" ".asTransient"]
         :in-any-order))
 
     (fact "A docstring is offered for the previous query"
@@ -236,9 +239,10 @@
                                           "(__prefix__ \"\")"))
       =>
       (just [{:candidate ".getChars", :type :method}
-             {:candidate ".getBytes", :type :method}]
+             {:candidate ".getBytes", :type :method}
+             {:candidate ".getClass", :type :method}]
         :in-any-order))
-    
+
     (fact "A docstring is offered for the previous query"
       (src/members-doc ".codePointBefore" (-ns))
       => (checker string?))))

@@ -124,7 +124,7 @@
                          (.startsWith ^String member-name prefix))
                        ^{:lite true}
                        (or (not klass)
-                           (some (fn [m] (= klass (.getDeclaringClass ^Member m)))
+                           (some (fn [m] (.isAssignableFrom (.getDeclaringClass ^Member m) klass))
                                  members)))]
         {:candidate (str "." member-name)
          :type (if (instance? Method (first members))
