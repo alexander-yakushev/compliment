@@ -28,8 +28,7 @@
   "Returns a list of namespace aliases prefixed by double colon required in the
   given namespace."
   [prefix ns]
-  (let [prefix (subs prefix 2)
-        ns-name (str ns)]
+  (let [prefix (subs prefix 2)]
     (for [[alias _] (ns-aliases ns)
           :let [aname (name alias)]
           :when (.startsWith aname prefix)]

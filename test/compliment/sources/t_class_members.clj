@@ -132,6 +132,11 @@
                                                     "(__prefix__ ^java.io.File (foo))")))
     => (just [".mkdirs" ".mkdir"] :in-any-order)
 
+    ;; Doesn't break if the class of the hint can't be resolved.
+    (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
+                                                    "(__prefix__ ^non.existing.Class (foo))")))
+    => (contains [".matches"])
+
     (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
                                                      "(__prefix__ ^Thread (foo))")))
     => (just [".interrupt"])

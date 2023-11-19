@@ -10,6 +10,7 @@
 
   (let [symbol "get-last-message-date"]
     (fact "cases where fuzzy matching should or shouldn't work"
+      (fuzzy-matches? "" symbol \-)        => truthy
       (fuzzy-matches? "ge" symbol \-)      => truthy
       (fuzzy-matches? "ge-" symbol \-)     => truthy
       (fuzzy-matches? "ge-la" symbol \-)   => truthy
@@ -27,6 +28,7 @@
   (let [symbol "getImplementationVendor"
         pred #(Character/isUpperCase ^char %)]
     (fact "rules for camel-case matching"
+      (fuzzy-matches-no-skip? "" symbol pred) => truthy
       (fuzzy-matches-no-skip? "gIV" symbol pred) => truthy
       (fuzzy-matches-no-skip? "getImVendor" symbol pred) => truthy
       (fuzzy-matches-no-skip? "getVen" symbol pred) => truthy

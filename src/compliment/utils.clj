@@ -163,14 +163,13 @@
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
   modules, we have to do extra work to extract them."
   []
-  (if (resolve-class *ns* 'java.lang.module.ModuleFinder)
+  (when (resolve-class *ns* 'java.lang.module.ModuleFinder)
     `(-> (.findAll (java.lang.module.ModuleFinder/ofSystem))
          (.stream)
          (.flatMap (reify Function
                      (apply [_ mref#]
                        (.list (.open ^java.lang.module.ModuleReference mref#)))))
-         (.collect (Collectors/toList)))
-    ()))
+         (.collect (Collectors/toList)))))
 
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,

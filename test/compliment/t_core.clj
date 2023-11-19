@@ -192,7 +192,9 @@
   resolved to something that has a docstring."
     (core/documentation "reduce")         => (checker (every-pred string? not-empty))
     (core/documentation ".suspend")       => (checker (every-pred string? not-empty))
-    (core/documentation "jus.t g:arbage") => "")
+    (core/documentation "jus.t g:arbage") => ""
+    (core/documentation "reduce" *ns* {:sources []})
+    => "")
 
   (fact "don't break on empty input"
     (core/documentation "") => ""))
