@@ -1,4 +1,4 @@
-;; This file was generated at Tue Nov 14 01:00:10 EET 2023
+;; This file was generated at Sun Nov 19 12:18:58 EET 2023
 ;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
@@ -159,14 +159,13 @@
   "Because on JDK9+ the classfiles are stored not in rt.jar on classpath, but in
   modules, we have to do extra work to extract them."
   []
-  (if (resolve-class *ns* 'java.lang.module.ModuleFinder)
+  (when (resolve-class *ns* 'java.lang.module.ModuleFinder)
     `(-> (.findAll (java.lang.module.ModuleFinder/ofSystem))
          (.stream)
          (.flatMap (reify Function
                      (apply [_ mref#]
                        (.list (.open ^java.lang.module.ModuleReference mref#)))))
-         (.collect (Collectors/toList)))
-    ()))
+         (.collect (Collectors/toList)))))
 
 (defn- all-files-on-classpath
   "Given a list of files on the classpath, returns the list of all files,\n  including those located inside jar files."
@@ -585,8 +584,7 @@
 (defn namespace-alias-candidates
   "Returns a list of namespace aliases prefixed by double colon required in the\n  given namespace."
   [prefix ns]
-  (let [prefix (subs prefix 2)
-        ns-name (str ns)]
+  (let [prefix (subs prefix 2)]
     (for [[alias _] (ns-aliases ns)
           :let [aname (name alias)]
           :when (.startsWith aname prefix)]
