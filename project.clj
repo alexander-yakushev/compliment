@@ -12,7 +12,7 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.11.1"]
                                   [criterium "0.4.6"]
                                   [fudje "0.9.7"]]
-                   :plugins [[jonase/eastwood "1.4.0"]
+                   :plugins [[jonase/eastwood "1.4.2"]
                              [lein-cloverage "1.2.4"]]
                    :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
                                                :unused-meta-on-macro {compliment.utils true
@@ -34,4 +34,4 @@
                              "coverage" ["cloverage" "--test-ns-regex" ".+\\.t-(?!benchmark)[^.]+$"
                                          "--codecov"]}}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}
-             :1.12 {:dependencies [[org.clojure/clojure "1.12.0-alpha4"]]}})
+             :1.12 {:dependencies [[org.clojure/clojure "1.12.0-alpha5"]]}})
