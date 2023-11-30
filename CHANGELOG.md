@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.5.1 (2023-11-30)
+
 - [#113](https://github.com/alexander-yakushev/compliment/issues/113): Suggest
   members of the superclass for hinted symbols.
 - Fix completing classes from local directory classpath on Windows.
