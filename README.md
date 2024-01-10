@@ -117,6 +117,6 @@ sources](https://github.com/alexander-yakushev/compliment/wiki/Custom-sources).
 
 ## License
 
-Copyright © 2013-2023 Oleksandr Yakushev. Distributed under the Eclipse Public
+Copyright © 2013-2024 Oleksandr Yakushev. Distributed under the Eclipse Public
 License. See
 [LICENSE](https://github.com/alexander-yakushev/compliment/blob/master/LICENSE).
