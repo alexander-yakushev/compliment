@@ -228,11 +228,11 @@
 
 (deftest literals-inference-test
   (testing "Vector literals"
-    (fact "Only returns members of clojure.lang.PersistentVector for the very short \".a\" query"
-      (strip-tags (src/members-candidates ".a" (-ns) (ctx/cache-context
+    (fact "Only returns members of clojure.lang.PersistentVector for the very short \".s\" query"
+      (strip-tags (src/members-candidates ".s" (-ns) (ctx/cache-context
                                                       "(__prefix__ [])")))
       =>
-      (just [".addAll" ".arrayFor" ".assocN" ".applyTo" ".add" ".assoc" ".asTransient"]
+      (just [".seq" ".set" ".shift" ".size" ".sort" ".spliterator" ".stream" ".subList"]
         :in-any-order))
 
     (fact "A docstring is offered for the previous query"

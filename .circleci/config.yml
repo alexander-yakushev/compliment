@@ -24,7 +24,7 @@ jobs:
   coverage:
     working_directory: ~/project
     docker:
-      - image: clojure:temurin-17-lein
+      - image: clojure:temurin-17-lein # Never images don't have cURL
     steps:
       - checkout
       - restore_cache:
@@ -65,8 +65,7 @@ workflows:
               docker-image:
                 - clojure:temurin-8-lein
                 - clojure:temurin-11-lein
-                - clojure:openjdk-14-lein
                 - clojure:temurin-17-lein
-                - clojure:temurin-20-lein
+                - clojure:temurin-21-lein
       - test-lite
       - coverage
