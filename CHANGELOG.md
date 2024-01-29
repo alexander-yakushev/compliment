@@ -7,6 +7,8 @@
 - [#113](https://github.com/alexander-yakushev/compliment/issues/113): Suggest
   members of the superclass for hinted symbols.
 - Fix completing classes from local directory classpath on Windows.
+- **BREAKING**: `compliment.context/cache-context` no longer accepts `:same` as
+  the argument to use the previously supplied context string.
 
 ### 0.5.0 (2023-11-08)
 
