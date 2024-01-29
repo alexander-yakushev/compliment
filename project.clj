@@ -16,6 +16,7 @@
                              [lein-cloverage "1.2.4"]]
                    :eastwood {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
                                                :unused-meta-on-macro {compliment.utils true
+                                                                      compliment.sources true
                                                                       compliment.sources.classes true
                                                                       compliment.sources.class-members true
                                                                       compliment.sources.special-forms true

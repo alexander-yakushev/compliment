@@ -34,9 +34,12 @@
   "Takes either a namespace object or a symbol and returns the corresponding
   namespace if it exists, otherwise returns `user` namespace."
   [nspc]
-  (cond (instance? clojure.lang.Namespace nspc) nspc
-        (symbol? nspc) (or (find-ns nspc) (find-ns 'user) *ns*)
-        :else *ns*))
+  (or (and (instance? clojure.lang.Namespace nspc) nspc)
+      (and (symbol? nspc) (find-ns nspc))
+      (find-ns 'user)
+      ;; In an environment that for some reason lacks 'user namespace, commit to
+      ;; return any valid Namespace object.
+      *ns*))
 
 (defn completions
   "Returns a list of completions for the given prefix.

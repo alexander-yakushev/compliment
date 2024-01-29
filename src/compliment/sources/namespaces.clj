@@ -16,7 +16,7 @@
   (fuzzy-matches? prefix namespace \.))
 
 (defn ^{:lite 'namespaces-candidates} candidates
-  "Returns a list of namespace and classname completions."
+  "Return a list of namespace candidates."
   [^String prefix, ns context]
   (when (nscl-symbol? prefix)
     (let [has-dot (> (.indexOf prefix ".") -1)
