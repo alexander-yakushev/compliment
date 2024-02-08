@@ -1,0 +1,50 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1" :mvn/scope "provided"}}
+
+ :aliases
+ {:build {:deps {io.github.seancorfield/build-clj {:git/tag "v0.8.3"
+                                                   :git/sha "7ac1f8d"}}
+          :ns-default build
+          :ns-aliases {bb org.corfield.build}}
+
+  :1.10 {:override-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
+  :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.0-alpha5"}}}
+
+  :dev {:extra-paths ["test"]
+        :extra-deps {fudje/fudje {:mvn/version "0.9.7"}
+                     criterium/criterium {:mvn/version "0.4.6"}}}
+
+  :test {:extra-deps {fudje/fudje {:mvn/version "0.9.7"}
+                      criterium/criterium {:mvn/version "0.4.6"}
+                      io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
+                                                            :git/sha "dfb30dd"}}
+         :extra-paths ["test"]
+         :exec-fn cognitect.test-runner.api/test
+         :exec-args {:patterns [".+"]}}
+
+  :bench {:exec-args {:includes [:benchmark]}}
+  :no-bench {:exec-args {:excludes [:benchmark]}}
+
+  :coverage {:extra-deps {cloverage/cloverage {:mvn/version "1.2.4"}}
+             :main-opts ["-m" "cloverage.coverage"
+                         "-p" "src" "-s" "test"
+                         "--test-ns-regex" ".+\\.t-(?!benchmark)[^.]+$"
+                         "--codecov"]}
+
+  :eastwood {:extra-deps {jonase/eastwood {:mvn/version "1.4.2"}}
+             :main-opts ["-m" "eastwood.lint"
+                         {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}
+                                           :unused-meta-on-macro {compliment.utils true
+                                                                  compliment.sources true
+                                                                  compliment.sources.classes true
+                                                                  compliment.sources.class-members true
+                                                                  compliment.sources.special-forms true
+                                                                  compliment.sources.namespaces true
+                                                                  compliment.sources.vars true
+                                                                  compliment.core true}
+                                           :def-in-def {compliment.sources.t-class-members true
+                                                        compliment.sources.t-vars true
+                                                        compliment.t-core true
+                                                        compliment.sources.t-local-bindings true}}}]}
+
+  }}

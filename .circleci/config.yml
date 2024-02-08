@@ -11,25 +11,25 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: project-{{ checksum "project.clj" }}
-      - run: lein with-profile +1.10 test-no-bench
-      - run: lein with-profile +1.12 test-no-bench
-      - run: lein with-profile +1.11 test-all
-      - run: lein with-profile +1.11 eastwood
+          key: project-{{ checksum "deps.edn" }}
+      - run: clojure -X:1.10:test:no-bench
+      - run: clojure -X:1.12:test:no-bench
+      - run: clojure -X:test
+      - run: clojure -M:eastwood
       - save_cache:
           paths:
             - ~/.m2
-          key: project-{{ checksum "project.clj" }}
+          key: project-{{ checksum "deps.edn" }}
 
   coverage:
     working_directory: ~/project
     docker:
-      - image: clojure:temurin-17-lein # Never images don't have cURL
+      - image: clojure:temurin-21-jammy
     steps:
       - checkout
       - restore_cache:
-          key: project-{{ checksum "project.clj" }}
-      - run: lein coverage
+          key: project-{{ checksum "deps.edn" }}
+      - run: clojure -M:test:coverage
       - run: >
           curl -Os https://uploader.codecov.io/latest/linux/codecov &&
           chmod +x codecov &&
@@ -39,7 +39,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: project-{{ checksum "project.clj" }}
+          key: project-{{ checksum "deps.edn" }}
 
   test-lite:
     working_directory: ~/project/lite
@@ -63,9 +63,9 @@ workflows:
           matrix:
             parameters:
               docker-image:
-                - clojure:temurin-8-lein
-                - clojure:temurin-11-lein
-                - clojure:temurin-17-lein
-                - clojure:temurin-21-lein
+                - clojure:temurin-8-jammy
+                - clojure:temurin-11-jammy
+                - clojure:temurin-17-jammy
+                - clojure:temurin-21-jammy
       - test-lite
       - coverage
