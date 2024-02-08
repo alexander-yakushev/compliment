@@ -8,7 +8,7 @@
 (defmacro opts+ []
   `(let [url# "https://github.com/alexander-yakushev/compliment"
          version# "0.5.2-SNAPSHOT"]
-     (-> {:lib 'compliment
+     (-> {:lib 'compliment/compliment
           :version version#
           :tag version#
           :scm {:url url#}
