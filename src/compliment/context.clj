@@ -46,7 +46,8 @@
 
                ;; Basic enhance reader for forms with reader conditionals. Include the meta
                ;; for sources that are sensitive to this.
-               (str/replace "#?" "^:reader-conditional? ")
+               (str/replace "#?@" "^:splicing-reader-conditional ")
+               (str/replace "#?" "^:reader-conditional ")
 
                ;; The reader breaks on aliased keywords if the respective
                ;; namespace isn't imported into the current ns.

@@ -66,10 +66,9 @@
                                    (all-sources sources)
                                    (all-sources)))
              candidates (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
-             sorted-cands (case sort-order 
-                            :by-name (sort-by :candidate candidates)
-                            :by-length (sort-by :candidate by-length-comparator candidates)
-                            candidates)
+             sorted-cands (if (= sort-order :by-name)
+                            (sort-by :candidate candidates)
+                            (sort-by :candidate by-length-comparator candidates))
              cands (if plain-candidates
                      (map :candidate sorted-cands)
                      sorted-cands)]
