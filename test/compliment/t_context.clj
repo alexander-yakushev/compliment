@@ -33,7 +33,7 @@
            (#'ctx/safe-read-context-string "(defn a [] #?(:cljs [1 2 3 __prefix__]))")))
     
     (is (= '(defn a [] ^{:splicing-reader-conditional true} (:cljs [1 2 3 __prefix__]))
-           (#'ctx/safe-read-context-string "(defn a [] #?@(:cljs [1 2 3 __prefix__]))"))))
+           (#'ctx/safe-read-context-string "(defn a [] #?@(:cljs [1 2 3 __prefix__]))")))))
 
 (deftest context-parsing
   (fact "prefix placeholder in a context represents the location in
