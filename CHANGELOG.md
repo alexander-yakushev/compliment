@@ -2,6 +2,10 @@
 
 ### master (unreleased)
 
+- **BREAKING**: source `:compliment.sources.class-members/static-members` is replaced by `compliment.sources.class-members/qualified-members`.
+  Only affects consumers that use the static-member vars or explicitly pass `:sources` to `compliment.core/documentation` or `compliment.core/completions`.
+  The `qualified-members`-source behaves exactly like the `static-members`-source for Clojure < 1.12. For Clojure >= 1.12 it also includes methods and constructors for prefixes of the form "Class/instanceMethod" or "Class/new".
+
 ### 0.5.1 (2023-11-30)
 
 - [#113](https://github.com/alexander-yakushev/compliment/issues/113): Suggest

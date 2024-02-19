@@ -7,6 +7,9 @@
            (java.util.jar JarEntry JarFile)
            java.util.stream.Collectors))
 
+(defn clojure-1-12+? []
+  (>= (:minor *clojure-version*) 12))
+
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
   candidates they should attach . Should be a set of keywords."
