@@ -197,34 +197,54 @@
   (fact "class members have docs"
     (src/members-doc ".wait" (-ns)) => (checker string?)))
 
-(deftest static-members-test
-  (in-ns 'compliment.sources.t-class-members)
-  (fact "static members can be matched by camelCase too"
-    (src/camel-case-matches? "Thread/actC" "Thread/activeCount") => truthy)
 
-  (fact "static members candidates are taken for the class in prefix"
-    (strip-tags (src/static-members-candidates "String/" (-ns) nil))
+(deftest qualified-members-test
+  (in-ns 'compliment.sources.t-class-members)
+  (fact "qualified members can be matched by camelCase too"
+    (src/qualified-members-candidates "Thread/actC" (-ns) nil)
+    => (contains #{{:candidate "Thread/activeCount", :type :static-method}}))
+
+  (fact "qualified members candidates contain constructors and members for Clojure >= 1.12"
+    (binding [*clojure-version* {:major 1 :minor 12}]
+      (src/qualified-members-candidates "java.io.File/cre" (-ns) nil))
+      => (just [{:candidate "java.io.File/createTempFile", :type :static-method}
+                {:candidate "java.io.File/createNewFile", :type :method}])
+
+    (binding [*clojure-version* {:major 1 :minor 12}]
+      (src/qualified-members-candidates "java.io.File/n" (-ns) nil))
+      => (contains #{{:candidate "java.io.File/new", :type :constructor}
+                     {:candidate "java.io.File/notify", :type :method}}))
+
+  (fact "qualified members candidates are taken for the class in prefix"
+    (strip-tags (src/qualified-members-candidates "String/" (-ns) nil))
     => (contains #{"String/CASE_INSENSITIVE_ORDER" "String/copyValueOf"
                    "String/format" "String/valueOf"} :gaps-ok)
 
     ;; Don't have to import class to get static members for it.
-    (src/static-members-candidates "java.io.File/sep" (-ns) nil)
+    (src/qualified-members-candidates "java.io.File/sep" (-ns) nil)
     => (just [{:candidate "java.io.File/separatorChar", :type :static-field}
               {:candidate "java.io.File/separator", :type :static-field}])
 
-    (src/static-members-candidates "java.io.File/cre" (-ns) nil)
+    ;; without 1.12 method values just yield static methods and static fields
+    (src/qualified-members-candidates "java.io.File/createT" (-ns) nil)
     => [{:candidate "java.io.File/createTempFile", :type :static-method}]
+
+    ;; without 1.12 method values just yield static methods and static fields
+    (binding [*clojure-version* {:major 1 :minor 12}]
+      (src/qualified-members-candidates "java.io.File/cre" (-ns) nil))
+      => (just [{:candidate "java.io.File/createTempFile", :type :static-method}
+                {:candidate "java.io.File/createNewFile", :type :method}])
 
     ;; But for imported classes last name can be used.
     (do (import 'java.io.File)
-        (strip-tags (src/static-members-candidates "File/sep" (-ns) nil)))
+        (strip-tags (src/qualified-members-candidates "File/sep" (-ns) nil)))
     => (just ["File/separator" "File/separatorChar"] :in-any-order))
 
   (fact "single slash doesn't break the completion"
-    (src/static-members-candidates "/" (-ns) nil) => nil)
+    (src/qualified-members-candidates "/" (-ns) nil) => nil)
 
   (fact "static class members have docs"
-    (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
+    (src/qualified-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
 
 (deftest literals-inference-test
   (testing "Vector literals"
