@@ -1,4 +1,4 @@
-;; This file was generated at Sun Nov 19 12:18:58 EET 2023
+;; This file was generated at Thu Mar 07 12:02:21 EET 2024
 ;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
@@ -229,7 +229,7 @@
 
 ;; compliment/sources.clj
 
-(def ^{:doc "Stores defined sources.", :private true} sources (atom nil))
+(def ^{:private true} sources "Stores defined sources." (atom {}))
 
 (defn all-sources
   "Returns the list of all completion sources, or the selected once specified by\n  `source-kws`."
@@ -237,9 +237,9 @@
   ([source-kws] (select-keys @sources source-kws)))
 
 (defn defsource
-  "Defines a source with the given name and argument map. Map must\n  contain two keys - `:candidates` and `:doc`.\n\n  Value of `:candidates`should be a function of prefix, namespace and\n  context.\n\n  Value of `:doc` latter should be a function of symbol name and\n  namespace."
-  [name & {:as kw-args}]
-  {:pre [(:candidates kw-args)]}
+  "Define a source with the given name and completion functions:\n  `:candidates` - a function of prefix, namespace and context;\n  `:doc` - a function of symbol name and namespace."
+  [name & {:keys [candidates doc], :as kw-args}]
+  {:pre [candidates]}
   (swap! sources assoc name (assoc kw-args :enabled true)))
 
 ;; compliment/sources/class_members.clj
@@ -399,7 +399,7 @@
   (fuzzy-matches? prefix namespace \.))
 
 (defn namespaces-candidates
-  "Returns a list of namespace and classname completions."
+  "Return a list of namespace candidates."
   [^String prefix ns context]
   (when (nscl-symbol? prefix)
     (let [has-dot (> (.indexOf prefix ".") -1)
@@ -653,9 +653,10 @@
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding\n  namespace if it exists, otherwise returns `user` namespace."
   [nspc]
-  (cond (instance? clojure.lang.Namespace nspc) nspc
-        (symbol? nspc) (or (find-ns nspc) (find-ns 'user) *ns*)
-        :else *ns*))
+  (or (and (instance? clojure.lang.Namespace nspc) nspc)
+      (and (symbol? nspc) (find-ns nspc))
+      (find-ns 'user)
+      *ns*))
 
 (defn completions
   "Returns a list of completions for the given prefix.
