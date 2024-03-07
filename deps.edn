@@ -45,6 +45,4 @@
                                            :def-in-def {compliment.sources.t-class-members true
                                                         compliment.sources.t-vars true
                                                         compliment.t-core true
-                                                        compliment.sources.t-local-bindings true}}}]}
-
-  }}
+                                                        compliment.sources.t-local-bindings true}}}]}}}

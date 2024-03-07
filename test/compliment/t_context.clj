@@ -1,5 +1,6 @@
 (ns compliment.t-context
   (:require [fudje.sweet :refer :all]
+            [clojure.walk :as walk]
             [clojure.test :refer :all]
             [compliment.context :as ctx]))
 
@@ -61,6 +62,17 @@
   (fact "broken map literals are fixed before they get to parse-context"
     (ctx/parse-context (#'ctx/safe-read-context-string "{:foo __prefix__ :bar}"))
     => '({:idx :foo, :map-role :value, :form {:foo __prefix__, :bar nil}}))
+
+  (fact "hashset literals are handled correctly"
+    ;; https://github.com/alexander-yakushev/compliment/issues/118
+    (->> (ctx/parse-context
+          (#'ctx/safe-read-context-string "(remove #(some #{(:value %)}) __prefix__)"))
+         (walk/postwalk #(if (and (symbol? %) (.endsWith (name %) "#"))
+                           'arg1
+                           %)))
+    => '({:idx 2, :form (remove (fn* [arg1]
+                                     (some (compliment-hashset (:value arg1))))
+                                __prefix__)}))
 
   (fact "failing to parse an unfinished form will try to recover by completing it"
     (ctx/parse-context (#'ctx/safe-read-context-string "(let [a {:b 1}, c {__prefix__"))

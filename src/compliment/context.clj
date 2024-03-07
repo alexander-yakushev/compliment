@@ -41,6 +41,7 @@
                ;; To avoid replacing '\{' and '\}' with '(compliment-hashmap ' and ')'
                (str/replace "\\{" "(char 123)")
                (str/replace "\\}" "(char 125)")
+               (str/replace "#{" "(compliment-hashset ")
                (str/replace "{" "(compliment-hashmap ")
                (str/replace "}" ")")
                ;; The reader breaks on aliased keywords if the respective
