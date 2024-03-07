@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [#118](https://github.com/alexander-yakushev/compliment/issues/118): Fix no
+  completion for locals when hashset literal is used within short lambda syntax
+
 ### 0.5.1 (2023-11-30)
 
 - [#113](https://github.com/alexander-yakushev/compliment/issues/113): Suggest
