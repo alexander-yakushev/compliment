@@ -1,6 +1,6 @@
 # Change log
 
-### master (unreleased)
+### 0.5.2 (2024-03-07)
 
 - [#118](https://github.com/alexander-yakushev/compliment/issues/118): Fix no
   completion for locals when hashset literal is used within short lambda syntax
