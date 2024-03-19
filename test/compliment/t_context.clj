@@ -27,7 +27,14 @@
 
   (testing "maps with odd number of elements are also handled"
     (is (= '{:foo bar, __prefix__ nil}
-           (#'ctx/safe-read-context-string "{:foo bar __prefix__}")))))
+           (#'ctx/safe-read-context-string "{:foo bar __prefix__}"))))
+  
+  (testing "reader conditionals are parsable"
+    (is (= '(defn a [] ^{:reader-conditional true} (:cljs [1 2 3 __prefix__]))
+           (#'ctx/safe-read-context-string "(defn a [] #?(:cljs [1 2 3 __prefix__]))")))
+    
+    (is (= '(defn a [] ^{:splicing-reader-conditional true} (:cljs [1 2 3 __prefix__]))
+           (#'ctx/safe-read-context-string "(defn a [] #?@(:cljs [1 2 3 __prefix__]))")))))
 
 (deftest context-parsing
   (fact "prefix placeholder in a context represents the location in

@@ -44,6 +44,12 @@
                (str/replace "#{" "(compliment-hashset ")
                (str/replace "{" "(compliment-hashmap ")
                (str/replace "}" ")")
+
+               ;; Basic enhance reader for forms with reader conditionals. Include the meta
+               ;; for sources that are sensitive to this.
+               (str/replace "#?@" "^:splicing-reader-conditional ")
+               (str/replace "#?" "^:reader-conditional ")
+
                ;; The reader breaks on aliased keywords if the respective
                ;; namespace isn't imported into the current ns.
                (str/replace #"::([-!?+*_<>.\w]+)/"
