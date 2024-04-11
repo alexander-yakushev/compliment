@@ -67,5 +67,6 @@ workflows:
                 - clojure:temurin-11-jammy
                 - clojure:temurin-17-jammy
                 - clojure:temurin-21-jammy
+                - clojure:temurin-22-jammy
       - test-lite
       - coverage

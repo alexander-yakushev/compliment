@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps {org.clojure/clojure {:mvn/version "1.11.1" :mvn/scope "provided"}
+ :deps {org.clojure/clojure {:mvn/version "1.11.2" :mvn/scope "provided"}
         zprint/zprint {:mvn/version "1.2.8"}}
 
  :aliases
