@@ -1,9 +1,14 @@
 # Change log
 
+### 0.5.3 (2024-04-11)
+
+- [#116](https://github.com/alexander-yakushev/compliment/issues/116): Add
+  reader conditional support.
+
 ### 0.5.2 (2024-03-07)
 
 - [#118](https://github.com/alexander-yakushev/compliment/issues/118): Fix no
-  completion for locals when hashset literal is used within short lambda syntax
+  completion for locals when hashset literal is used within short lambda syntax.
 
 ### 0.5.1 (2023-11-30)
 
