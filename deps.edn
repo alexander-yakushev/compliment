@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps {org.clojure/clojure {:mvn/version "1.11.2" :mvn/scope "provided"}}
+ :deps {org.clojure/clojure {:mvn/version "1.11.3" :mvn/scope "provided"}}
 
  :aliases
  {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.0"}
