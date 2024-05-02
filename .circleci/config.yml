@@ -12,13 +12,14 @@ jobs:
       - checkout
       - restore_cache:
           key: project-{{ checksum "deps.edn" }}
-      - run: clojure -X:1.10:test:no-bench
-      - run: clojure -X:1.12:test:no-bench
-      - run: clojure -X:test
+      - run: CLOJURE_VERSION=1.10 clojure -X:1.10:test:no-bench
+      - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test:no-bench
+      - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test
       - run: clojure -M:eastwood
       - save_cache:
           paths:
             - ~/.m2
+            - ~/.gitlibs
           key: project-{{ checksum "deps.edn" }}
 
   coverage:
@@ -29,7 +30,7 @@ jobs:
       - checkout
       - restore_cache:
           key: project-{{ checksum "deps.edn" }}
-      - run: clojure -M:test:coverage
+      - run: CLOJURE_VERSION=1.11 clojure -M:test:coverage:1.11
       - run: >
           curl -Os https://uploader.codecov.io/latest/linux/codecov &&
           chmod +x codecov &&
@@ -39,6 +40,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
+            - ~/.gitlibs
           key: project-{{ checksum "deps.edn" }}
 
   test-lite:
@@ -54,6 +56,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
+            - ~/.gitlibs
           key: project-lite-{{ checksum "deps.edn" }}
 
 workflows:

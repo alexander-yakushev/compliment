@@ -5,6 +5,11 @@
             [compliment.context :as ctx]
             [compliment.t-helpers :refer :all]))
 
+(deftest version-sanity-check
+  (is (let [v (System/getenv "CLOJURE_VERSION")]
+        (println "Running on Clojure" (clojure-version))
+        (or (nil? v) (.startsWith (clojure-version) v)))))
+
 ;; This namespace contains only sanity checks for the public API. For
 ;; in-depth source testing see their respective test files.
 
