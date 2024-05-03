@@ -1,5 +1,9 @@
 # Change log
 
+### master (unreleased)
+
+- Deprecate `:plain-candidates` to `complliment.core/completions`.
+
 ### 0.5.3 (2024-04-11)
 
 - [#116](https://github.com/alexander-yakushev/compliment/issues/116): Add

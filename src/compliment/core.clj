@@ -48,7 +48,7 @@
    - :ns - namespace where completion is initiated;
    - :context - code form around the prefix;
    - :sort-order (either :by-length or :by-name);
-   - :plain-candidates - if true, returns plain strings instead of maps;
+   - :plain-candidates - DEPRECATED: if true, return strings instead of maps;
    - :extra-metadata - set of extra fields to add to the maps;
    - :sources - list of source keywords to use."
   ([prefix]
@@ -65,14 +65,13 @@
                                  (if sources
                                    (all-sources sources)
                                    (all-sources)))
-             candidates (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
+             candidates (into [] (comp (map (fn [f] (f prefix nspc ctx))) cat) candidate-fns)
              sorted-cands (if (= sort-order :by-name)
                             (sort-by :candidate candidates)
-                            (sort-by :candidate by-length-comparator candidates))
-             cands (if plain-candidates
-                     (map :candidate sorted-cands)
-                     sorted-cands)]
-         (doall cands))))))
+                            (sort-by :candidate by-length-comparator candidates))]
+         (if plain-candidates
+           (mapv :candidate sorted-cands)
+           sorted-cands))))))
 
 ^{:lite nil}
 (defn documentation
