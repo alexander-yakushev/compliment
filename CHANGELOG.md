@@ -1,6 +1,6 @@
 # Change log
 
-### master (unreleased)
+### 0.5.4 (2024-05-03)
 
 - Deprecate `:plain-candidates` to `complliment.core/completions`.
 
