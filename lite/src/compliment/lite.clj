@@ -1,4 +1,4 @@
-;; This file was generated at Thu Mar 07 12:02:21 EET 2024
+;; This file was generated at Fri May 03 16:11:30 EEST 2024
 ;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
@@ -90,31 +90,43 @@
 
 (def primitive-cache (atom {}))
 
+(defn- classpath-strings
+  []
+  (into []
+        (keep #(System/getProperty %))
+        ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
+         "fake.class.path"]))
+
 (let [lock (ReentrantLock.)]
-  (defn cache-last-result*
-    [name key value-fn]
-    (try (.lock lock)
-         (let [[cached-key cached-value :as t] (@primitive-cache name)]
-           (if (and t (= cached-key key))
+  (defn with-classpath-cache*
+    [key value-fn]
+    (.lock lock)
+    (try (let [cache @primitive-cache
+               cp-hash (reduce hash-combine 0 (classpath-strings))
+               same-cp? (= cp-hash (:compliment.lite/classpath-hash cache))
+               cached-value (cache key)]
+           (if (and (some? cached-value) same-cp?)
              cached-value
              (let [value (value-fn)]
-               (swap! primitive-cache assoc name [key value])
+               (reset! primitive-cache (assoc (if same-cp?
+                                                cache
+                                                {:compliment.lite/classpath-hash
+                                                   cp-hash})
+                                         key value))
                value)))
          (finally (.unlock lock)))))
 
-(defmacro cache-last-result
+(defmacro with-classpath-cache
   "If cache for `name` is absent, or `key` doesn't match the key in the cache,
   calculate `v` and return it. Else return value from cache."
-  {:style/indent 2}
-  [name key value]
-  `(cache-last-result* ~name ~key (fn [] ~value)))
+  {:style/indent 1}
+  [key value]
+  `(with-classpath-cache* ~key (fn [] ~value)))
 
 (defn- classpath
   "Returns a sequence of File objects of the elements on the classpath."
   []
-  (mapcat #(some-> (System/getProperty %) (.split File/pathSeparator))
-    ["sun.boot.class.path" "java.ext.dirs" "java.class.path"
-     "fake.class.path"]))
+  (mapcat #(.split % File/pathSeparator) (classpath-strings)))
 
 (defn- file-seq-nonr
   "A tree seq on java.io.Files, doesn't resolve symlinked directories to avoid\n  infinite sequence resulting from recursive symlinked directories."
@@ -167,65 +179,70 @@
                        (.list (.open ^java.lang.module.ModuleReference mref#)))))
          (.collect (Collectors/toList)))))
 
-(defn- all-files-on-classpath
+(defn- all-files-on-classpath*
   "Given a list of files on the classpath, returns the list of all files,\n  including those located inside jar files."
   [classpath]
-  (cache-last-result
-    :all-files-on-classpath
-    classpath
-    (let [seen (java.util.HashMap.)
-          seen? (fn [x] (.putIfAbsent seen x x))]
-      (-> []
-          (into (comp (map #(list-files % true)) cat (remove seen?)) classpath)
-          (into (remove seen?) (list-jdk9-base-classfiles))))))
+  (let [seen (java.util.HashMap.)
+        seen? (fn [x] (.putIfAbsent seen x x))]
+    (-> []
+        (into (comp (map #(list-files % true)) cat (remove seen?)) classpath)
+        (into (remove seen?) (list-jdk9-base-classfiles)))))
+
+(defn- classes-on-classpath*
+  [files]
+  (let [roots (volatile! #{})
+        filename->classname
+          (fn [^String file]
+            (when (.endsWith file ".class")
+              (when-not (or (.contains file "__")
+                            (.contains file "$")
+                            (.equals file "module-info.class"))
+                (let [c (-> (subs file 0 (- (.length file) 6))
+                            (.replace "/" "."))]
+                  (vswap! roots
+                          conj
+                          (subs c 0 (max (.indexOf ^String c ".") 0)))
+                  c))))
+        classes (into [] (keep filename->classname) files)
+        roots (set (remove empty? @roots))]
+    [classes roots]))
+
+(defn namespaces-on-classpath*
+  [files]
+  (into []
+        (keep (fn [^String file]
+                (when (or (.endsWith file ".clj")
+                          (.endsWith file ".cljs")
+                          (.endsWith file ".cljc"))
+                  (let [ns-str (.. (subs file 0 (.lastIndexOf file "."))
+                                   (replace "/" ".")
+                                   (replace "_" "-"))]
+                    {:ns-str ns-str, :file file}))))
+        files))
+
+(defn- recache-files-on-classpath
+  []
+  (with-classpath-cache :files-on-classpath
+                        (let [files (all-files-on-classpath* (classpath))
+                              [classes roots] (classes-on-classpath* files)]
+                          {:classes classes,
+                           :root-packages roots,
+                           :namespaces (namespaces-on-classpath* files)})))
 
 (defn classes-on-classpath
   "Returns a map of all classes that can be located on the classpath. Key\n  represent the root package of the class, and value is a list of all classes\n  for that package."
   []
-  (let [classpath (classpath)]
-    (cache-last-result
-      :classes-on-classpath
-      classpath
-      (let [roots (volatile! #{})
-            classes
-              (vec (for
-                     [^String file (all-files-on-classpath classpath)
-                      :when (and (.endsWith file ".class")
-                                 (not (.contains file "__"))
-                                 (not (.contains file "$"))
-                                 (not= file "module-info.class"))
-                      :let [c (-> (subs file 0 (- (.length file) 6))
-                                  (.replace "/" "."))
-                            _ (vswap!
-                                roots
-                                conj
-                                (subs c 0 (max (.indexOf ^String c ".") 0)))]]
-                     c))]
-        (swap! primitive-cache assoc
-          :root-packages-on-classpath
-          (set (remove empty? @roots)))
-        classes))))
+  (:classes (recache-files-on-classpath)))
 
 (defn root-packages-on-classpath
   "Return a set of all classname \"TLDs\" on the classpath."
   []
-  (classes-on-classpath)
-  (@primitive-cache :root-packages-on-classpath))
+  (:root-packages (recache-files-on-classpath)))
 
 (defn namespaces&files-on-classpath
   "Returns a collection of maps (e.g. `{:ns-str \"some.ns\", :file\n  \"some/ns.cljs\"}`) of all clj/cljc/cljs namespaces obtained by classpath\n  scanning."
   []
-  (let [classpath (classpath)]
-    (cache-last-result :namespaces-on-classpath
-                       classpath
-                       (for [^String file (all-files-on-classpath classpath)
-                             :when (or (.endsWith file ".clj")
-                                       (.endsWith file ".cljs")
-                                       (.endsWith file ".cljc"))]
-                         (let [ns-str (.. (subs file 0 (.lastIndexOf file "."))
-                                          (replace "/" ".")
-                                          (replace "_" "-"))]
-                           {:ns-str ns-str, :file file})))))
+  (:namespaces (recache-files-on-classpath)))
 
 ;; compliment/sources.clj
 
@@ -428,12 +445,10 @@
 (defn- all-classes-short-names
   "Returns a map where short classnames are matched with vectors with\n  package-qualified classnames."
   []
-  (let [all-classes (classes-on-classpath)]
-    (cache-last-result :all-classes-short-names
-                       all-classes
-                       (group-by (fn [^String s]
-                                   (.substring s (inc (.lastIndexOf s "."))))
-                                 all-classes))))
+  (with-classpath-cache :all-classes-short-names
+                        (group-by (fn [^String s]
+                                    (.substring s (inc (.lastIndexOf s "."))))
+                                  (classes-on-classpath))))
 
 (defn- get-classes-by-package-name
   "Returns simple classnames that match the `prefix` and belong to `pkg-name`."
@@ -664,7 +679,7 @@
   Options map can contain the following options:
   - :ns - namespace where completion is initiated;
   - :sort-order (either :by-length or :by-name);
-  - :plain-candidates - if true, returns plain strings instead of maps;
+  - :plain-candidates - DEPRECATED: if true, return strings instead of maps;
   - :extra-metadata - set of extra fields to add to the maps;
   - :sources - list of source keywords to use."
   ([prefix] (completions prefix {}))
@@ -677,11 +692,11 @@
        (let [candidate-fns
                (keep (fn [[_ src]] (when (:enabled src) (:candidates src)))
                      (if sources (all-sources sources) (all-sources)))
-             candidates (mapcat (fn [f] (f prefix nspc ctx)) candidate-fns)
+             candidates (into []
+                              (comp (map (fn [f] (f prefix nspc ctx))) cat)
+                              candidate-fns)
              sorted-cands
                (if (= sort-order :by-name)
                  (sort-by :candidate candidates)
-                 (sort-by :candidate by-length-comparator candidates))
-             cands
-               (if plain-candidates (map :candidate sorted-cands) sorted-cands)]
-         (doall cands))))))
+                 (sort-by :candidate by-length-comparator candidates))]
+         (if plain-candidates (mapv :candidate sorted-cands) sorted-cands))))))
