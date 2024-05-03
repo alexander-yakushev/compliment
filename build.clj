@@ -6,7 +6,7 @@
 
 (def default-opts
   (let [url "https://github.com/alexander-yakushev/compliment"
-        version "0.5.3"]
+        version "0.5.4-SNAPSHOT"]
     {;; Pom section
      :lib 'compliment/compliment
      :version version

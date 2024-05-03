@@ -10,10 +10,9 @@
   "Returns a map where short classnames are matched with vectors with
   package-qualified classnames."
   []
-  (let [all-classes (utils/classes-on-classpath)]
-    (utils/cache-last-result :all-classes-short-names all-classes
-      (group-by (fn [^String s] (.substring s (inc (.lastIndexOf s "."))))
-                all-classes))))
+  (utils/with-classpath-cache :all-classes-short-names
+    (group-by (fn [^String s] (.substring s (inc (.lastIndexOf s "."))))
+              (utils/classes-on-classpath))))
 
 ^{:lite nil}
 (defn- analyze-import-context
