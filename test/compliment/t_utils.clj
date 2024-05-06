@@ -19,10 +19,13 @@
       (fuzzy-matches? "gelast-" symbol \-) => truthy
       (fuzzy-matches? "ge-me" symbol \-)   => truthy
       (fuzzy-matches? "geme" symbol \-)    => truthy
+      (fuzzy-matches? "getme" symbol \-)   => truthy
+      (fuzzy-matches? "get-me" symbol \-)  => truthy
 
       (fuzzy-matches? "et-la" symbol \-)   => falsey
       (fuzzy-matches? "-get" symbol \-)    => falsey
       (fuzzy-matches? "geast" symbol \-)   => falsey
+      (fuzzy-matches? "getm-e" symbol \-)  => falsey
       (fuzzy-matches? "get-lat" symbol \-) => falsey))
 
   (let [symbol "getImplementationVendor"
