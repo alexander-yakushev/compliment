@@ -1,8 +1,12 @@
 # Change log
 
+### 0.5.5 (2024-05-06)
+
+- Fix fuzzy matching logic (`rema` didn't match `re-matches`).
+
 ### 0.5.4 (2024-05-03)
 
-- Deprecate `:plain-candidates` to `complliment.core/completions`.
+- Deprecate `:plain-candidates` in `complliment.core/completions`.
 
 ### 0.5.3 (2024-04-11)
 
