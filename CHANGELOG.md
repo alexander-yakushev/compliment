@@ -6,6 +6,8 @@
 
 ### 0.5.4 (2024-05-03)
 
+- Optimize the way how cached values are looked up.
+- Reduce the memory footprint of the cache.
 - Deprecate `:plain-candidates` in `complliment.core/completions`.
 
 ### 0.5.3 (2024-04-11)
