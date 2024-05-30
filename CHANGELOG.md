@@ -1,5 +1,11 @@
 # Change log
 
+### master (unreleased)
+
+- [#117](https://github.com/alexander-yakushev/compliment/pull/117):
+  Extend sources `static-members` and `members` with constructors and
+  qualified instance members for Clojure 1.12.
+
 ### 0.5.5 (2024-05-06)
 
 - Fix fuzzy matching logic (`rema` didn't match `re-matches`).

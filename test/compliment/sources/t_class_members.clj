@@ -10,6 +10,35 @@
 
 (def ^Thread thread (Thread.))
 
+(deftest class-member-symbol-test
+  (if (#'src/clojure-1-12+?)
+    (fact "accepts qualified methods for Clojure 1.12+"
+      (src/class-member-symbol? "a")
+      => nil
+
+      (src/class-member-symbol? "a.b/")
+      => (just ["a.b" ""])
+
+      (src/class-member-symbol? "a.b/foo")
+      => nil
+
+      (src/class-member-symbol? "a.b/.")
+      => (just ["a.b" "."])
+
+      (src/class-member-symbol? "a.b/.foo")
+      => (just ["a.b" ".foo"]))
+
+    (fact "accepts only dot-methods for Clojure <1.12"
+      (src/class-member-symbol? "a")
+      => nil
+
+      (src/class-member-symbol? ".")
+      => (just ["" "."])
+
+      (src/class-member-symbol? ".a")
+      => ["" ".a"])))
+
+
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
   (fact "`->` and `some->` work with Compliment"
@@ -115,6 +144,12 @@
     => (contains #{{:candidate ".put", :type :method}
                    {:candidate ".putAll", :type :method}} :gaps-ok))
 
+
+  (when (#'src/clojure-1-12+?)
+    (fact "candidates contain instance class members for Clojure 1.12+"
+      (strip-tags (src/members-candidates "Thread/" (-ns) nil))
+        => (contains ["Thread/.equals"])))
+
   (fact "if context is provided and the first arg is a symbol with type tag
   (either immediate or anywhere in the local scope)"
     (strip-tags (src/members-candidates ".sta" (-ns) nil))
@@ -194,6 +229,11 @@
     (strip-tags (src/members-candidates ".foo" (-ns) nil))
     => (just [".foo_bar"]))
 
+  (when (#'src/clojure-1-12+?)
+    (fact "instance class members have docs"
+      (src/members-doc "java.io.File/.isHidden" (-ns))
+      => (checker string?)))
+
   (fact "class members have docs"
     (src/members-doc ".wait" (-ns)) => (checker string?)))
 
@@ -222,6 +262,16 @@
 
   (fact "single slash doesn't break the completion"
     (src/static-members-candidates "/" (-ns) nil) => nil)
+
+  (when (#'src/clojure-1-12+?)
+    (fact "static members candidates contain constructors for Clojure 1.12+"
+      (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil))
+      => (just ["java.io.File/new"])))
+
+  (when (#'src/clojure-1-12+?)
+    (fact "constructors have docs"
+      (src/static-member-doc "java.io.File/new" (-ns))
+      => (checker string?)))
 
   (fact "static class members have docs"
     (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
