@@ -4,19 +4,16 @@
             [compliment.sources :refer [defsource]]
             [compliment.sources.local-bindings :refer [bindings-from-context]]
             [compliment.utils :as utils :refer [fuzzy-matches-no-skip?
-                                                resolve-class
-                                                clojure-1-12+?]])
+                                                resolve-class]])
   (:import [java.lang.reflect Field Member Method Modifier Constructor Executable]))
+
+(defn- clojure-1-12+? []
+  (>= (:minor *clojure-version*) 12))
 
 (defn static?
   "Tests if class member is static."
   [^Member member]
   (Modifier/isStatic (.getModifiers member)))
-
-(defn constructor?
-  "Tests if member is a constructor."
-  [^Member member]
-  (instance? Constructor member))
 
 ;; ## Regular (non-static) members
 
@@ -87,23 +84,14 @@
 
 (defn class-member-symbol?
   "Tests if `x` looks like a non-static class member,
-  e.g. \".getMonth\" or (with `clj-1-12+` option set) \"java.util.Date/.getMonth\".
+  e.g. \".getMonth\" or \"java.util.Date/.getMonth\" (for Clojure v1.12+).
 
   When true, yields `[klass-name method-name]`."
-  ([x] (class-member-symbol? x nil))
-  ([^String x {:keys [clj-1-12+]}]
-   (when-let [[_ klass-name member-name]
-              (re-matches #"(?x)
-                            (?=.)  # at least one character
-                            (?:    # optional 'a.b/'
-                              ([^\/\:\.][^\:]*) # capture 'a.b'
-                              (?<!\.)  # deny 'a.b./'
-                              \/)?
-                            (?:    # optional '.method'
-                              \.([^.]*))?  # capture 'method'"
-                          x)]
-     (when (or clj-1-12+ (nil? klass-name))
-       [klass-name member-name]))))
+  [^String x]
+  (cond
+    (.startsWith x ".") [nil (.substring x 1)]
+    (clojure-1-12+?)    (some-> (re-matches #"([^\/\:\.][^\:]*)(?<!\.)\/(?:\.([^.]*))?" x)
+                                (subvec 1))))
 
 (defn camel-case-matches?
   "Tests if prefix matches the member name following camel case rules.
@@ -135,14 +123,14 @@
 (defn members-candidates
   "Returns a list of Java non-static fields and methods candidates."
   [prefix ns context]
-  (when-let [[klass-name prefix] (class-member-symbol? prefix {:clj-1-12+ (clojure-1-12+?)})]
+  (when-let [[klass-name prefix] (class-member-symbol? prefix)]
     (let [prefix      (or prefix "")
-          qualified?  (seq klass-name)
+          qualified?  (some? klass-name)
           inparts?    (re-find #"[A-Z]" prefix)
           klass       ^{:lite nil} (if qualified?
                                      (resolve-class ns (symbol klass-name))
                                      (try-get-object-class ns context))
-          all-members (when-not (and qualified? (not klass))
+          all-members (when (or klass (not qualified?))
                         (get-all-members ns klass))]
       (for [[member-name members] all-members
             :when (and (if inparts?
@@ -179,12 +167,12 @@
        join
        (format "(%s)")))
 
-(defn- class&members->doc-dispatch [[^Class _cl members]]
+(defn- members->doc-dispatch [[^Class _cl members]]
   (class (first members)))
 
-(defmulti ^:private class&members->doc #'class&members->doc-dispatch)
+(defmulti ^:private members->doc #'members->doc-dispatch)
 
-(defmethod class&members->doc java.lang.reflect.Method
+(defmethod members->doc java.lang.reflect.Method
   [[^Class cl members]]
   (let [^Member f-mem (first members)]
     (str (.getName cl) "." (.getName f-mem)
@@ -196,7 +184,7 @@
                members))
          "\n")))
 
-(defmethod class&members->doc java.lang.reflect.Constructor
+(defmethod members->doc java.lang.reflect.Constructor
   [[^Class cl members]]
   (str (.getName cl) ".new"
        (join
@@ -205,7 +193,7 @@
              members))
        "\n"))
 
-(defmethod class&members->doc java.lang.reflect.Field
+(defmethod members->doc java.lang.reflect.Field
   [[^Class cl members]]
   (let [^Member f-mem (first members)]
     (str (.getName cl) "." (.getName f-mem)
@@ -225,7 +213,7 @@
                                     (distinct members))])]
     (->> members
          (group-by (fn [^Member m] (.getDeclaringClass m)))
-         (map (comp class&members->doc sort-members))
+         (map (comp members->doc sort-members))
          (interpose "\n")
          join)))
 
@@ -247,8 +235,8 @@
   "Documentation function for non-static members."
   [member-str ns]
   (when-let [[klass-name member-name]
-             (class-member-symbol? member-str {:clj-1-12+ (clojure-1-12+?)})]
-    (if (seq klass-name)
+             (class-member-symbol? member-str)]
+    (if (some? klass-name)
       (qualified-member-doc ns klass-name member-name)
       (non-qualified-member-doc ns member-name))))
 
@@ -274,8 +262,8 @@
 ;; ## Static members
 
 (defn static-member-symbol?
-  "Tests if `x` looks like a static member symbol, returns parsed parts."
-  [^String x]
+  "Tests if prefix looks like a static member symbol, returns parsed parts."
+  [x]
   (re-matches #"([^\/\:\.][^\:]*)\/(.*)" x))
 
 (def ^:private class-members-cache
@@ -285,20 +273,22 @@
 (defn- populate-class-members-cache
   "Populates qualified methods cache for a given class."
   [^Class class]
-  (let [member->cache-key #(get {:constructor "new"} %2 (.getName ^Member %1))
-        methods-by-type   (group-by (comp {true :static-method false :method} static?)
-                                    (.getMethods class))
-        members-by-type   (merge methods-by-type
-                                 {:static-field (.getFields class)
-                                  :constructor  (.getConstructors class)})]
-    (swap! class-members-cache assoc class
-           (reduce (fn [cache [type members]]
-                     (reduce
-                      (fn [acc ^Member m]
-                        (update acc (member->cache-key m type) (fnil conj (with-meta [] {:type type})) m))
-                      cache members))
-                   {}
-                   members-by-type))))
+  (swap! class-members-cache assoc class
+         (let [methods&fields (concat (.getMethods class) (.getFields class))
+               constructors   (.getConstructors class)
+               member->type   #(cond
+                                 (not (static? %))   :method
+                                 (instance? Field %) :static-field
+                                 (static? %)         :static-method)
+               update-cache   (fn [cache member name type]
+                                (update cache name
+                                        (fnil conj
+                                              (with-meta [] {:type type})) member))]
+           (reduce (fn [cache ^Member m]
+                     (update-cache cache m "new" :constructor))
+                   (reduce (fn [cache ^Member m]
+                             (update-cache cache m (.getName m) (member->type m)))
+                           {} methods&fields) constructors))))
 
 (defn static-members
   "Returns all static members for a given class."
@@ -326,15 +316,12 @@
   (when-let [[_ cl-name member-prefix] (static-member-symbol? prefix)]
     (when-let [cl (resolve-class ns (symbol cl-name))]
       (let [inparts? (re-find #"[A-Z]" member-prefix)]
-        (for [[^String member-name [member]] (static-members cl)
+        (for [[^String member-name members] (static-members cl)
               :when (if inparts?
                       (camel-case-matches? member-prefix member-name)
                       (.startsWith member-name member-prefix))]
           {:candidate (str cl-name "/" member-name)
-           :type (cond
-                   (constructor? member) :constructor
-                   (instance? Method member) :static-method
-                   :else :static-field)})))))
+           :type (-> members meta :type)})))))
 
 ^{:lite nil}
 (defn resolve-static-member

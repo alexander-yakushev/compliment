@@ -12,36 +12,37 @@
 
 (deftest class-member-symbol-test
   (fact "clojure <1.12"
-        (src/class-member-symbol? "")
-        => nil
+    (src/class-member-symbol? "")
+    => nil
 
-        (src/class-member-symbol? "a")
-        => nil
+    (src/class-member-symbol? "a")
+    => nil
 
-        (src/class-member-symbol? "a/")
-        => nil
+    (src/class-member-symbol? "a/")
+    => nil
 
-        (src/class-member-symbol? ".")
-        => (just [nil ""])
+    (src/class-member-symbol? ".")
+    => (just [nil ""])
 
-        (src/class-member-symbol? ".a")
-        => [nil "a"])
+    (src/class-member-symbol? ".a")
+    => [nil "a"])
 
-  (fact "clojure 1.12+"
-        (src/class-member-symbol? "" {:clj-1-12+ true})
-        => nil
+  (binding [*clojure-version* {:major 1 :minor 12}]
+    (fact "clojure 1.12+"
+      (src/class-member-symbol? "")
+      => nil
 
-        (src/class-member-symbol? "a" {:clj-1-12+ true})
-        => nil
+      (src/class-member-symbol? "a")
+      => nil
 
-        (src/class-member-symbol? "a./" {:clj-1-12+ true})
-        => nil
+      (src/class-member-symbol? "a./")
+      => nil
 
-        (src/class-member-symbol? "a.b/" {:clj-1-12+ true})
-        => (just ["a.b" nil])
+      (src/class-member-symbol? "a.b/")
+      => (just ["a.b" nil])
 
-        (src/class-member-symbol? "a.b/." {:clj-1-12+ true})
-        => (just ["a.b" ""])))
+      (src/class-member-symbol? "a.b/.")
+      => (just ["a.b" ""]))))
 
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
