@@ -11,38 +11,33 @@
 (def ^Thread thread (Thread.))
 
 (deftest class-member-symbol-test
-  (fact "clojure <1.12"
-    (src/class-member-symbol? "")
-    => nil
-
-    (src/class-member-symbol? "a")
-    => nil
-
-    (src/class-member-symbol? "a/")
-    => nil
-
-    (src/class-member-symbol? ".")
-    => (just [nil ""])
-
-    (src/class-member-symbol? ".a")
-    => [nil "a"])
-
-  (binding [*clojure-version* {:major 1 :minor 12}]
-    (fact "clojure 1.12+"
-      (src/class-member-symbol? "")
-      => nil
-
+  (if (#'src/clojure-1-12+?)
+    (fact "accepts qualified methods for clojure 1.12+"
       (src/class-member-symbol? "a")
       => nil
 
-      (src/class-member-symbol? "a./")
+      (src/class-member-symbol? "a.b/")
+      => (just ["a.b" ""])
+
+      (src/class-member-symbol? "a.b/foo")
       => nil
 
-      (src/class-member-symbol? "a.b/")
-      => (just ["a.b" nil])
-
       (src/class-member-symbol? "a.b/.")
-      => (just ["a.b" ""]))))
+      => (just ["a.b" "."])
+
+      (src/class-member-symbol? "a.b/.foo")
+      => (just ["a.b" ".foo"]))
+
+    (fact "accepts only dot-methods for clojure <1.12"
+      (src/class-member-symbol? "a")
+      => nil
+
+      (src/class-member-symbol? ".")
+      => (just ["" "."])
+
+      (src/class-member-symbol? ".a")
+      => ["" ".a"])))
+
 
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
