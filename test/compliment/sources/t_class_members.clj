@@ -144,10 +144,11 @@
     => (contains #{{:candidate ".put", :type :method}
                    {:candidate ".putAll", :type :method}} :gaps-ok))
 
-  (fact "candidates contain instance class members for Clojure 1,12+"
-    (binding [*clojure-version* {:major 1 :minor 12}]
-      (strip-tags (src/members-candidates "Thread/" (-ns) nil)))
-      => (contains ["Thread/.equals"]))
+
+  (when (#'src/clojure-1-12+?)
+    (fact "candidates contain instance class members for Clojure 1,12+"
+      (strip-tags (src/members-candidates "Thread/" (-ns) nil))
+        => (contains ["Thread/.equals"])))
 
   (fact "if context is provided and the first arg is a symbol with type tag
   (either immediate or anywhere in the local scope)"
@@ -228,10 +229,10 @@
     (strip-tags (src/members-candidates ".foo" (-ns) nil))
     => (just [".foo_bar"]))
 
-  (fact "instance class members have docs"
-    (binding [*clojure-version* {:major 1 :minor 12}]
-      (src/members-doc "java.io.File/.isHidden" (-ns)))
-      => (checker string?))
+  (when (#'src/clojure-1-12+?)
+    (fact "instance class members have docs"
+      (src/members-doc "java.io.File/.isHidden" (-ns))
+      => (checker string?)))
 
   (fact "class members have docs"
     (src/members-doc ".wait" (-ns)) => (checker string?)))
@@ -262,15 +263,15 @@
   (fact "single slash doesn't break the completion"
     (src/static-members-candidates "/" (-ns) nil) => nil)
 
-  (fact "static members candidates contain constructors for Clojure >= 1.12"
-    (binding [*clojure-version* {:major 1 :minor 12}]
-      (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil)))
-      => (just ["java.io.File/new"]))
+  (when (#'src/clojure-1-12+?)
+    (fact "static members candidates contain constructors for Clojure >= 1.12"
+      (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil))
+      => (just ["java.io.File/new"])))
 
-  (fact "constructors have docs"
-    (binding [*clojure-version* {:major 1 :minor 12}]
-      (src/static-member-doc "java.io.File/new" (-ns)))
-      => (checker string?))
+  (when (#'src/clojure-1-12+?)
+    (fact "constructors have docs"
+      (src/static-member-doc "java.io.File/new" (-ns))
+      => (checker string?)))
 
   (fact "static class members have docs"
     (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
