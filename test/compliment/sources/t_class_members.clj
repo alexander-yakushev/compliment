@@ -12,7 +12,7 @@
 
 (deftest class-member-symbol-test
   (if (#'src/clojure-1-12+?)
-    (fact "accepts qualified methods for clojure 1.12+"
+    (fact "accepts qualified methods for Clojure 1.12+"
       (src/class-member-symbol? "a")
       => nil
 
@@ -28,7 +28,7 @@
       (src/class-member-symbol? "a.b/.foo")
       => (just ["a.b" ".foo"]))
 
-    (fact "accepts only dot-methods for clojure <1.12"
+    (fact "accepts only dot-methods for Clojure <1.12"
       (src/class-member-symbol? "a")
       => nil
 
@@ -146,7 +146,7 @@
 
 
   (when (#'src/clojure-1-12+?)
-    (fact "candidates contain instance class members for Clojure 1,12+"
+    (fact "candidates contain instance class members for Clojure 1.12+"
       (strip-tags (src/members-candidates "Thread/" (-ns) nil))
         => (contains ["Thread/.equals"])))
 
@@ -264,7 +264,7 @@
     (src/static-members-candidates "/" (-ns) nil) => nil)
 
   (when (#'src/clojure-1-12+?)
-    (fact "static members candidates contain constructors for Clojure >= 1.12"
+    (fact "static members candidates contain constructors for Clojure 1.12+"
       (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil))
       => (just ["java.io.File/new"])))
 
