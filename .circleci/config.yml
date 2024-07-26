@@ -25,7 +25,7 @@ jobs:
   coverage:
     working_directory: ~/project
     docker:
-      - image: clojure:temurin-21-jammy
+      - image: clojure:temurin-21-noble
     steps:
       - checkout
       - restore_cache:
@@ -46,7 +46,7 @@ jobs:
   test-lite:
     working_directory: ~/project/lite
     docker:
-      - image: clojure:temurin-21-jammy
+      - image: clojure:temurin-21-noble
     steps:
       - checkout:
           path: ~/project
@@ -66,10 +66,10 @@ workflows:
           matrix:
             parameters:
               docker-image:
-                - clojure:temurin-8-jammy
-                - clojure:temurin-11-jammy
-                - clojure:temurin-17-jammy
-                - clojure:temurin-21-jammy
-                - clojure:temurin-22-jammy
+                - clojure:temurin-8-noble
+                - clojure:temurin-11-noble
+                - clojure:temurin-17-noble
+                - clojure:temurin-21-noble
+                - clojure:temurin-22-noble
       - test-lite
       - coverage

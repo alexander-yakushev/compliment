@@ -5,6 +5,7 @@
             [compliment.context :as ctx]
             [compliment.t-helpers :refer :all]))
 
+;; Sanity check we run the Clojure version which we think we do.
 (deftest version-sanity-check
   (is (let [v (System/getenv "CLOJURE_VERSION")]
         (println "Running on Clojure" (clojure-version))
