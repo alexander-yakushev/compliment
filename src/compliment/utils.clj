@@ -9,7 +9,7 @@
 
 (def ^:dynamic *extra-metadata*
   "Signals to downstream sources which additional information about completion
-  candidates they should attach . Should be a set of keywords."
+  candidates they should attach. Should be a set of keywords."
   nil)
 
 (defn split-by-leading-literals
