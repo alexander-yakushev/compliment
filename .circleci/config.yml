@@ -1,63 +1,98 @@
 version: 2.1
 
+defaults: &defaults
+  working_directory: ~/project
+
+executors:
+  jdk8:
+    docker:
+      - image: clojure:temurin-8-noble
+    <<: *defaults
+  jdk11:
+    docker:
+      - image: clojure:temurin-11-noble
+    <<: *defaults
+  jdk17:
+    docker:
+      - image: clojure:temurin-17-noble
+    <<: *defaults
+  jdk21:
+    docker:
+      - image: clojure:temurin-21-noble
+    <<: *defaults
+  jdk22:
+    docker:
+      - image: clojure:temurin-22-noble
+    <<: *defaults
+
+commands:
+  with_cache:
+    parameters:
+      steps:
+        type: steps
+      cache_key:
+        description: Will be used as part of the cache key
+        type: string
+      files:
+        description: Files to consider when creating the cache key
+        type: string
+        default: "deps.edn project.clj"
+    steps:
+      - run:
+          name: Generate cache checksum
+          command: |
+            for file in deps.edn project.clj
+            do
+              find . -name $file -exec cat {} +
+            done | sha256sum | awk '{print $1}' > /tmp/clojure_cache_seed
+      - restore_cache:
+          key: cache-<< parameters.cache_key >>-{{ checksum "/tmp/clojure_cache_seed" }}
+      - steps: << parameters.steps >>
+      - save_cache:
+          paths:
+            - ~/.m2
+            - .cpcache
+          key: cache-<< parameters.cache_key >>-{{ checksum "/tmp/clojure_cache_seed" }}
+
 jobs:
   test:
     parameters:
-      docker-image:
+      jdk_version:
         type: string
-    working_directory: ~/project
-    docker:
-      - image: << parameters.docker-image >>
+    executor: << parameters.jdk_version >>
     steps:
       - checkout
-      - restore_cache:
-          key: project-{{ checksum "deps.edn" }}
-      - run: CLOJURE_VERSION=1.10 clojure -X:1.10:test:no-bench
-      - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test:no-bench
-      - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test
-      - run: clojure -M:eastwood
-      - save_cache:
-          paths:
-            - ~/.m2
-            - ~/.gitlibs
-          key: project-{{ checksum "deps.edn" }}
+      - with_cache:
+          cache_key: "test_v1"
+          steps:
+            - run: CLOJURE_VERSION=1.10 clojure -X:1.10:test:no-bench
+            - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test:no-bench
+            - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test
+            - run: clojure -M:eastwood
 
   coverage:
-    working_directory: ~/project
-    docker:
-      - image: clojure:temurin-21-noble
+    executor: jdk21
     steps:
       - checkout
-      - restore_cache:
-          key: project-{{ checksum "deps.edn" }}
-      - run: CLOJURE_VERSION=1.11 clojure -M:test:coverage:1.11
-      - run: >
-          curl -Os https://uploader.codecov.io/latest/linux/codecov &&
-          chmod +x codecov &&
-          ./codecov -f target/coverage/codecov.json -t ${CODECOV_TOKEN} -R .
-      - store_artifacts:
-          path: target/coverage
-      - save_cache:
-          paths:
-            - ~/.m2
-            - ~/.gitlibs
-          key: project-{{ checksum "deps.edn" }}
+      - with_cache:
+          cache_key: "coverage_v1"
+          steps:
+            - run: CLOJURE_VERSION=1.11 clojure -M:test:coverage:1.11
+            - run: >
+                curl -Os https://uploader.codecov.io/latest/linux/codecov &&
+                chmod +x codecov &&
+                ./codecov -f target/coverage/codecov.json -t ${CODECOV_TOKEN} -R .
+            - store_artifacts:
+                path: target/coverage
 
   test-lite:
-    working_directory: ~/project/lite
-    docker:
-      - image: clojure:temurin-21-noble
+    executor: jdk21
     steps:
-      - checkout:
-          path: ~/project
-      - restore_cache:
-          key: project-lite-{{ checksum "deps.edn" }}
-      - run: clojure -X:test
-      - save_cache:
-          paths:
-            - ~/.m2
-            - ~/.gitlibs
-          key: project-lite-{{ checksum "deps.edn" }}
+      - checkout
+      - with_cache:
+          cache_key: "test_lite_v1"
+          steps:
+            - run: cd lite/ && clojure -X:test
 
 workflows:
   run_all:
@@ -65,11 +100,6 @@ workflows:
       - test:
           matrix:
             parameters:
-              docker-image:
-                - clojure:temurin-8-noble
-                - clojure:temurin-11-noble
-                - clojure:temurin-17-noble
-                - clojure:temurin-21-noble
-                - clojure:temurin-22-noble
+              jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk22]
       - test-lite
       - coverage
