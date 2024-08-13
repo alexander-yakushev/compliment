@@ -68,7 +68,7 @@
   if classname can't be resolved."
   [ns sym]
   (when-let [val (try (ns-resolve ns sym)
-                      (catch ClassNotFoundException ex nil))]
+                      (catch ClassNotFoundException _))]
     (when (class? val) val)))
 
 (defn resolve-namespace

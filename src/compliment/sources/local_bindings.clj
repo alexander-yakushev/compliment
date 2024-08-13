@@ -146,7 +146,7 @@
   (try (->> (mapcat #(extract-local-bindings (:form %) ns) ctx)
             (filter symbol?)
             distinct-preserve-tags)
-       (catch Exception ex ())))
+       (catch Exception _)))
 
 (defn candidates
   "Returns a list of local bindings inside the context that match prefix."

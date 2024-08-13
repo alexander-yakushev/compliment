@@ -295,9 +295,7 @@
   [^String member-str ns]
   (let [[cl-name member-name] (.split member-str "/")]
     (when-let [cl (resolve-class ns (symbol cl-name))]
-      (let [class-members (get (get-all-class-members cl) member-name)
-            matching-types (cond-> #{:static-field :static-method}
-                             (clojure-1-12+?) (conj :constructor))]
+      (let [class-members (get (get-all-class-members cl) member-name)]
         (filter #(or (static? %)
                      (and (clojure-1-12+?) (instance? Constructor %)))
                 class-members)))))

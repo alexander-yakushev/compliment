@@ -1,7 +1,7 @@
 (ns compliment.sources.classes
   "Completion for class names."
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches?] :as utils]
+            [compliment.utils :as utils]
             [compliment.sources.class-members :refer [classname-doc]]
             [compliment.sources.namespaces :refer [nscl-symbol? nscl-matches?]])
   (:import java.util.HashSet))

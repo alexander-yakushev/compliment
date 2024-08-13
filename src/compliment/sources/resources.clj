@@ -3,8 +3,7 @@
   (:require [clojure.java.io :as io]
             [compliment.sources :refer [defsource]]
             [compliment.utils :as utils])
-  (:import java.io.File
-           java.net.URLConnection))
+  (:import java.net.URLConnection))
 
 (defn inside-resource-call?
   "If context is not nil, check if prefix inside the string in a
@@ -35,7 +34,7 @@
                  (or (URLConnection/guessContentTypeFromName filename)
                      "application/unknown")
                  (.length (io/file filename))))
-       (catch Exception ex nil)))
+       (catch Exception _)))
 
 (defsource ::resources
   :candidates #'candidates

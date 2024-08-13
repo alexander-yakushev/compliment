@@ -1,7 +1,6 @@
 (ns compliment.context
   "Utilities for parsing and storing the current completion context."
-  (:require [clojure.string :as str]
-            [clojure.walk :as walk]))
+  (:require [clojure.string :as str]))
 
 (defn- walk-meta-preserving
   "Like `clojure.walk/walk`, but preserves meta. Redundant after
@@ -57,7 +56,7 @@
                               (str ":" (get ns-aliases (symbol kw-ns) kw-ns) "/")))
                read-string
                restore-map-literals)))
-       (catch Exception ex)))
+       (catch Exception _)))
 
 (defn- dumb-read-form
   "Take a presumably unfinished Clojure form and try to \"complete\" it so that it
