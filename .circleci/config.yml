@@ -94,6 +94,18 @@ jobs:
           steps:
             - run: cd lite/ && clojure -X:test
 
+  deploy:
+    executor: jdk8
+    steps:
+      - checkout
+      - run:
+         name: Deploy
+         command: clojure -T:build deploy :version \"$CIRCLE_TAG\"
+
+tags_filter: &tags_filter
+  tags:
+    only: /^\d+\.\d+\.\d+/
+
 workflows:
   run_all:
     jobs:
@@ -101,5 +113,16 @@ workflows:
           matrix:
             parameters:
               jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk22]
+          filters:
+            branches:
+              only: /.*/
+            <<: *tags_filter
       - test-lite
       - coverage
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            <<: *tags_filter
