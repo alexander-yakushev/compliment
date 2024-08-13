@@ -198,11 +198,14 @@
        join
        (format "(%s)")))
 
+^{:lite nil}
 (defn- members->doc-dispatch [[^Class _cl members]]
   (class (first members)))
 
+^{:lite nil}
 (defmulti ^:private members->doc #'members->doc-dispatch)
 
+^{:lite nil}
 (defmethod members->doc java.lang.reflect.Method
   [[^Class cl members]]
   (let [^Member f-mem (first members)]
@@ -215,6 +218,7 @@
                members))
          "\n")))
 
+^{:lite nil}
 (defmethod members->doc java.lang.reflect.Constructor
   [[^Class cl members]]
   (str (.getName cl) ".new"
@@ -224,6 +228,7 @@
              members))
        "\n"))
 
+^{:lite nil}
 (defmethod members->doc java.lang.reflect.Field
   [[^Class cl members]]
   (let [^Member f-mem (first members)]

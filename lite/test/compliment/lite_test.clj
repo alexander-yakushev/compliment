@@ -153,6 +153,9 @@
     (completions ".getName" {:ns 'compliment.lite-test})
     => (contains [{:candidate ".getName", :type :method}])
 
+    (completions "Thread/.int" {})
+    => (just [{:candidate "Thread/.interrupt", :type :method}])
+
     (completions "Integer/SI" {})
     => (just [{:type :static-field, :candidate "Integer/SIZE"}])
 

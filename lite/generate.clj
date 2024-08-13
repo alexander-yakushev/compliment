@@ -40,6 +40,7 @@
 
 (defn make-header-form [imports]
   (list 'ns 'compliment.lite
+        '(:require [clojure.string :as str])
         (list* :import imports)))
 
 (defn generate-lite-version []
