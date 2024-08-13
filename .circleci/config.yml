@@ -77,7 +77,7 @@ jobs:
       - with_cache:
           cache_key: "coverage_v1"
           steps:
-            - run: CLOJURE_VERSION=1.11 clojure -M:test:coverage:1.11
+            - run: CLOJURE_VERSION=1.12 clojure -M:test:coverage:1.12
             - run: >
                 curl -Os https://uploader.codecov.io/latest/linux/codecov &&
                 chmod +x codecov &&
