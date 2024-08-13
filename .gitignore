@@ -12,3 +12,5 @@ pom.xml.asc
 .lein-repl-history
 .nrepl-port
 .cpcache
+.eastwood
+.rebel_readline_history
