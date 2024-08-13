@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.6.0 (2024-08-13)
+
 - [#117](https://github.com/alexander-yakushev/compliment/pull/117):
   Extend sources `static-members` and `members` with constructors and
   qualified instance members for Clojure 1.12.
