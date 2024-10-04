@@ -197,7 +197,7 @@
   (fact "`documentation` takes a symbol string which presumably can be
   resolved to something that has a docstring."
     (core/documentation "reduce")         => (checker (every-pred string? not-empty))
-    (core/documentation ".suspend")       => (checker (every-pred string? not-empty))
+    (core/documentation ".start")         => (checker (every-pred string? not-empty))
     (core/documentation "jus.t g:arbage") => ""
     (core/documentation "reduce" *ns* {:sources []})
     => "")

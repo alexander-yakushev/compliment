@@ -92,13 +92,13 @@
                                                      "(->> [] (clojure.string/join \"a\") __prefix__ FOO)")))
     => (just '(".subSequence" ".substring") :in-any-order)
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(->> [] ^Thread (anything) __prefix__ )")))
-    => (just '(".suspend"))
+    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                      "(->> [] ^Thread (anything) __prefix__ )")))
+    => (just '(".start"))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(->> thread __prefix__)")))
-    => (just '(".suspend"))))
+    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                      "(->> thread __prefix__)")))
+    => (just '(".start"))))
 
 (deftest doto-test
   (in-ns 'compliment.sources.t-class-members)
