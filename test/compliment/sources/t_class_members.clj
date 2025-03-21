@@ -1,10 +1,9 @@
 (ns compliment.sources.t-class-members
-  (:require [clojure.string :as str]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [compliment.context :as ctx]
             [compliment.sources.class-members :as src]
             [compliment.t-helpers :refer :all]
-            [fudje.sweet :refer :all]))
+            [matcher-combinators.matchers :as mc]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-class-members))
 
@@ -12,304 +11,276 @@
 
 (deftest class-member-symbol-test
   (if (#'src/clojure-1-12+?)
-    (fact "accepts qualified methods for Clojure 1.12+"
-      (src/class-member-symbol? "a")
-      => nil
+    (testing "accepts qualified methods for Clojure 1.12+"
+      (is? nil (src/class-member-symbol? "a"))
+      (is? ["a.b" ""] (src/class-member-symbol? "a.b/"))
+      (is? nil (src/class-member-symbol? "a.b/foo"))
+      (is? ["a.b" "."] (src/class-member-symbol? "a.b/."))
+      (is? ["a.b" ".foo"] (src/class-member-symbol? "a.b/.foo")))
 
-      (src/class-member-symbol? "a.b/")
-      => (just ["a.b" ""])
-
-      (src/class-member-symbol? "a.b/foo")
-      => nil
-
-      (src/class-member-symbol? "a.b/.")
-      => (just ["a.b" "."])
-
-      (src/class-member-symbol? "a.b/.foo")
-      => (just ["a.b" ".foo"]))
-
-    (fact "accepts only dot-methods for Clojure <1.12"
-      (src/class-member-symbol? "a")
-      => nil
-
-      (src/class-member-symbol? ".")
-      => (just [nil "."])
-
-      (src/class-member-symbol? ".a")
-      => [nil ".a"])))
-
+    (testing "accepts only dot-methods for Clojure <1.12"
+      (is? nil (src/class-member-symbol? "a"))
+      (is? [nil "."] (src/class-member-symbol? "."))
+      (is? [nil ".a"] (src/class-member-symbol? ".a")))))
 
 (deftest thread-first-test
   (in-ns 'compliment.sources.t-class-members)
-  (fact "`->` and `some->` work with Compliment"
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(-> thread __prefix__)")))
-    => (just '(".interrupt"))
+  (testing "`->` and `some->` work with Compliment"
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(-> thread __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(some-> thread __prefix__)")))
-    => (just '(".interrupt"))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(some-> thread __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(-> thread __prefix__ FOO)")))
-    => (just '(".interrupt"))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(-> thread __prefix__ FOO)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> \"\" clojure.string/trim __prefix__)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(-> \"\" clojure.string/trim __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> \"\" clojure.string/trim __prefix__ FOO)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(-> \"\" clojure.string/trim __prefix__ FOO)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> [] (clojure.string/join) __prefix__)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(-> [] (clojure.string/join) __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(-> [] (clojure.string/join) __prefix__ FOO)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(-> [] (clojure.string/join) __prefix__ FOO)"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(-> x ^Thread (anything) __prefix__)")))
-    => (just '(".interrupt"))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(-> x ^Thread (anything) __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(-> x ^Thread (anything) __prefix__ FOO)")))
-    => (just '(".interrupt"))))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(-> x ^Thread (anything) __prefix__ FOO)"))))))
 
 (deftest thread-last-test
-  (fact "`->>` and `some->>` work with Compliment"
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(->> [] (clojure.string/join \"a\") __prefix__)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+  (testing "`->>` and `some->>` work with Compliment"
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(->> [] (clojure.string/join \"a\") __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(some->> [] (clojure.string/join \"a\") __prefix__)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(some->> [] (clojure.string/join \"a\") __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
-                                                     "(->> [] (clojure.string/join \"a\") __prefix__ FOO)")))
-    => (just '(".subSequence" ".substring") :in-any-order)
+    (is? [".subSequence" ".substring"]
+         (strip-tags (src/members-candidates ".su" (-ns) (ctx/cache-context
+                                                          "(->> [] (clojure.string/join \"a\") __prefix__ FOO)"))))
 
-    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
-                                                      "(->> [] ^Thread (anything) __prefix__ )")))
-    => (just '(".start"))
+    (is? [".start"]
+         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                           "(->> [] ^Thread (anything) __prefix__ )"))))
 
-    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
-                                                      "(->> thread __prefix__)")))
-    => (just '(".start"))))
+    (is? [".start"]
+         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                           "(->> thread __prefix__)"))))))
 
 (deftest doto-test
   (in-ns 'compliment.sources.t-class-members)
-  (fact "`doto` works with Compliment"
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(doto thread __prefix__)")))
-    => (just '(".interrupt"))
+  (testing "`doto` works with Compliment"
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(doto thread __prefix__)"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(doto thread (__prefix__))")))
-    => (just '(".interrupt"))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(doto thread (__prefix__))"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(doto thread .checkAccess (__prefix__))")))
-    => (just '(".interrupt"))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(doto thread .checkAccess (__prefix__))"))))
 
-    (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                      "(doto thread (__prefix__) .checkAccess)")))
-    => (just '(".interrupt"))))
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(doto thread (__prefix__) .checkAccess)"))))))
 
 (deftype FooType [x-y x-z])
 (definterface SomeIface (foo_bar [this]))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
-  (fact "fuzzy matching class members works with camelCase as separator"
-    (src/camel-case-matches? ".getDeF" ".getDeclaredFields") => truthy
-    (src/camel-case-matches? ".gT" ".getTextSize")           => truthy)
+  (testing "fuzzy matching class members works with camelCase as separator"
+    (is (src/camel-case-matches? ".getDeF" ".getDeclaredFields"))
+    (is (src/camel-case-matches? ".gT" ".getTextSize")))
 
-  (fact "candidates are taken from all non-static members of classes
+  (testing "candidates are taken from all non-static members of classes
   imported into the current namespace"
-    (strip-tags (src/members-candidates ".eq" (-ns) nil))
-    => (just [".equals" ".equalsIgnoreCase"] :in-any-order)
+    (is? (mc/in-any-order [".equals" ".equalsIgnoreCase"])
+         (strip-tags (src/members-candidates ".eq" (-ns) nil)))
 
-    (strip-tags (src/members-candidates ".getDeclF" (-ns) nil))
-    => (just [".getDeclaredFields" ".getDeclaredField"] :in-any-order)
+    (is? (mc/in-any-order [".getDeclaredField" ".getDeclaredFields"])
+         (strip-tags (src/members-candidates ".getDeclF" (-ns) nil)))
 
-    (src/members-candidates ".pu" (-ns) nil)
-    => [] ;; Because java.util.HashMap is not imported into current ns
+    (is? [] ;; Because java.util.HashMap is not imported into current ns
+         (src/members-candidates ".pu" (-ns) nil))
 
-    (do (import 'java.util.HashMap)
-        (src/members-candidates ".pu" (-ns) nil))
-    => (contains #{{:candidate ".put", :type :method}
-                   {:candidate ".putAll", :type :method}} :gaps-ok))
+    (import 'java.util.HashMap)
+    (is? (mc/embeds [{:candidate ".put", :type :method}
+                     {:candidate ".putAll", :type :method}])
+         (src/members-candidates ".pu" (-ns) nil)))
 
 
   (when (#'src/clojure-1-12+?)
-    (fact "candidates contain instance class members for Clojure 1.12+"
-      (strip-tags (src/members-candidates "Thread/" (-ns) nil))
-        => (contains ["Thread/.equals"])))
+    (testing "candidates contain instance class members for Clojure 1.12+"
+      (is? (mc/embeds ["Thread/.isAlive"])
+           (strip-tags (src/members-candidates "Thread/" (-ns) nil)))))
 
-  (fact "if context is provided and the first arg is a symbol with type tag
+  (testing "if context is provided and the first arg is a symbol with type tag
   (either immediate or anywhere in the local scope)"
-    (strip-tags (src/members-candidates ".sta" (-ns) nil))
-    => (just [".start" ".startsWith"] :in-any-order)
+    (is? (mc/in-any-order [".start" ".startsWith"])
+         (strip-tags (src/members-candidates ".sta" (-ns) nil)))
 
-    (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
-                                                      "(__prefix__ ^String foo)")))
-    => (just [".startsWith"])
+    (is? [".startsWith"]
+         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                           "(__prefix__ ^String foo)"))))
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
-                                                     "(__prefix__ ^Thread foo)")))
-    => (just [".interrupt"])
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                          "(__prefix__ ^Thread foo)"))))
 
-    (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
-                                                    "(__prefix__ ^java.io.File (foo))")))
-    => (just [".mkdirs" ".mkdir"] :in-any-order)
+    (is? (mc/in-any-order [".mkdirs" ".mkdir"])
+         (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
+                                                         "(__prefix__ ^java.io.File (foo))"))))
 
     ;; Doesn't break if the class of the hint can't be resolved.
-    (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
-                                                    "(__prefix__ ^non.existing.Class (foo))")))
-    => (contains [".matches"])
+    (is? (mc/embeds [".matches"])
+         (strip-tags (src/members-candidates ".m" (-ns) (ctx/cache-context
+                                                         "(__prefix__ ^non.existing.Class (foo))"))))
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
-                                                     "(__prefix__ ^Thread (foo))")))
-    => (just [".interrupt"])
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                          "(__prefix__ ^Thread (foo))"))))
 
-    (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
-                                                    "(__prefix__ ^java.util.Map foo)")))
-    => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order)
+    (is? (mc/in-any-order [".putAll" ".putIfAbsent" ".put"])
+         (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
+                                                         "(__prefix__ ^java.util.Map foo)"))))
 
-    (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
-                                                     "(let [^Thread foo ...
+    (is? [".interrupt"]
+         (strip-tags (src/members-candidates ".in" (-ns) (ctx/cache-context
+                                                          "(let [^Thread foo ...
                                                              ... ...
                                                              _ (.start foo)]
-                                                         (__prefix__ foo))")))
-    => (just [".interrupt"])
+                                                         (__prefix__ foo))"))))
 
-    (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
-                                                    "(defn bar [{:keys [^java.util.Map foo]}]
-                                                        (__prefix__ foo))")))
-    => (just [".putAll" ".putIfAbsent" ".put"] :in-any-order))
+    (is? (mc/in-any-order [".putAll" ".putIfAbsent" ".put"])
+         (strip-tags (src/members-candidates ".p" (-ns) (ctx/cache-context
+                                                         "(defn bar [{:keys [^java.util.Map foo]}]
+                                                        (__prefix__ foo))")))))
 
-  (fact "if context is provided and the first arg is a global var with a
+  (testing "if context is provided and the first arg is a global var with a
   resolvable class, use it to filter candidates"
-    (do (def a-str "a string")
-        (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
-                                                          "(__prefix__ a-str)"))))
-    => (just [".startsWith"]))
+    (def a-str "a string")
+    (is? [".startsWith"]
+         (strip-tags (src/members-candidates ".sta" (-ns) (ctx/cache-context
+                                                           "(__prefix__ a-str)")))))
 
-  (fact "completes members of context object even if its class is not imported"
-    (do (def a-bitset (java.util.BitSet.))
-        (strip-tags (src/members-candidates ".inter" (-ns) (ctx/cache-context
-                                                            "(__prefix__ a-bitset)"))))
-    => (just [".intersects"]))
+  (testing "completes members of context object even if its class is not imported"
+    (def a-bitset (java.util.BitSet.))
+    (is? [".intersects"]
+         (strip-tags (src/members-candidates ".inter" (-ns) (ctx/cache-context
+                                                             "(__prefix__ a-bitset)")))))
 
-  (fact "given a subclass context, superclass members are suggested when not imported"
-    (strip-tags (src/members-candidates "." (-ns) (ctx/cache-context
-                                                   "(__prefix__ ^java.io.LineNumberReader x")))
-    => (contains [".getLineNumber" ".markSupported"] :gaps-ok :in-any-order))
+  (testing "given a subclass context, superclass members are suggested when not imported"
+    (is? (mc/embeds [".getLineNumber" ".markSupported"])
+         (strip-tags (src/members-candidates "." (-ns) (ctx/cache-context
+                                                        "(__prefix__ ^java.io.LineNumberReader x")))))
 
-  (fact "completion should work with vars on different namespaces"
-    (do (def an-object 1234)
-        (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
-                                                          "(__prefix__ an-object)"))))
-    => (just [".intValue"])
+  (testing "completion should work with vars on different namespaces"
+    (def an-object 1234)
+    (is? [".intValue"]
+         (strip-tags (src/members-candidates ".int" (-ns) (ctx/cache-context
+                                                           "(__prefix__ an-object)"))))
 
-    (do (create-ns 'another-ns)
-        (intern 'another-ns 'an-object "foo")
-        (strip-tags (src/members-candidates ".toUpper" (find-ns 'another-ns) (ctx/cache-context
-                                                                              "(__prefix__ an-object)"))))
-    => (just [".toUpperCase"]))
+    (create-ns 'another-ns)
+    (intern 'another-ns 'an-object "foo")
+    (is? [".toUpperCase"]
+         (strip-tags (src/members-candidates ".toUpper" (find-ns 'another-ns) (ctx/cache-context
+                                                                               "(__prefix__ an-object)")))))
 
-  (fact "deftype fields are demunged for better compatibility"
-    (strip-tags (src/members-candidates ".x" (-ns) nil))
-    => (just [".x-z" ".x-y" ".xor"])
+  (testing "deftype fields are demunged for better compatibility"
+    (is? (mc/in-any-order [".x-z" ".x-y" ".xor"])
+         (strip-tags (src/members-candidates ".x" (-ns) nil)))
 
-    (strip-tags (src/members-candidates ".foo" (-ns) nil))
-    => (just [".foo_bar"]))
+    (is? [".foo_bar"]
+         (strip-tags (src/members-candidates ".foo" (-ns) nil))))
 
   (when (#'src/clojure-1-12+?)
-    (fact "instance class members have docs"
-      (src/members-doc "java.io.File/.isHidden" (-ns))
-      => (checker string?)))
+    (testing "instance class members have docs"
+      (is? string? (src/members-doc "java.io.File/.isHidden" (-ns)))))
 
-  (fact "class members have docs"
-    (src/members-doc ".wait" (-ns)) => (checker string?)))
+  (testing "class members have docs"
+    (is? string? (src/members-doc ".wait" (-ns)))))
 
 (deftest static-members-test
   (in-ns 'compliment.sources.t-class-members)
-  (fact "static members can be matched by camelCase too"
-    (src/camel-case-matches? "Thread/actC" "Thread/activeCount") => truthy)
+  (testing "static members can be matched by camelCase too"
+    (is (src/camel-case-matches? "Thread/actC" "Thread/activeCount")))
 
-  (fact "static members candidates are taken for the class in prefix"
-    (strip-tags (src/static-members-candidates "String/" (-ns) nil))
-    => (contains #{"String/CASE_INSENSITIVE_ORDER" "String/copyValueOf"
-                   "String/format" "String/valueOf"} :gaps-ok)
+  (testing "static members candidates are taken for the class in prefix"
+    (is? (mc/embeds ["String/CASE_INSENSITIVE_ORDER" "String/copyValueOf"
+                     "String/format" "String/valueOf"])
+         (strip-tags (src/static-members-candidates "String/" (-ns) nil)))
 
     ;; Don't have to import class to get static members for it.
-    (src/static-members-candidates "java.io.File/sep" (-ns) nil)
-    => (just [{:candidate "java.io.File/separatorChar", :type :static-field}
-              {:candidate "java.io.File/separator", :type :static-field}])
+    (is? [{:candidate "java.io.File/separatorChar", :type :static-field}
+          {:candidate "java.io.File/separator", :type :static-field}]
+         (src/static-members-candidates "java.io.File/sep" (-ns) nil))
 
-    (src/static-members-candidates "java.io.File/cre" (-ns) nil)
-    => [{:candidate "java.io.File/createTempFile", :type :static-method}]
+    (is? [{:candidate "java.io.File/createTempFile", :type :static-method}]
+         (src/static-members-candidates "java.io.File/cre" (-ns) nil))
 
     ;; But for imported classes last name can be used.
-    (do (import 'java.io.File)
-        (strip-tags (src/static-members-candidates "File/sep" (-ns) nil)))
-    => (just ["File/separator" "File/separatorChar"] :in-any-order))
+    (import 'java.io.File)
+    (is? (mc/embeds ["File/separator" "File/separatorChar"])
+         (strip-tags (src/static-members-candidates "File/sep" (-ns) nil))))
+
+  (testing "single slash doesn't break the completion"
+    (is? nil (src/static-members-candidates "/" (-ns) nil)))
 
   (when (#'src/clojure-1-12+?)
-    (fact "static members in 1.12+ include constructors"
-      (src/static-members-candidates "String/" (-ns) nil)
-      => [{:candidate "String/valueOf", :type :static-method}
-          {:candidate "String/CASE_INSENSITIVE_ORDER", :type :static-field}
-          {:candidate "String/copyValueOf", :type :static-method}
-          {:candidate "String/new", :type :constructor}
-          {:candidate "String/join", :type :static-method}
-          {:candidate "String/format", :type :static-method}]))
+    (testing "static members in 1.12+ include constructors"
+      (is? (mc/in-any-order
+            [{:candidate "String/valueOf", :type :static-method}
+             {:candidate "String/CASE_INSENSITIVE_ORDER", :type :static-field}
+             {:candidate "String/copyValueOf", :type :static-method}
+             {:candidate "String/new", :type :constructor}
+             {:candidate "String/join", :type :static-method}
+             {:candidate "String/format", :type :static-method}])
+           (src/static-members-candidates "String/" (-ns) nil)))
 
-  (fact "single slash doesn't break the completion"
-    (src/static-members-candidates "/" (-ns) nil) => nil)
+    (testing "static members candidates contain constructors for Clojure 1.12+"
+      (is? ["java.io.File/new"]
+           (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil))))
 
-  (when (#'src/clojure-1-12+?)
-    (fact "static members candidates contain constructors for Clojure 1.12+"
-      (strip-tags (src/static-members-candidates "java.io.File/n" (-ns) nil))
-      => (just ["java.io.File/new"])))
+    (testing "constructors have docs"
+      (is? string? (src/static-member-doc "java.io.File/new" (-ns)))))
 
-  (when (#'src/clojure-1-12+?)
-    (fact "constructors have docs"
-      (src/static-member-doc "java.io.File/new" (-ns))
-      => (checker string?)))
-
-  (fact "static class members have docs"
-    (src/static-member-doc "Integer/parseInt" (-ns)) => (checker string?)))
+  (testing "static class members have docs"
+    (is? string? (src/static-member-doc "Integer/parseInt" (-ns)))))
 
 (deftest literals-inference-test
   (testing "Vector literals"
-    (fact "Only returns members of clojure.lang.PersistentVector for the very short \".s\" query"
-      (strip-tags (src/members-candidates ".s" (-ns) (ctx/cache-context
-                                                      "(__prefix__ [])")))
-      =>
-      (just [".seq" ".set" ".shift" ".size" ".sort" ".spliterator" ".stream" ".subList"]
-        :in-any-order))
-
-    ;; TODO: this is broken for now, not sure if important.
-    #_
-    (fact "A docstring is offered for the previous query"
-      (src/members-doc ".assocN" (-ns)) => (checker string?)))
+    (testing "Only returns members of clojure.lang.PersistentVector for the very short \".s\" query"
+      (is? (mc/in-any-order [".seq" ".set" ".shift" ".size" ".sort" ".spliterator" ".stream" ".subList"])
+           (strip-tags (src/members-candidates ".s" (-ns) (ctx/cache-context
+                                                           "(__prefix__ [])"))))))
 
   (testing "String literals"
-    (fact "Only returns members of String for the very short \".g\" query"
-      (src/members-candidates ".g" (-ns) (ctx/cache-context
-                                          "(__prefix__ \"\")"))
-      =>
-      (just [{:candidate ".getChars", :type :method}
-             {:candidate ".getBytes", :type :method}
-             {:candidate ".getClass", :type :method}]
-        :in-any-order))
+    (testing "Only returns members of String for the very short \".g\" query"
+      (is? (mc/in-any-order [{:candidate ".getChars", :type :method}
+                             {:candidate ".getBytes", :type :method}
+                             {:candidate ".getClass", :type :method}])
+           (src/members-candidates ".g" (-ns) (ctx/cache-context
+                                               "(__prefix__ \"\")"))))
 
-    (fact "A docstring is offered for the previous query"
-      (src/members-doc ".codePointBefore" (-ns))
-      => (checker string?))))
+    (testing "A docstring is offered for the previous query"
+      (is? string? (src/members-doc ".codePointBefore" (-ns))))))

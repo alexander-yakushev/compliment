@@ -1,32 +1,30 @@
 (ns compliment.sources.t-special-forms
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [compliment.context :as ctx]
             [compliment.sources.special-forms :as src]
-            [compliment.t-helpers :refer :all]))
+            [compliment.t-helpers :refer :all]
+            [matcher-combinators.matchers :as mc]))
 
 (deftest special-forms-test
-  (fact "special forms are matched when they are first item in the list"
-    (src/candidates "va" *ns* (ctx/parse-context '(__prefix__ foo)))
-    => [{:candidate "var", :type :special-form}]
+  (testing "special forms are matched when they are first item in the list"
+    (is? [{:candidate "var", :type :special-form}]
+         (src/candidates "va" *ns* (ctx/parse-context '(__prefix__ foo))))
 
-    (strip-tags (src/candidates "c" *ns* (ctx/parse-context '(__prefix__ Exception ex nil))))
-    => (just ["catch"])
+    (is? ["catch"]
+         (strip-tags (src/candidates "c" *ns* (ctx/parse-context '(__prefix__ Exception ex nil)))))
 
-    (strip-tags (src/candidates "mo-e" *ns* (ctx/parse-context '(__prefix__))))
-    => (just ["monitor-enter" "monitor-exit"] :in-any-order)
+    (is? (mc/in-any-order ["monitor-enter" "monitor-exit"])
+         (strip-tags (src/candidates "mo-e" *ns* (ctx/parse-context '(__prefix__)))))
 
-    (src/candidates "" *ns* (ctx/parse-context '(str __prefix__ 42)))
-    => nil
+    (is? nil (src/candidates "" *ns* (ctx/parse-context '(str __prefix__ 42))))
 
-    (src/candidates "" *ns* (ctx/parse-context '[__prefix__ 42]))
-    => nil)
+    (is? nil (src/candidates "" *ns* (ctx/parse-context '[__prefix__ 42]))))
 
-  (fact "literals are completed"
-    (src/literal-candidates "tr" *ns* nil) => [{:candidate "true", :type :special-form}]
-    (src/literal-candidates "f" *ns* nil) => [{:candidate "false", :type :special-form}]
-    (src/literal-candidates "n"  *ns* nil) => [{:candidate "nil", :type :special-form}])
+  (testing "literals are completed"
+    (is? [{:candidate "true", :type :special-form}] (src/literal-candidates "tr" *ns* nil))
+    (is? [{:candidate "false", :type :special-form}] (src/literal-candidates "f" *ns* nil))
+    (is? [{:candidate "nil", :type :special-form}] (src/literal-candidates "n"  *ns* nil)))
 
-  (fact "there are docs for special forms too"
-    (src/doc "try" *ns*) => (checker string?)
-    (src/doc "not-a-form" *ns*) => nil))
+  (testing "there are docs for special forms too"
+    (is? string? (src/doc "try" *ns*))
+    (is? nil (src/doc "not-a-form" *ns*))))

@@ -1,9 +1,9 @@
 (ns compliment.sources.t-classes
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
-            [compliment.sources.classes :as src]
+  (:require [clojure.test :refer :all]
             [compliment.context :as ctx]
-            [compliment.t-helpers :refer :all])
+            [compliment.sources.classes :as src]
+            [compliment.t-helpers :refer :all]
+            [matcher-combinators.matchers :as mc])
   (:import java.io.File))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-classes))
@@ -11,70 +11,70 @@
 (defrecord Animal [name])
 
 (deftest class-completion
-  (fact "they are completed either according to the mapping in the given
+  (testing "they are completed either according to the mapping in the given
   namespace, or by classpath scanning results"
-    (src/candidates "java.io.Stri" (-ns) nil)
-    => (contains #{{:candidate "java.io.StringReader", :type :class}
-                   {:candidate "java.io.StringWriter", :type :class}} :gaps-ok)
+    (is? (mc/in-any-order [{:candidate "java.io.StringBufferInputStream", :type :class}
+                           {:candidate "java.io.StringReader", :type :class}
+                           {:candidate "java.io.StringWriter", :type :class}])
+         (src/candidates "java.io.Stri" (-ns) nil))
 
-    (src/candidates "j.i.I" (-ns) nil)
-    => [] ;; Because fuzziness works only for classes imported into current ns
+    ;; Because fuzziness works only for classes imported into current ns
+    (is? [] (src/candidates "j.i.I" (-ns) nil)) 
 
-    (src/candidates "j.i.F" (-ns) nil)
-    => (contains [{:candidate "java.io.File", :type :class}]))
+    (is? (mc/embeds [{:candidate "java.io.File", :type :class}])
+         (src/candidates "j.i.F" (-ns) nil)))
 
-  (fact "local directories are correctly scanned for classes"
-    (src/candidates "compliment.E" (-ns) nil)
-    => [{:candidate "compliment.Example", :type :class}])
+  (testing "local directories are correctly scanned for classes"
+    (is? [{:candidate "compliment.Example", :type :class}]
+         (src/candidates "compliment.E" (-ns) nil)))
 
-  (fact "imported classes are looked up in the given namespace"
-    (src/candidates "Runt" (-ns) nil)
-    => (contains [{:candidate "Runtime", :type :class, :package "java.lang"}
-                  {:candidate "RuntimePermission", :type :class, :package "java.lang"}
-                  {:candidate "RuntimeException", :type :class, :package "java.lang"}]
-         :gaps-ok))
+  (testing "imported classes are looked up in the given namespace"
+    (is? (mc/embeds [{:candidate "Runtime", :type :class, :package "java.lang"}
+                     {:candidate "RuntimePermission", :type :class, :package "java.lang"}
+                     {:candidate "RuntimeException", :type :class, :package "java.lang"}])
+         (src/candidates "Runt" (-ns) nil)))
 
-  (fact "defrecord produces classes that don't have a package"
-        ;; Since JDK9, they inherit the namespace package
-        (src/candidates "Anim" (-ns) nil)
-        => (contains [{:candidate "Animal", :type :class
-                       :package (if (try (resolve 'java.lang.Runtime$Version)
-                                         (catch Exception _))
-                                  "compliment.sources.t_classes"
-                                  nil)}]))
+  (testing "defrecord produces classes that don't have a package"
+    ;; Since JDK9, they inherit the namespace package
+    (is? (mc/embeds [{:candidate "Animal", :type :class
+                      :package (if (try (resolve 'java.lang.Runtime$Version)
+                                        (catch Exception _))
+                                 "compliment.sources.t_classes"
+                                 nil)}])
+         (src/candidates "Anim" (-ns) nil)))
 
-  (fact "anonymous and inner classes are not suggested"
-    (strip-tags (src/candidates "java.util.ArrayDeq" (-ns) nil))
-    => (just ["java.util.ArrayDeque"]))
+  (testing "anonymous and inner classes are not suggested"
+    (is? ["java.util.ArrayDeque"]
+         (strip-tags (src/candidates "java.util.ArrayDeq" (-ns) nil))))
 
-  (fact "for prefixes without a period only root package names are suggested"
-    (strip-tags (src/candidates "jd" (-ns) nil))
-    => (just ["jdk."])
+  (testing "for prefixes without a period only root package names are suggested"
+    (is? ["jdk."]
+         (strip-tags (src/candidates "jd" (-ns) nil)))
 
     ;; But if the prefix is a full root package name, then suggest classes.
-    (src/candidates "jdk" (-ns) nil)
-    => (checker #(> (count %) 100)))
+    (is? #(> (count %) 100)
+         (src/candidates "jdk" (-ns) nil)))
 
-  (fact "capitalized prefixes are treated as short classnames for completing FQN"
-    (strip-tags (src/candidates "BiPred" (-ns) nil))
-    => (just ["java.util.function.BiPredicate"])
+  (testing "capitalized prefixes are treated as short classnames for completing FQN"
+    (is? ["java.util.function.BiPredicate"]
+         (strip-tags (src/candidates "BiPred" (-ns) nil)))
 
-    (sort (strip-tags (src/candidates "Array" (-ns) nil)))
-    => (contains #{"java.util.ArrayList" "java.lang.reflect.Array"} :gaps-ok))
+    (is? (mc/embeds ["java.util.ArrayList" "java.lang.reflect.Array"])
+         (strip-tags (src/candidates "Array" (-ns) nil))))
 
-  (fact "inside :import block additional rules apply"
-    (src/candidates "Handler" (-ns) (ctx/parse-context '(ns (:require stuff)
-                                                          (:import __prefix__))))
-    => (contains #{{:candidate "clojure.asm.Handler", :type :class}
-                   {:candidate "java.util.logging.Handler", :type :class}} :gaps-ok)
+  (testing "inside :import block additional rules apply"
+    (is? (mc/embeds [{:candidate "clojure.asm.Handler", :type :class}
+                     {:candidate "java.util.logging.Handler", :type :class}])
+         (src/candidates "Handler" (-ns) (ctx/parse-context '(ns (:require stuff)
+                                                               (:import __prefix__)))))
 
-    (src/candidates "Lis" 'clojure.core (ctx/parse-context '(ns (:import [clojure.lang __prefix__]))))
-    => [{:candidate "LispReader", :type :class}]
+    (is? [{:candidate "LispReader", :type :class}]
+         (src/candidates "Lis" 'clojure.core (ctx/parse-context '(ns (:import [clojure.lang __prefix__])))))
 
-    (strip-tags
-     (src/candidates "java.util" (-ns) (ctx/parse-context '(ns (:require stuff)
-                                                             (:import __prefix__)))))
-    => (contains #{"java.util.Map" "java.util.Set" "java.util.Date"} :gaps-ok))
+    (is? (mc/embeds ["java.util.Map" "java.util.Set" "java.util.Date"])
+         (strip-tags
+          (src/candidates "java.util" (-ns) (ctx/parse-context '(ns (:require stuff)
+                                                                  (:import __prefix__)))))))
 
-  (fact "classes have documentation"
-    (src/doc "java.lang.Runnable" (-ns)) => (checker string?)))
+  (testing "classes have documentation"
+    (is string? (src/doc "java.lang.Runnable" (-ns)))))

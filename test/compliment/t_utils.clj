@@ -1,69 +1,68 @@
 (ns compliment.t-utils
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
-            [compliment.utils :refer :all]))
+  (:require [clojure.test :refer :all]
+            [compliment.t-helpers :refer :all]
+            [compliment.utils :refer :all]
+            [matcher-combinators.matchers :as mc]))
 
 (deftest fuzzy-matching
-  (fact "fuzzy matching works with or without separators provided"
-    (fuzzy-matches? "ge-la-me-da" "get-last-message-date" \-) => truthy
-    (fuzzy-matches? "gelameda" "get-last-message-date" \-) => truthy)
+  (testing "fuzzy matching works with or without separators provided"
+    (is (fuzzy-matches? "ge-la-me-da" "get-last-message-date" \-))
+    (is (fuzzy-matches? "gelameda" "get-last-message-date" \-)))
 
   (let [symbol "get-last-message-date"]
-    (fact "cases where fuzzy matching should or shouldn't work"
-      (fuzzy-matches? "" symbol \-)        => truthy
-      (fuzzy-matches? "ge" symbol \-)      => truthy
-      (fuzzy-matches? "ge-" symbol \-)     => truthy
-      (fuzzy-matches? "ge-la" symbol \-)   => truthy
-      (fuzzy-matches? "gela" symbol \-)    => truthy
-      (fuzzy-matches? "ge-last" symbol \-) => truthy
-      (fuzzy-matches? "gelast-" symbol \-) => truthy
-      (fuzzy-matches? "ge-me" symbol \-)   => truthy
-      (fuzzy-matches? "geme" symbol \-)    => truthy
-      (fuzzy-matches? "getme" symbol \-)   => truthy
-      (fuzzy-matches? "get-me" symbol \-)  => truthy
+    (testing "cases where fuzzy matching should or shouldn't work"
+      (is? true (fuzzy-matches? "" symbol \-))
+      (is? true (fuzzy-matches? "ge" symbol \-))
+      (is? true (fuzzy-matches? "ge-" symbol \-))
+      (is? true (fuzzy-matches? "ge-la" symbol \-))
+      (is? true (fuzzy-matches? "gela" symbol \-))
+      (is? true (fuzzy-matches? "ge-last" symbol \-))
+      (is? true (fuzzy-matches? "gelast-" symbol \-))
+      (is? true (fuzzy-matches? "ge-me" symbol \-))
+      (is? true (fuzzy-matches? "geme" symbol \-))
+      (is? true (fuzzy-matches? "getme" symbol \-))
+      (is? true (fuzzy-matches? "get-me" symbol \-))
 
-      (fuzzy-matches? "et-la" symbol \-)   => falsey
-      (fuzzy-matches? "-get" symbol \-)    => falsey
-      (fuzzy-matches? "geast" symbol \-)   => falsey
-      (fuzzy-matches? "getm-e" symbol \-)  => falsey
-      (fuzzy-matches? "get-lat" symbol \-) => falsey))
+      (is? false (fuzzy-matches? "et-la" symbol \-))
+      (is? false (fuzzy-matches? "-get" symbol \-))
+      (is? false (fuzzy-matches? "geast" symbol \-))
+      (is? false (fuzzy-matches? "getm-e" symbol \-))
+      (is? false (fuzzy-matches? "get-lat" symbol \-))))
 
   (let [symbol "getImplementationVendor"
         pred #(Character/isUpperCase ^char %)]
-    (fact "rules for camel-case matching"
-      (fuzzy-matches-no-skip? "" symbol pred) => truthy
-      (fuzzy-matches-no-skip? "gIV" symbol pred) => truthy
-      (fuzzy-matches-no-skip? "getImVendor" symbol pred) => truthy
-      (fuzzy-matches-no-skip? "getVen" symbol pred) => truthy
+    (testing "rules for camel-case matching"
+      (is? true (fuzzy-matches-no-skip? "" symbol pred))
+      (is? true (fuzzy-matches-no-skip? "gIV" symbol pred))
+      (is? true (fuzzy-matches-no-skip? "getImVendor" symbol pred))
+      (is? true (fuzzy-matches-no-skip? "getVen" symbol pred))
 
-      (fuzzy-matches-no-skip? "ImpVen" symbol pred) => falsey
-      (fuzzy-matches-no-skip? "getmple" symbol pred) => falsey)))
+      (is? false (fuzzy-matches-no-skip? "ImpVen" symbol pred))
+      (is? false (fuzzy-matches-no-skip? "getmple" symbol pred)))))
 
 (deftest split-by-leading-literals-test
-  (fact "separates quote/var/deref qualifiers from a var name"
-    (split-by-leading-literals "@some-atom") => ["@" "some-atom"]
-    (split-by-leading-literals "@#'a") => ["@#'" "a"]
-    (split-by-leading-literals "#'ns/var") => ["#'" "ns/var"]
-    (split-by-leading-literals "nothing") => [nil "nothing"]))
+  (testing "separates quote/var/deref qualifiers from a var name"
+    (is? ["@" "some-atom"] (split-by-leading-literals "@some-atom"))
+    (is? ["@#'" "a"] (split-by-leading-literals "@#'a"))
+    (is? ["#'" "ns/var"] (split-by-leading-literals "#'ns/var"))
+    (is? [nil "nothing"] (split-by-leading-literals "nothing"))))
 
 (deftest classpath-test
   (testing "if System/getProperty returns nil, Compliment won't fail"
-    (is (= () (#'compliment.utils/list-files "" true)))))
+    (is? [] (#'compliment.utils/list-files "" true))))
 
 (deftest namespace-resolving-test
   (require '[compliment.context :as user])
-  (fact "can resolve a namespace aliased as user"
-    (resolve-namespace 'user *ns*) => (find-ns 'compliment.context)))
+  (testing "can resolve a namespace aliased as user"
+    (is? (find-ns 'compliment.context) (resolve-namespace 'user *ns*))))
 
 (deftest classes-on-classpath-test
-  (let [all-classes (set (classes-on-classpath))]
-    (is (< 3000 (count all-classes)))
-    (is (contains? all-classes "java.lang.Thread"))
-    (is (contains? all-classes "java.io.File"))
-    (is (contains? all-classes "java.nio.channels.FileChannel"))))
+  (is? (mc/all-of #(> (count %) 3000)
+                  (mc/embeds ["java.lang.Thread" "java.io.File" "java.nio.channels.FileChannel"]))
+       (classes-on-classpath)))
 
 (deftest namespaces&files-on-classpath-test
-  (is (contains? (set (namespaces&files-on-classpath))
-                 {:ns-str "compliment.t-utils" :file "compliment/t_utils.clj"}))
-  (is (contains? (set (namespaces&files-on-classpath))
-                 {:ns-str "dummy" :file "dummy.cljs"})))
+  (is? (mc/embeds [{:ns-str "compliment.t-utils" :file "compliment/t_utils.clj"}])
+       (namespaces&files-on-classpath))
+  (is? (mc/embeds [{:ns-str "dummy" :file "dummy.cljs"}])
+       (namespaces&files-on-classpath)))

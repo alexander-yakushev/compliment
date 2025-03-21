@@ -1,42 +1,42 @@
 (ns compliment.sources.t-keywords
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [compliment.sources.keywords :as src]
-            [compliment.t-helpers :refer :all]))
+            [compliment.t-helpers :refer :all]
+            [matcher-combinators.matchers :as mc]))
 
 (deftest keywords-test
-  (fact "keyword source completes keywords that were used at least once"
-    (do (str :t-key-foo :t-key-bar :t-key-baz)
-        (strip-tags (src/candidates ":t-key" *ns* nil)))
-    => (contains #{":t-key-foo" ":t-key-bar" ":t-key-baz"} :gaps-ok))
+  (testing "keyword source completes keywords that were used at least once"
+    (str :t-key-foo :t-key-bar :t-key-baz)
+    (is? (mc/in-any-order [":t-key-foo" ":t-key-bar" ":t-key-baz"])
+         (strip-tags (src/candidates ":t-key" *ns* nil))))
 
-  (fact "namespace-qualified keywords work too"
-    (do (str ::foo ::bar ::baz)
-        (strip-tags (src/candidates ":compliment.sources.t-keywords/b" *ns* nil)))
-    => (just [":compliment.sources.t-keywords/bar"
-              ":compliment.sources.t-keywords/baz"] :in-any-order))
+  (testing "namespace-qualified keywords work too"
+    (str ::foo ::bar ::baz)
+    (is? (mc/in-any-order [":compliment.sources.t-keywords/bar"
+                           ":compliment.sources.t-keywords/baz"])
+         (strip-tags (src/candidates ":compliment.sources.t-keywords/b" *ns* nil))))
 
-  (fact "namespace-qualified keywords can be completed in the same namespace"
-    (do (str ::foo ::bar ::baz)
-        (strip-tags (src/candidates "::ba" (find-ns 'compliment.sources.t-keywords) nil)))
-    => (just ["::bar" "::baz"] :in-any-order))
+  (testing "namespace-qualified keywords can be completed in the same namespace"
+    (str ::foo ::bar ::baz)
+    (is? (mc/in-any-order ["::bar" "::baz"])
+         (strip-tags (src/candidates "::ba" (find-ns 'compliment.sources.t-keywords) nil))))
 
-  (fact "namespace-qualified keywords can be completed with an ns alias"
-    (do (str :compliment.core/aliased-one :compliment.core/aliased-two)
-        (in-ns 'compliment.sources.t-keywords)
-        (require '[compliment.core :as core])
-        (strip-tags (src/candidates "::core/ali" (find-ns 'compliment.sources.t-keywords) nil)))
-    => (just ["::core/aliased-one" "::core/aliased-two"] :in-any-order))
+  (testing "namespace-qualified keywords can be completed with an ns alias"
+    (str :compliment.core/aliased-one :compliment.core/aliased-two)
+    (in-ns 'compliment.sources.t-keywords)
+    (require '[compliment.core :as core])
 
-  (fact "namespace aliases are completed when double colon"
-    (strip-tags (src/candidates "::s" (find-ns 'compliment.sources.t-keywords) nil))
-    => (just ["::src"]))
+    (is? (mc/in-any-order ["::core/aliased-one" "::core/aliased-two"])
+         (strip-tags (src/candidates "::core/ali" (find-ns 'compliment.sources.t-keywords) nil))))
 
-  (fact "keyword candidates have a special tag"
-    (do (str :it-is-deprecated)
-        (src/candidates ":it" *ns* nil))
-    => (just [{:candidate ":it-is-deprecated" :type :keyword}]))
+  (testing "namespace aliases are completed when double colon"
+    (is? ["::src"]
+         (strip-tags (src/candidates "::s" (find-ns 'compliment.sources.t-keywords) nil))))
 
-  (fact "namespace aliases without namespace are handled"
-    (src/candidates "::/" *ns* nil)
-    => nil))
+  (testing "keyword candidates have a special tag"
+    (str :it-is-deprecated)
+    (is? [{:candidate ":it-is-deprecated" :type :keyword}]
+         (src/candidates ":it" *ns* nil)))
+
+  (testing "namespace aliases without namespace are handled"
+    (is? nil (src/candidates "::/" *ns* nil))))

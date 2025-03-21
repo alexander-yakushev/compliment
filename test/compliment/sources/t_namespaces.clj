@@ -1,57 +1,56 @@
 (ns compliment.sources.t-namespaces
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [compliment.sources.namespaces :as src]
+            [compliment.t-helpers :refer :all]
             [compliment.utils :as utils]
-            [compliment.t-helpers :refer :all]))
+            [matcher-combinators.matchers :as mc]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-namespaces))
 
 (deftest namespaces-and-classes-prefixes
-  (fact "ns/class symbol is something that looks like part of either"
-    "clojure"       => (checker src/nscl-symbol?)
-    "clojure.z"     => (checker src/nscl-symbol?)
-    "java.lang.Run" => (checker src/nscl-symbol?))
+  (testing "ns/class symbol is something that looks like part of either"
+    (is (src/nscl-symbol? "clojure"))
+    (is (src/nscl-symbol? "clojure.z"))
+    (is (src/nscl-symbol? "java.lang.Run")))
 
-  (fact "fuzzy matching nses/classes works with period as separator"
-    (src/nscl-matches? "c.str" "clojure.string")      => truthy
-    (src/nscl-matches? "c.j.i" "clojure.java.io")     => truthy
-    (src/nscl-matches? "j.l.Run" "java.lang.Runtime") => truthy)
+  (testing "fuzzy matching nses/classes works with period as separator"
+    (is (src/nscl-matches? "c.str" "clojure.string"))
+    (is (src/nscl-matches? "c.j.i" "clojure.java.io"))
+    (is (src/nscl-matches? "j.l.Run" "java.lang.Runtime")))
 
-  (fact "separator in prefix can be omitted"
-    (src/nscl-matches? "cstr" "clojure.string")     => truthy
-    (src/nscl-matches? "cji" "clojure.java.io")     => truthy
-    (src/nscl-matches? "jlRun" "java.lang.Runtime") => truthy))
+  (testing "separator in prefix can be omitted"
+    (is (src/nscl-matches? "cstr" "clojure.string"))
+    (is (src/nscl-matches? "cji" "clojure.java.io"))
+    (is (src/nscl-matches? "jlRun" "java.lang.Runtime"))))
 
 (deftest ns-completion
   (in-ns 'compliment.sources.t-namespaces)
 
-  (fact "they are completed either according to the mapping in the given
+  (testing "they are completed either according to the mapping in the given
   namespace, or by classpath scanning results"
-    (strip-tags (src/candidates "cl.s" (-ns) nil))
-    => (contains #{"clojure.java.shell" "clojure.set"
-                   "clojure.stacktrace" "clojure.string"} :gaps-ok)
+    (is? (mc/embeds ["clojure.java.shell" "clojure.set"
+                     "clojure.stacktrace" "clojure.string"])
+         (strip-tags (src/candidates "cl.s" (-ns) nil)))
 
-    (strip-tags (src/candidates "src" (-ns) nil))
-    => (just ["src"])
+    (is? ["src"]
+         (strip-tags (src/candidates "src" (-ns) nil)))
 
-    (src/candidates "clojure.java." (-ns) nil)
-    => (contains #{{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
-                   {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}} :gaps-ok)
+    (is? (mc/embeds [{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
+                     {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}])
+         (src/candidates "clojure.java." (-ns) nil))
 
-    (strip-tags (src/candidates "#'clojure.co" (-ns) nil))
-    => (contains ["#'clojure.core"]))
+    (is? (mc/embeds ["#'clojure.core"])
+         (strip-tags (src/candidates "#'clojure.co" (-ns) nil))))
 
-  (fact "aliases are completed by this source too"
-    (do (require '[clojure.string :as str])
-        (strip-tags (src/candidates "st" (-ns) nil)))
-    => (contains ["str"])
+  (testing "aliases are completed by this source too"
+    (require '[clojure.string :as str])
+    (is? ["str"] (strip-tags (src/candidates "st" (-ns) nil)))
 
-    (do (require '[clojure.string :as c.str])
-        (strip-tags (src/candidates "c.st" (-ns) nil)))
-    => (contains ["c.str"]))
+    (require '[clojure.string :as c.str])
+    (is? (mc/embeds ["c.str"])
+         (strip-tags (src/candidates "c.st" (-ns) nil))))
 
-    (fact "namespaces have documentation"
-    (src/doc "clojure.core" (-ns)) => (checker string?)
-    (src/doc "utils" (-ns)) => (checker string?)
-    (src/doc "#'utils" (-ns)) => (checker string?)))
+  (testing "namespaces have documentation"
+    (is? string? (src/doc "clojure.core" (-ns)))
+    (is? string? (src/doc "utils" (-ns)))
+    (is? string? (src/doc "#'utils" (-ns)))))
