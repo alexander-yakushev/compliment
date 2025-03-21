@@ -11,7 +11,7 @@
   :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.0"}}}
 
   :test {:extra-paths ["test"]
-         :extra-deps {fudje/fudje {:mvn/version "0.9.8"}
+         :extra-deps {nubank/matcher-combinators {:mvn/version "3.9.1"}
                       criterium/criterium {:mvn/version "0.4.6"}
                       io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
                                                             :git/sha "dfb30dd"}}

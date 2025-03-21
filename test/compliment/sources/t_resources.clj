@@ -1,25 +1,20 @@
 (ns compliment.sources.t-resources
   (:require [clojure.java.io :as io]
+            [clojure.test :refer :all]
             [compliment.context :as ctx]
             [compliment.sources.resources :as src]
-            [compliment.t-helpers :refer :all]
-            [fudje.sweet :refer :all]
-            [clojure.test :refer :all]))
+            [compliment.t-helpers :refer :all]))
 
 (deftest resources-test
-  (fact "completion works when started from a string in a resource call"
-    (src/candidates "comp" *ns* (ctx/parse-context '(resource "__prefix__")))
-    => [{:candidate "compliment/dummy_resource.txt"
-         :type :resource}]
+  (testing "completion works when started from a string in a resource call"
+    (is? [{:candidate "compliment/dummy_resource.txt" :type :resource}]
+         (src/candidates "comp" *ns* (ctx/parse-context '(resource "__prefix__"))))
 
-    (src/candidates "comp" *ns* (ctx/parse-context '(io/resource "__prefix__")))
-    => [{:candidate "compliment/dummy_resource.txt"
-         :type :resource}]
+    (is? [{:candidate "compliment/dummy_resource.txt" :type :resource}]
+         (src/candidates "comp" *ns* (ctx/parse-context '(io/resource "__prefix__"))))
 
-    (src/candidates "comp" *ns* nil) => nil)
+    (is? nil (src/candidates "comp" *ns* nil)))
 
-  (fact "there are docs for resources too"
-    (src/doc "compliment/dummy_resource.txt" *ns*)
-    => (checker #(.startsWith ^String % "File type: text/plain, size: 43 bytes"))
-
-    (src/doc "not-a-resource" *ns*) => nil))
+  (testing "there are docs for resources too"
+    (is? #"File type: text/plain, size: 43 bytes" (src/doc "compliment/dummy_resource.txt" *ns*))
+    (is? nil (src/doc "not-a-resource" *ns*))))

@@ -1,7 +1,8 @@
 (ns compliment.lite-test
-  (:require [fudje.sweet :refer :all]
-            [clojure.test :refer :all]
-            [compliment.lite :as lite :refer [completions]]))
+  (:require [clojure.test :refer :all]
+            [compliment.lite :as lite :refer [completions]]
+            [matcher-combinators.matchers :as mc]
+            [matcher-combinators.test :refer [match?]]))
 
 (def a-big-int 42M)
 
@@ -11,183 +12,172 @@
   [completions]
   (map :candidate completions))
 
+(defmacro is? [expected actual] `(is (~'match? ~expected ~actual)))
+
 (deftest completions-test
-  (fact "`completions` takes a prefix, and optional options-map."
-    (strip-tags (completions "redu"))
-    => (contains ["reduce" "reduce-kv" "reductions"] :gaps-ok)
+  (testing "`completions` takes a prefix, and optional options-map."
+    (is? (mc/embeds ["reduce" "reduce-kv" "reductions"])
+         (strip-tags (completions "redu")))
 
-    (strip-tags (completions "'redu"))
-    => (contains ["'reduce" "'reduce-kv" "'reductions"] :gaps-ok)
+    (is? (mc/embeds ["'reduce" "'reduce-kv" "'reductions"])
+         (strip-tags (completions "'redu")))
 
-    (strip-tags (completions "#'redu"))
-    => (contains ["#'reduce" "#'reduce-kv" "#'reductions"] :gaps-ok)
+    (is? (mc/embeds ["#'reduce" "#'reduce-kv" "#'reductions"])
+         (strip-tags (completions "#'redu")))
 
-    (strip-tags (completions "fac" {:ns (find-ns 'fudje.sweet)}))
-    => (just ["fact" "facts"] :in-any-order)
+    (is? (mc/in-any-order ["rename" "rename-keys"])
+         (strip-tags (completions "rena" {:ns (find-ns 'clojure.set)})))
 
-    (strip-tags (completions "fac" {:ns (find-ns 'clojure.core)}))
-    => []
+    (is? [] (strip-tags (completions "fac" {:ns (find-ns 'clojure.core)})))
 
-    (strip-tags (completions "compliment.lite/comp"))
-    => (just ["compliment.lite/completions"])
+    (is? ["compliment.lite/completions"]
+         (strip-tags (completions "compliment.lite/comp")))
 
-    (strip-tags (completions "'compliment.lite/comp"))
-    => (just ["'compliment.lite/completions"])
+    (is? ["'compliment.lite/completions"]
+         (strip-tags (completions "'compliment.lite/comp")))
 
-    (strip-tags (completions "#'compliment.lite/comp"))
-    => (just ["#'compliment.lite/completions"])
+    (is? ["#'compliment.lite/completions"]
+         (strip-tags (completions "#'compliment.lite/comp")))
 
-    (strip-tags (completions "lite/com" {:ns (find-ns 'compliment.lite-test)}))
-    => (just ["lite/completions"]))
+    (is? ["lite/completions"]
+         (strip-tags (completions "lite/com" {:ns (find-ns 'compliment.lite-test)}))))
 
-  (fact "check that all lite sources work"
-    (strip-tags (completions "map"))
-    => (contains ["map" "map?" "mapv" "mapcat"] :in-any-order)
+  (testing "check that all lite sources work"
+    (is? (mc/embeds ["map" "map?" "mapv" "mapcat"])
+         (strip-tags (completions "map")))
 
-    (strip-tags (completions "clojure."))
-    => (contains ["clojure.core" "clojure.edn" "clojure.string"] :gaps-ok :in-any-order)
+    (is? (mc/embeds ["clojure.core" "clojure.edn" "clojure.string"])
+         (strip-tags (completions "clojure.")))
 
-    (strip-tags (completions ".sub"))
-    => (contains [".subtract" ".substring" ".subSequence"] :in-any-order)
+    (is? (mc/embeds [".subtract" ".substring" ".subSequence"])
+         (strip-tags (completions ".sub")))
 
-    (strip-tags (completions "Integer/"))
-    => (contains ["Integer/MAX_VALUE" "Integer/MIN_VALUE"] :in-any-order)
+    (is? (mc/embeds ["Integer/MAX_VALUE" "Integer/MIN_VALUE"])
+         (strip-tags (completions "Integer/")))
 
-    (strip-tags (completions ":req"))
-    => (contains [":require"])
+    (is? (mc/embeds [":require"]) (strip-tags (completions ":req")))
 
-    (strip-tags (completions ":compliment.lite/k"))
-    => (just [":compliment.lite/keywords"])
+    (is? [":compliment.lite/keywords"]
+         (strip-tags (completions ":compliment.lite/k")))
 
-    (strip-tags (completions "catc"))
-    => (contains ["catch"])
+    (is? (mc/embeds ["catch"]) (strip-tags (completions "catc")))
 
-    (strip-tags (completions "ni"))
-    => (contains ["nil"]))
+    (is? (mc/embeds ["nil"]) (strip-tags (completions "ni"))))
 
-  (fact "in case of non-existing namespace doesn't fail"
-    (completions "redu" {:ns nil}) => anything
-    (completions "n-m" {:ns 'foo.bar.baz}) => anything)
+  (testing "in case of non-existing namespace doesn't fail"
+    (is (completions "redu" {:ns nil}))
+    (is (completions "n-m" {:ns 'foo.bar.baz})))
 
-  (fact "many sources allow some sort of fuzziness in prefixes"
-    (strip-tags (completions "re-me"))
-    => (just ["reset-meta!" "remove-method" "remove-all-methods"] :in-any-order)
+  (testing "many sources allow some sort of fuzziness in prefixes"
+    (is? (mc/in-any-order ["reset-meta!" "remove-method" "remove-all-methods"])
+         (strip-tags (completions "re-me")))
 
-    (strip-tags (completions "remme"))
-    => (just ["remove-method" "remove-all-methods"] :in-any-order)
+    (is? (mc/in-any-order ["remove-method" "remove-all-methods"])
+         (strip-tags (completions "remme")))
 
-    (strip-tags (completions "cl.co."))
-    => (contains #{"clojure.core.protocols" "clojure.core.server"} :gaps-ok)
+    (is? (mc/embeds ["clojure.core.protocols" "clojure.core.server"])
+         (strip-tags (completions "cl.co.")))
 
-    (strip-tags (completions "cji"))
-    => (just ["clojure.java.io"])
+    (is? (mc/embeds ["clojure.java.io"]) (strip-tags (completions "cji")))
 
-    (strip-tags (completions ".gSV"))
-    => (just [".getSpecificationVendor" ".getSpecificationVersion"] :in-any-order))
+    (is? (mc/in-any-order [".getSpecificationVendor" ".getSpecificationVersion"])
+         (strip-tags (completions ".gSV"))))
 
-  (fact "candidates are sorted by their length first, and then alphabetically"
-    (strip-tags (completions "map"))
-    => (contains ["map" "map?" "mapv" "mapcat"] :gaps-ok)
+  (testing "candidates are sorted by their length first, and then alphabetically"
+    (is? (mc/embeds ["map" "map?" "mapv" "mapcat"])
+         (strip-tags (completions "map")))
 
-    (strip-tags (completions "al-"))
-    => (contains ["all-ns" "alter-meta!" "alter-var-root"] :gaps-ok))
+    (is? (mc/embeds ["all-ns" "alter-meta!" "alter-var-root"])
+         (strip-tags (completions "al-"))))
 
-  (fact "sorting directly by name can also be enabled"
-    (strip-tags (completions "map" {:sort-order :by-name}))
-    => (contains ["map-indexed" "map?" "mapcat" "mapv"] :gaps-ok)
+  (testing "sorting directly by name can also be enabled"
+    (is? (mc/embeds ["map-indexed" "map?" "mapcat" "mapv"])
+         (strip-tags (completions "map" {:sort-order :by-name})))
 
-    (completions "remo" {:sort-order :by-name})
-    => (contains [{:ns "clojure.core", :type :function, :candidate "remove-method"}
-                  {:ns "clojure.core", :type :function, :candidate "remove-ns"}
-                  {:ns "clojure.core", :type :function, :candidate "remove-watch"}]
-                 :gaps-ok))
+    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "remove-method"}
+                     {:ns "clojure.core", :type :function, :candidate "remove-ns"}
+                     {:ns "clojure.core", :type :function, :candidate "remove-watch"}])
+         (completions "remo" {:sort-order :by-name})))
 
-  (fact ":sources list can filter the sources to be used during completion"
-    (completions "cl")
-    => (checker #(> (count %) 10) {:ns 'compliment.lite-test})
+  (testing ":sources list can filter the sources to be used during completion"
+    (is? #(> (count %) 10) (completions "cl" {:ns 'compliment.lite-test}))
 
-    (strip-tags (completions "cl" {:sources [:compliment.lite/vars]
-                                        :ns 'compliment.lite-test}))
-    => (just ["class" "class?" "clojure-version" "clear-agent-errors"] :in-any-order))
+    (is? (mc/in-any-order ["class" "class?" "clojure-version" "clear-agent-errors"])
+         (strip-tags (completions "cl" {:sources [:compliment.lite/vars]
+                                        :ns 'compliment.lite-test}))))
 
-  (fact "empty prefix returns a list of candidates"
-    (completions "") => (checker not-empty))
+  (testing "empty prefix returns a list of candidates"
+    (is? not-empty (completions "")))
 
-  (fact "different metadata is attached to candidates"
-    (completions "bound" {}) =>
-    (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
-                {:ns "clojure.core", :type :macro, :candidate "bound-fn"}} :gaps-ok)
+  (testing "different metadata is attached to candidates"
+    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
+                     {:ns "clojure.core", :type :macro, :candidate "bound-fn"}])
+         (completions "bound" {}))
 
-    (completions "fac" {:ns (find-ns 'fudje.sweet)})
-    => (just [{:candidate "fact", :type :macro, :ns "fudje.sweet"}
-              {:candidate "facts", :type :macro, :ns "fudje.sweet"}]
-             :in-any-order)
+    (is? (mc/embeds [{:candidate "deftest", :type :macro, :ns "clojure.test"}
+                     {:candidate "deftest-", :type :macro, :ns "clojure.test"}])
+         (completions "def" {:ns (find-ns 'clojure.test)}))
 
-    (completions "a-big" {:ns 'compliment.lite-test})
-    => (just [{:ns "compliment.lite-test", :type :var, :candidate "a-big-int"}])
+    (is? [{:ns "compliment.lite-test", :type :var, :candidate "a-big-int"}]
+         (completions "a-big" {:ns 'compliment.lite-test}))
 
-    (completions "cl.se" {}) =>
-    (contains [{:candidate "clojure.set", :type :namespace}])
+    (is? (mc/embeds [{:candidate "clojure.set", :type :namespace}])
+         (completions "cl.se" {}))
 
     ;; Test for not required namespaces
-    (completions "cl.test.ta" {}) =>
-    (just [{:type :namespace, :candidate "clojure.test.tap" :file "clojure/test/tap.clj"}])
+    (is? [{:type :namespace, :candidate "clojure.test.tap" :file "clojure/test/tap.clj"}]
+         (completions "cl.test.ta" {}))
 
     ;; Test for aliases
-    (completions "lit" {:ns 'compliment.lite-test})
-    => (contains [{:type :namespace, :candidate "lite"}])
+    (is? (mc/embeds [{:type :namespace, :candidate "lite"}])
+         (completions "lit" {:ns 'compliment.lite-test}))
 
-    (completions "clojure.lang.Lisp" {}) =>
-    (contains [{:type :class, :candidate "clojure.lang.LispReader"}])
+    (is? [{:type :class, :candidate "clojure.lang.LispReader"}]
+         (completions "clojure.lang.Lisp" {}))
 
-    (completions "java.net.URLE" {}) =>
-    (contains [{:type :class, :candidate "java.net.URLEncoder"}])
+    (is? (mc/embeds [{:type :class, :candidate "java.net.URLEncoder"}])
+         (completions "java.net.URLE" {}))
 
-    (completions "RuntimeE" {})
-    => (contains #{{:package "java.lang", :type :class, :candidate "RuntimeException"}})
+    (is? (mc/embeds [{:package "java.lang", :type :class, :candidate "RuntimeException"}])
+         (completions "RuntimeE" {}))
 
-    (completions ".getName" {}) =>
-    (contains #{{:candidate ".getName", :type :method}
-                {:candidate ".getSimpleName", :type :method}} :gaps-ok)
+    (is? (mc/embeds [{:candidate ".getName", :type :method}
+                     {:candidate ".getSimpleName", :type :method}])
+         (completions ".getName" {}))
 
-    (completions ".getName" {:ns 'compliment.lite-test})
-    => (contains [{:candidate ".getName", :type :method}])
+    (is? (mc/embeds [{:candidate ".getName", :type :method}])
+         (completions ".getName" {:ns 'compliment.lite-test}))
 
-    (completions "Thread/.int" {})
-    => (just [{:candidate "Thread/.interrupt", :type :method}])
+    (is? [{:candidate "Thread/.interrupt", :type :method}]
+         (completions "Thread/.int" {}))
 
-    (completions "Integer/SI" {})
-    => (just [{:type :static-field, :candidate "Integer/SIZE"}])
+    (is? [{:type :static-field, :candidate "Integer/SIZE"}]
+         (completions "Integer/SI" {}))
 
-    (completions "Integer/co" {})
-    => (contains [{:candidate "Integer/compare", :type :static-method}])
+    (is? (mc/embeds [{:candidate "Integer/compare", :type :static-method}])
+         (completions "Integer/co" {}))
 
-    (completions "recu" {})
-    => (contains [{:candidate "recur", :type :special-form}])
+    (is? (mc/embeds [{:candidate "recur", :type :special-form}])
+         (completions "recu" {}))
 
-    (completions "tru" {})
-    => (contains [{:candidate "true", :type :special-form}])
+    (is? (mc/embeds [{:candidate "true", :type :special-form}])
+         (completions "tru" {}))
 
-    (completions ":argl" {})
-    => (contains [{:candidate ":arglists", :type :keyword}]))
+    (is? (mc/embeds [{:candidate ":arglists", :type :keyword}])
+         (completions ":argl" {})))
 
-  (fact ":plain-candidates true returns plain strings"
-    (completions "bound" {:plain-candidates true})
-    => (contains #{"bound?" "bound-fn" "bound-fn*"})
+  (testing ":plain-candidates true returns plain strings"
+    (is? (mc/embeds ["bound?" "bound-fn" "bound-fn*"])
+         (completions "bound" {:plain-candidates true})))
 
-    (completions "fac" {:ns (find-ns 'fudje.sweet) :plain-candidates true})
-    => (just ["fact" "facts"] :in-any-order))
+  (testing "extra-metadata arglists"
+    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}])
+         (completions "apply" {:extra-metadata #{:arglists}})))
 
-  (fact "extra-metadata arglists"
-    (completions "apply" {:extra-metadata #{:arglists}})
-    => (contains #{{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}}
-                 :gaps-ok))
+  (testing "extra-metadata doc"
+    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
+                     {:ns "clojure.core", :type :macro, :candidate "bound-fn"}])
+         (completions "bound" {:extra-metadata #{:doc}}))
 
-  (fact "extra-metadata doc"
-    (map #(select-keys % [:ns :type :candidate]) (completions "bound" {:extra-metadata #{:doc}}))
-    => (contains #{{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
-                   {:ns "clojure.core", :type :macro, :candidate "bound-fn"}}
-                 :gaps-ok)
-
-    (map :doc (completions "bound" {:extra-metadata #{:doc}}))
-    => (checker #(every? string? %))))
+    (is? (mc/seq-of {:doc string?})
+         (completions "bound" {:extra-metadata #{:doc}}))))
