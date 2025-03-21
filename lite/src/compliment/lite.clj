@@ -1,4 +1,4 @@
-;; This file was generated at Tue Aug 13 19:19:08 EEST 2024
+;; This file was generated at Fri Mar 21 20:46:26 EET 2025
 ;; SPDX-License-Identifier: EPL-1.0
 ;; Do not edit manually! Check https://github.com/alexander-yakushev/compliment/tree/master/lite
 (ns compliment.lite
@@ -709,12 +709,11 @@
   Options map can contain the following options:
   - :ns - namespace where completion is initiated;
   - :sort-order (either :by-length or :by-name);
-  - :plain-candidates - DEPRECATED: if true, return strings instead of maps;
   - :extra-metadata - set of extra fields to add to the maps;
   - :sources - list of source keywords to use."
   ([prefix] (completions prefix {}))
   ([prefix
-    {:keys [ns context sort-order sources extra-metadata plain-candidates],
+    {:keys [ns context sort-order sources extra-metadata],
      :or {sort-order :by-length}}]
    (let [nspc (ensure-ns ns)
          ctx nil]
@@ -729,4 +728,5 @@
                (if (= sort-order :by-name)
                  (sort-by :candidate candidates)
                  (sort-by :candidate by-length-comparator candidates))]
-         (if plain-candidates (mapv :candidate sorted-cands) sorted-cands))))))
+         sorted-cands)))))
+
