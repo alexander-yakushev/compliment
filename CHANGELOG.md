@@ -4,6 +4,8 @@
 
 - [cider#3792](https://github.com/clojure-emacs/cider/issues/3792): Don't fail
   if context macroexpansion throws an exception.
+- [#121](https://github.com/alexander-yakushev/compliment/pull/121): Remove
+  deprecated `:plain-candidates` flag.
 
 ### 0.6.0 (2024-08-13)
 

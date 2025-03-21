@@ -166,10 +166,6 @@
     (is? (mc/embeds [{:candidate ":arglists", :type :keyword}])
          (completions ":argl" {})))
 
-  (testing ":plain-candidates true returns plain strings"
-    (is? (mc/embeds ["bound?" "bound-fn" "bound-fn*"])
-         (completions "bound" {:plain-candidates true})))
-
   (testing "extra-metadata arglists"
     (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}])
          (completions "apply" {:extra-metadata #{:arglists}})))

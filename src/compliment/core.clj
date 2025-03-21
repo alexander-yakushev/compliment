@@ -48,12 +48,11 @@
    - :ns - namespace where completion is initiated;
    - :context - code form around the prefix;
    - :sort-order (either :by-length or :by-name);
-   - :plain-candidates - DEPRECATED: if true, return strings instead of maps;
    - :extra-metadata - set of extra fields to add to the maps;
    - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
-  ([prefix {:keys [ns context sort-order sources extra-metadata plain-candidates]
+  ([prefix {:keys [ns context sort-order sources extra-metadata]
             :or {sort-order :by-length}}]
    (let [nspc (ensure-ns ns)
          ctx ^{:lite nil} (binding [*ns* nspc]
@@ -69,9 +68,7 @@
              sorted-cands (if (= sort-order :by-name)
                             (sort-by :candidate candidates)
                             (sort-by :candidate by-length-comparator candidates))]
-         (if plain-candidates
-           (mapv :candidate sorted-cands)
-           sorted-cands))))))
+         sorted-cands)))))
 
 ^{:lite nil}
 (defn documentation
