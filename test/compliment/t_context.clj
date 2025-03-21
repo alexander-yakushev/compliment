@@ -91,4 +91,8 @@
   element of its key-value pair."
     (is? '[{:idx 42, :map-role :key, :form {__prefix__ 42}}
            {:idx :akey, :map-role :value, :form {:akey {__prefix__ 42}}}]
-         (ctx/parse-context '{:akey {__prefix__ 42}}))))
+         (ctx/parse-context '{:akey {__prefix__ 42}})))
+
+  (testing "doesn't fail if macroexpansion fails"
+    (is? '({:idx 0, :form (__prefix__ (->) (->>))})
+         (ctx/parse-context '(__prefix__ (->) (->>))))))

@@ -93,32 +93,34 @@
   '__prefix__)
 
 (defn- macroexpand-form [form]
-  (postwalk (fn [x]
-              (let [call? (and (seq? x)
-                               (-> x first symbol?))
-                    resolved (when call?
-                               (ns-resolve *ns* (first x)))]
-                (cond
-                  (and call?
-                       (contains? #{#'clojure.core/->
-                                    #'clojure.core/->>
-                                    #'clojure.core/doto}
-                                  resolved))
-                  (macroexpand-1 x)
+  (try
+    (postwalk (fn [x]
+                (let [call? (and (seq? x)
+                                 (-> x first symbol?))
+                      resolved (when call?
+                                 (ns-resolve *ns* (first x)))]
+                  (cond
+                    (and call?
+                         (contains? #{#'clojure.core/->
+                                      #'clojure.core/->>
+                                      #'clojure.core/doto}
+                                    resolved))
+                    (macroexpand-1 x)
 
-                  ;; The macroexpansion of some-> is trickier than that of ->,
-                  ;; so we macroexpand -> instead,
-                  ;; which is equivalent for our purposes:
-                  (and call?
-                       (= resolved #'clojure.core/some->))
-                  (macroexpand-1 (cons `-> (rest x)))
+                    ;; The macroexpansion of some-> is trickier than that of ->,
+                    ;; so we macroexpand -> instead,
+                    ;; which is equivalent for our purposes:
+                    (and call?
+                         (= resolved #'clojure.core/some->))
+                    (macroexpand-1 (cons `-> (rest x)))
 
-                  (and call?
-                       (= resolved #'clojure.core/some->>))
-                  (macroexpand-1 (cons `->> (rest x)))
+                    (and call?
+                         (= resolved #'clojure.core/some->>))
+                    (macroexpand-1 (cons `->> (rest x)))
 
-                  :else x)))
-            form))
+                    :else x)))
+              form)
+    (catch Exception _ form)))
 
 (defn parse-context
   "Takes a context which is a Lisp form and returns a transformed context.
