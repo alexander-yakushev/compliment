@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [cider#3792](https://github.com/clojure-emacs/cider/issues/3792): Don't fail
+  if context macroexpansion throws an exception.
+
 ### 0.6.0 (2024-08-13)
 
 - [#117](https://github.com/alexander-yakushev/compliment/pull/117):
