@@ -6,6 +6,8 @@
             [compliment.sources.namespaces :refer [nscl-symbol? nscl-matches?]])
   (:import java.util.HashSet))
 
+(def ^:private base-priority 60)
+
 (defn- all-classes-short-names
   "Returns a map where short classnames are matched with vectors with
   package-qualified classnames."
@@ -40,6 +42,12 @@
                  l))
              [] (all-classes-short-names)))
 
+(defn- priority-by-name [^String full-name]
+  (if (or (.startsWith full-name "clojure")
+          (.startsWith full-name "java")
+          (.startsWith full-name "jdk"))
+    0 1))
+
 ;; The function below is quite ugly for performance and efficiency reasons. The
 ;; total number of classes can go up to 7 digits, and we must still return the
 ;; result reasonably quickly in such scenarios.
@@ -57,7 +65,9 @@
                           (when-not (.contains seen class-str)
                             (when remember? (.add seen class-str))
                             true)))
-            str->cand (fn [s] {:candidate s, :type :class})
+            str->cand (fn [s fqname]
+                        {:candidate s, :type :class
+                         :priority (+ base-priority (priority-by-name fqname) 1)})
             all-classes (utils/classes-on-classpath)
             it (.iterator ^Iterable all-classes)
             roots (utils/root-packages-on-classpath)]
@@ -66,19 +76,18 @@
           ;; For classes imported into the namespace, suggest them both as
           ;; short names and fully-qualified names.
           (reduce-kv
-           (fn [result _ v]
+           (fn [result _ ^Class v]
              (if (class? v)
-               (let [fqname (.getName ^Class v)
-                     sname (.getSimpleName ^Class v)]
+               (let [fqname (.getName v)
+                     sname (.getSimpleName v)]
                  (cond-> result
                    (and (nscl-matches? prefix fqname) (include? fqname true))
-                   (conj! (str->cand fqname))
+                   (conj! (str->cand fqname fqname))
 
                    (and (nscl-matches? prefix sname) (include? sname true))
                    (conj! {:candidate sname, :type :class,
-                           :package (when-let [pkg (.getPackage ^Class v)]
-                                      ;; Some classes don't have a package
-                                      (.getName ^Package pkg))})))
+                           :package (some-> (.getPackage v) .getName)
+                           :priority (+ base-priority (priority-by-name fqname))})))
                result))
            result (ns-map ns))
 
@@ -88,7 +97,7 @@
                          (if (.startsWith short-name prefix)
                            (reduce (fn [result cl]
                                      (cond-> result
-                                       (include? cl true) (conj! (str->cand cl))))
+                                       (include? cl true) (conj! (str->cand cl cl))))
                                    result full-names)
                            result))
                        result (all-classes-short-names))
@@ -103,14 +112,14 @@
                 (let [^String cl (.next it)]
                   (recur (cond-> result
                            (and (.startsWith cl prefix) (include? cl false))
-                           (conj! (str->cand cl)))))
+                           (conj! (str->cand cl cl)))))
                 result))
 
             (reduce conj! result
                     (for [^String root-pkg roots
                           :when (and (.startsWith root-pkg prefix)
                                      (include? root-pkg false))]
-                      (str->cand (str root-pkg ".")))))
+                      (str->cand (str root-pkg ".") ""))))
 
           (persistent! result))))))
 

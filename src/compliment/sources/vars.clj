@@ -5,6 +5,8 @@
                                       *extra-metadata* split-by-leading-literals]])
   (:import java.io.StringWriter))
 
+(def ^:private base-priority 30)
+
 (defn var-symbol?
   "Test if prefix resembles a var name."
   [x]
@@ -79,7 +81,10 @@
               :let [var-name (name var-sym)]
               :when (and (var? var) (dash-matches? prefix var-name))
               :let [{:keys [arglists doc private deprecated] :as var-meta} (meta var)]
-              :when (not (:completion/hidden var-meta))]
+              :when (not (:completion/hidden var-meta))
+              :let [var-ns (.ns ^clojure.lang.Var var)
+                    this-ns? (= var-ns ns)
+                    clojure-ns? (some-> var-ns ns-name name (.startsWith "clojure"))]]
           (cond-> {:candidate (str literals
                                    (if scope
                                      (str scope-name "/" var-name)
@@ -87,7 +92,11 @@
                    :type (cond (:macro var-meta) :macro
                                arglists :function
                                :else :var)
-                   :ns (str (or (:ns var-meta) ns))}
+                   :ns (str (or (:ns var-meta) ns))
+                   ;; Priority rule: vars from requested ns, then from Clojure
+                   ;; namespaces, then the rest.
+                   :priority (+ base-priority
+                                (cond this-ns? 0, clojure-ns? 1, :else 2))}
             (and private (:private *extra-metadata*))
             (assoc :private (boolean private))
 

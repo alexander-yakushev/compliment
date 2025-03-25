@@ -267,6 +267,15 @@
   (testing "static class members have docs"
     (is? string? (src/static-member-doc "Integer/parseInt" (-ns)))))
 
+(when (#'src/clojure-1-12+?)
+  (deftest priority-test
+    (testing "static members are prioritized over non-static members"
+      (is? (mc/embeds [{:candidate "String/valueOf", :type :static-method, :priority 40}
+                       {:candidate "String/CASE_INSENSITIVE_ORDER", :type :static-field, :priority 40}
+                       {:candidate "String/.getBytes", :type :method, :priority 41}])
+           (concat (src/static-members-candidates "String/" (-ns) nil)
+                   (src/members-candidates "String/" (-ns) nil))))))
+
 (deftest literals-inference-test
   (testing "Vector literals"
     (testing "Only returns members of clojure.lang.PersistentVector for the very short \".s\" query"
