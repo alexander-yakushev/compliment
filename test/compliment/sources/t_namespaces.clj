@@ -50,6 +50,11 @@
     (is? (mc/embeds ["c.str"])
          (strip-tags (src/candidates "c.st" (-ns) nil))))
 
+  (testing "priorities"
+    (is? (mc/embeds [{:candidate "compliment.core", :type :namespace, :file "compliment/core.clj", :priority 51}
+                     {:candidate "clojure.core", :type :namespace, :file "clojure/core.clj", :priority 50}])
+         (src/candidates "c" (-ns) nil)))
+
   (testing "namespaces have documentation"
     (is? string? (src/doc "clojure.core" (-ns)))
     (is? string? (src/doc "utils" (-ns)))

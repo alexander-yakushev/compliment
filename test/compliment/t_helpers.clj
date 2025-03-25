@@ -10,3 +10,6 @@
 
 (defmacro is? [expected actual]
   `(is (~'match? ~expected ~actual)))
+
+(def jdk11+? (try (resolve 'java.lang.Runtime$Version)
+                  (catch Exception _)))

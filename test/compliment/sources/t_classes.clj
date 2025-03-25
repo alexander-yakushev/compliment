@@ -4,7 +4,8 @@
             [compliment.sources.classes :as src]
             [compliment.t-helpers :refer :all]
             [matcher-combinators.matchers :as mc])
-  (:import java.io.File))
+  (:import java.io.File
+           clojure.lang.PersistentArrayMap))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-classes))
 
@@ -37,10 +38,7 @@
   (testing "defrecord produces classes that don't have a package"
     ;; Since JDK9, they inherit the namespace package
     (is? (mc/embeds [{:candidate "Animal", :type :class
-                      :package (if (try (resolve 'java.lang.Runtime$Version)
-                                        (catch Exception _))
-                                 "compliment.sources.t_classes"
-                                 nil)}])
+                      :package (when jdk11+? "compliment.sources.t_classes")}])
          (src/candidates "Anim" (-ns) nil)))
 
   (testing "anonymous and inner classes are not suggested"
@@ -75,6 +73,20 @@
          (strip-tags
           (src/candidates "java.util" (-ns) (ctx/parse-context '(ns (:require stuff)
                                                                   (:import __prefix__)))))))
+
+  (testing "priority"
+    (testing "short import classes first, then java. and jdk., then the rest"
+      (is? (mc/embeds [{:candidate "Exception", :type :class, :package "java.lang", :priority 60}
+                       {:candidate "java.util.concurrent.Executors", :type :class, :priority 61}
+                       {:candidate "jdk.net.ExtendedSocketOptions", :type :class, :priority 61}
+                       {:candidate "compliment.Example", :type :class, :priority 62}])
+           (src/candidates "Ex" (-ns) nil)))
+
+    (testing "clojure. classes have higher priority too"
+      (is? (mc/embeds [{:candidate "PersistentArrayMap", :type :class, :package "clojure.lang", :priority 60}
+                       {:candidate "clojure.lang.PersistentHashMap", :type :class, :priority 61}
+                       {:candidate "com.sun.jndi.ldap.PersistentSearchControl", :type :class, :priority 62}])
+           (src/candidates "Pers" (-ns) nil))))
 
   (testing "classes have documentation"
     (is string? (src/doc "java.lang.Runnable" (-ns)))))

@@ -136,6 +136,15 @@
                                                 (:require [clojure.string
                                                            :refer [__prefix__]])))))))
 
+  (testing "priorities"
+    (testing "first namespace's own vars, then clojure vars, then the rest"
+      (refer 'compliment.context :only '[cache-context])
+      (def catastrophic 1)
+      (is? (mc/embeds [{:candidate "catastrophic", :ns "compliment.sources.t-vars", :priority 30}
+                       {:candidate "cat", :ns "clojure.core", :priority 31}
+                       {:candidate "cache-context", :ns "compliment.context", :priority 32}])
+           (src/candidates "ca" (-ns) nil))))
+
   (testing "vars have documentation"
     (is? string? (src/doc "map" (-ns)))
     (is? string? (src/doc "clojure.core/map" (-ns)))

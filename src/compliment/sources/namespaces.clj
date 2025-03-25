@@ -3,6 +3,8 @@
   (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches?] :as utils]))
 
+(def ^:private base-priority 50)
+
 (defn nscl-symbol?
   "Tests if prefix looks like a namespace or classname."
   [^String x]
@@ -14,6 +16,9 @@
   separators."
   [prefix namespace]
   (fuzzy-matches? prefix namespace \.))
+
+(defn- namespace-priority [^String ns-name]
+  (+ base-priority (if (.startsWith ns-name "clojure.") 0 1)))
 
 (defn ^{:lite 'namespaces-candidates} candidates
   "Return a list of namespace candidates."
@@ -30,13 +35,15 @@
                            (if has-dot
                              (nscl-matches? prefix ns-str)
                              (.startsWith ns-str prefix)))]
-            {:candidate (str literals ns-str), :type :namespace, :file file})
+            {:candidate (str literals ns-str), :type :namespace, :file file
+             :priority (namespace-priority ns-str)})
 
           ns-names (set (map :candidate cands-from-classpath))
           ns-sym->cand #(let [ns-str (name %)]
                           (when (and (nscl-matches? prefix ns-str)
                                      (not (ns-names ns-str)))
-                            {:candidate (str literals ns-str), :type :namespace}))]
+                            {:candidate (str literals ns-str), :type :namespace
+                             :priority (namespace-priority ns-str)}))]
       ;; Add aliases and runtime namespaces not found on the classpath.
       (-> cands-from-classpath
           (into (keep ns-sym->cand) (keys (ns-aliases ns)))

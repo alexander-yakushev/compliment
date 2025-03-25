@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [compliment.core :as core]
             [compliment.t-helpers :refer :all]
+            [compliment.sources.class-members :as class-members]
             [matcher-combinators.matchers :as mc]))
 
 ;; Sanity check we run the Clojure version which we think we do.
@@ -12,6 +13,8 @@
 
 ;; This namespace contains only sanity checks for the public API. For
 ;; in-depth source testing see their respective test files.
+
+(defn- clone [])
 
 (deftest completions-test
   (testing "`completions` takes a prefix, and optional options-map."
@@ -103,7 +106,7 @@
     (is? #(> (count %) 20)
          (core/completions "cl" {:ns 'compliment.t-core}))
 
-    (is? ["class" "class?" "clojure-version" "clear-agent-errors"]
+    (is? ["clone" "class" "class?" "clojure-version" "clear-agent-errors"]
          (strip-tags (core/completions "cl" {:sources [:compliment.sources.vars/vars]
                                              :ns 'compliment.t-core}))))
 
@@ -177,6 +180,52 @@
 
     (is? (mc/seq-of {:doc string?})
          (core/completions "bound" {:extra-metadata #{:doc}}))))
+
+(defn- is-ordered-subset [expected actual]
+  (is? expected (filter (set expected) actual)))
+
+(deftest priority-based-sorting
+  (testing "works with default sort-order (:by-length)"
+    (is-ordered-subset
+     [{:candidate "clone", :type :function, :ns "compliment.t-core", :priority 30}
+      {:candidate "clojure-version", :type :function, :ns "clojure.core", :priority 31}
+      {:candidate "clojure.set", :type :namespace, :file "clojure/set.clj", :priority 50}
+      {:candidate "clojure.data", :type :namespace, :file "clojure/data.clj", :priority 50}
+      {:candidate "compliment.sources.local-bindings", :type :namespace, :priority 51}
+      {:candidate "clojure.lang.Compiler", :type :class, :priority 61}
+      {:candidate "clojure.", :type :class, :priority 62}]
+     (core/completions "clo" {:ns 'compliment.t-core, :sort-order :by-length}))
+
+    (when jdk11+? ;; Only because sun.security...Functions is missing on JDK8.
+      (is-ordered-subset
+       [{:candidate "java.util.function.Function", :type :class, :priority 61}
+        {:candidate "java.lang.FunctionalInterface", :type :class, :priority 61}
+        {:candidate "sun.security.pkcs11.wrapper.Functions", :type :class, :priority 62}]
+       (core/completions "Function" {:sort-order :by-length}))))
+
+  (testing "works with :by-name sort-order"
+    (is-ordered-subset
+     [{:candidate "clone", :type :function, :ns "compliment.t-core", :priority 30}
+      {:candidate "clojure-version", :type :function, :ns "clojure.core", :priority 31}
+      {:candidate "clojure.data", :type :namespace, :file "clojure/data.clj", :priority 50}
+      {:candidate "clojure.set", :type :namespace, :file "clojure/set.clj", :priority 50}
+      {:candidate "compliment.sources.local-bindings", :type :namespace, :priority 51}
+      {:candidate "clojure.lang.Compiler", :type :class, :priority 61}
+      {:candidate "clojure.", :type :class, :priority 62}]
+     (core/completions "clo" {:ns 'compliment.t-core, :sort-order :by-name}))
+
+    (when jdk11+?
+      (is-ordered-subset
+       [{:candidate "java.lang.FunctionalInterface", :type :class, :priority 61}
+        {:candidate "java.util.function.Function", :type :class, :priority 61}
+        {:candidate "sun.security.pkcs11.wrapper.Functions", :type :class, :priority 62}]
+       (core/completions "Function" {:sort-order :by-name})))
+
+    (when (#'class-members/clojure-1-12+?)
+      (is-ordered-subset
+       [{:candidate "String/valueOf", :type :static-method, :priority 40}
+        {:candidate "String/.concat", :type :method, :priority 41}]
+       (core/completions "String/" {:sort-order :by-name})))))
 
 (deftest documentation-test
   (testing "`documentation` takes a symbol string which presumably can be

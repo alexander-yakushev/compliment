@@ -20,16 +20,6 @@
             [clojure.string :refer [join]])
   (:import java.util.Comparator))
 
-(def ^:private by-length-comparator
-  "Sorts list of strings by their length first, and then alphabetically if length
-  is equal."
-  (reify Comparator
-    (compare [_ s1 s2]
-      (let [res (Integer/compare (.length ^String s1) (.length ^String s2))]
-        (if (zero? res)
-          (.compareTo ^String s1 s2)
-          res)))))
-
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
   namespace if it exists, otherwise returns `user` namespace."
@@ -64,11 +54,8 @@
                                  (if sources
                                    (all-sources sources)
                                    (all-sources)))
-             candidates (into [] (comp (map (fn [f] (f prefix nspc ctx))) cat) candidate-fns)
-             sorted-cands (if (= sort-order :by-name)
-                            (sort-by :candidate candidates)
-                            (sort-by :candidate by-length-comparator candidates))]
-         sorted-cands)))))
+             candidates (into [] (comp (map (fn [f] (f prefix nspc ctx))) cat) candidate-fns)]
+         (compliment.sources/sort-candidates candidates sort-order))))))
 
 ^{:lite nil}
 (defn documentation
