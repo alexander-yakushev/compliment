@@ -20,9 +20,9 @@ executors:
     docker:
       - image: clojure:temurin-21-noble
     <<: *defaults
-  jdk23:
+  jdk24:
     docker:
-      - image: clojure:temurin-23-noble
+      - image: clojure:temurin-24-noble
     <<: *defaults
 
 commands:
@@ -66,8 +66,8 @@ jobs:
           cache_key: "test_v1"
           steps:
             - run: CLOJURE_VERSION=1.10 clojure -X:1.10:test:no-bench
-            - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test:no-bench
-            - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test
+            - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test:no-bench
+            - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test
             - run: clojure -M:eastwood
 
   coverage:
@@ -112,7 +112,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk23]
+              jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk24]
           filters:
             branches:
               only: /.*/
