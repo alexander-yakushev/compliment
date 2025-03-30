@@ -1,7 +1,7 @@
 (ns compliment.sources.keywords
   "Completion for keywords interned globally across the application"
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [resolve-namespace]])
+            [compliment.utils :refer [fuzzy-matches-multi? resolve-namespace]])
   (:import java.lang.reflect.Field))
 
 (def ^:private keywords-table
@@ -12,6 +12,11 @@
 
 (defn- tagged-candidate [c]
   {:candidate c, :type :keyword})
+
+(defn fuzzy-kw-matches?
+  "Tests if prefix partially matches a keyword."
+  [prefix kw]
+  (fuzzy-matches-multi? prefix kw #{\/ \-}))
 
 (defn qualified-candidates
   "Returns a list of namespace-qualified double-colon keywords (like ::foo)
@@ -54,7 +59,7 @@
           double-colon? (concat (qualified-candidates prefix ns)
                                 (namespace-alias-candidates prefix ns))
           single-colon? (for [[kw _] @keywords-table
-                              :when (.startsWith (str kw) (subs prefix 1))]
+                              :when (fuzzy-kw-matches? (subs prefix 1) (str kw))]
                           (tagged-candidate (str ":" kw))))))
 
 ^{:lite '(defsource :compliment.lite/keywords :candidates #'keyword-candidates)}

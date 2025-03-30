@@ -39,6 +39,29 @@
                                 (or skipping (not match)) (recur pi (inc si) true)
                                 match (recur (inc pi) (inc si) false))))))))
 
+
+(defn fuzzy-matches-multi?
+  "Tests if symbol matches the prefix when symbol is split into parts on
+  any of the provided separators."
+  [^String prefix, ^String symbol, separators]
+  (let [pn (.length prefix), sn (.length symbol)
+        separator? (set separators)]
+    (cond (zero? pn) true
+          (zero? sn) false
+          (not (= (.charAt prefix 0) (.charAt symbol 0))) false
+          :else
+          (loop [pi 1, si 1, skipping false]
+            (cond (>= pi pn) true
+                  (>= si sn) false
+                  :else (let [pc (.charAt prefix pi)
+                              sc (.charAt symbol si)
+                              match (= pc sc)]
+                          (cond (separator? sc) (recur (if match (inc pi) pi)
+                                                       (inc si) false)
+                                (or skipping (not match)) (recur pi (inc si) true)
+                                match (recur (inc pi) (inc si) false))))))))
+
+
 (defn fuzzy-matches-no-skip?
   "Tests if symbol matches the prefix where separator? checks whether character
   is a separator. Unlike `fuzzy-matches?` requires separator characters to be
