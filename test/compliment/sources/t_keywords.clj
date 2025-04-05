@@ -6,9 +6,9 @@
 
 (deftest keywords-test
   (testing "keyword source completes keywords that were used at least once"
-    (str :t-key-foo :t-key-bar :t-key-baz)
-    (is? (mc/in-any-order [":t-key-foo" ":t-key-bar" ":t-key-baz"])
-         (strip-tags (src/candidates ":t-key" *ns* nil))))
+    (str :test-key-foo :test-key-bar :test-key-baz)
+    (is? (mc/in-any-order [":test-key-foo" ":test-key-bar" ":test-key-baz"])
+         (strip-tags (src/candidates ":test-key" *ns* nil))))
 
   (testing "keyword source completes keywords fuzzily"
     (str :my/foo-bar :my/foo-foo :my/foo-baz)
@@ -47,7 +47,7 @@
   (testing "keyword candidates have a special tag"
     (str :it-is-deprecated)
     (is? [{:candidate ":it-is-deprecated" :type :keyword}]
-         (src/candidates ":it" *ns* nil)))
+         (src/candidates ":it-is" *ns* nil)))
 
   (testing "namespace aliases without namespace are handled"
     (is? nil (src/candidates "::/" *ns* nil))))
