@@ -1,7 +1,7 @@
 (ns compliment.sources.keywords
   "Completion for keywords interned globally across the application"
   (:require [compliment.sources :refer [defsource]]
-            [compliment.utils :refer [fuzzy-matches-multi? resolve-namespace]])
+            [compliment.utils :refer [fuzzy-matches? resolve-namespace]])
   (:import java.lang.reflect.Field))
 
 (def ^:private keywords-table
@@ -16,7 +16,7 @@
 (defn fuzzy-kw-matches?
   "Tests if prefix partially matches a keyword."
   [prefix kw]
-  (fuzzy-matches-multi? prefix kw #{\/ \-}))
+  (fuzzy-matches? prefix kw \/ \-))
 
 (defn qualified-candidates
   "Returns a list of namespace-qualified double-colon keywords (like ::foo)
