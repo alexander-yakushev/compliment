@@ -17,11 +17,12 @@
       (and (list? (:form expr)) (= (:idx expr) 0)))
     true))
 
-(defn ^{:lite 'special-candidates} candidates
+(defn ^{:lite 'special-form-candidates} candidates
   "Returns list of completions for special forms."
   [prefix _ context]
-  (when (and (vars/var-symbol? prefix) ^{:lite true} (first-item-in-list? context))
-    (for [form special-forms
+  (when (vars/var-symbol? prefix)
+    (for [form (concat ^{:lite special-forms} (when (first-item-in-list? context) special-forms)
+                       ["true" "false" "nil"])
           :when (vars/dash-matches? prefix form)]
       {:candidate form
        :type :special-form})))
@@ -33,20 +34,7 @@
   (when (and (vars/var-symbol? symbol-str) (special-forms symbol-str))
     (vars/generate-docstring (#'repl/special-doc (symbol symbol-str)))))
 
-^{:lite '(defsource :compliment.lite/special-forms :candidates #'special-candidates)}
+^{:lite '(defsource :compliment.lite/special-forms :candidates #'special-form-candidates)}
 (defsource ::special-forms
   :candidates #'candidates
   :doc #'doc)
-
-(defn literal-candidates
-  "We define `true`, `false`, and `nil` in a separate source because they are
-  not context-dependent (don't have to be first items in the list)."
-  [prefix _ __]
-  (for [^String literal ["true" "false" "nil"]
-        :when (.startsWith literal prefix)]
-    {:candidate literal, :type :special-form}))
-
-^{:lite '(defsource :compliment.lite/literals :candidates #'literal-candidates)}
-(defsource ::literals
-  :candidates #'literal-candidates
-  :doc (constantly nil))

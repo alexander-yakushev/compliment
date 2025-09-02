@@ -16,14 +16,14 @@
     (is? (mc/in-any-order ["monitor-enter" "monitor-exit"])
          (strip-tags (src/candidates "mo-e" *ns* (ctx/parse-context '(__prefix__)))))
 
-    (is? nil (src/candidates "" *ns* (ctx/parse-context '(str __prefix__ 42))))
+    (is? [] (src/candidates "mo" *ns* (ctx/parse-context '(str __prefix__ 42))))
 
-    (is? nil (src/candidates "" *ns* (ctx/parse-context '[__prefix__ 42]))))
+    (is? [] (src/candidates "mo" *ns* (ctx/parse-context '[__prefix__ 42]))))
 
   (testing "literals are completed"
-    (is? [{:candidate "true", :type :special-form}] (src/literal-candidates "tr" *ns* nil))
-    (is? [{:candidate "false", :type :special-form}] (src/literal-candidates "f" *ns* nil))
-    (is? [{:candidate "nil", :type :special-form}] (src/literal-candidates "n"  *ns* nil)))
+    (is? [{:candidate "true", :type :special-form}] (src/candidates "tru" *ns* nil))
+    (is? [{:candidate "false", :type :special-form}] (src/candidates "f" *ns* nil))
+    (is? [{:candidate "nil", :type :special-form}] (src/candidates "ni"  *ns* nil)))
 
   (testing "there are docs for special forms too"
     (is? string? (src/doc "try" *ns*))
