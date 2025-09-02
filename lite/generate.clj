@@ -61,7 +61,7 @@
 
                             (binding [*print-meta* true]
                               (println)
-                              (zprint/zprint form {:style [:anon-fn :backtranslate]}))))
+                              (zprint/zprint form {:style [:anon-fn :backtranslate :community]}))))
                         (recur))))))]
           (binding [*out* wr]
             (println ";; This file was generated at" (str (java.util.Date.)))
@@ -71,4 +71,5 @@
             (println body)))))
     @imports))
 
+(zprint/set-options! {:width 90})
 (generate-lite-version)

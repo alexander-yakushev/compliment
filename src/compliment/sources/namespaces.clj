@@ -3,6 +3,7 @@
   (:require [compliment.sources :refer [defsource]]
             [compliment.utils :refer [fuzzy-matches?] :as utils]))
 
+^{:lite nil}
 (def ^:private base-priority 50)
 
 (defn nscl-symbol?
@@ -17,6 +18,7 @@
   [prefix namespace]
   (fuzzy-matches? prefix namespace \.))
 
+^{:lite nil}
 (defn- namespace-priority [^String ns-name]
   (+ base-priority (if (.startsWith ns-name "clojure.") 0 1)))
 
@@ -27,7 +29,7 @@
     (let [has-dot (> (.indexOf prefix ".") -1)
           [literals prefix] (utils/split-by-leading-literals prefix)
 
-          cands-from-classpath
+          cands-from-cp
           (for [{:keys [^String ns-str, file]} (utils/namespaces&files-on-classpath)
                 :when (and (re-find #"\.cljc?$" file)
                            ;; If prefix doesn't contain a period, using fuziness
@@ -36,17 +38,17 @@
                              (nscl-matches? prefix ns-str)
                              (.startsWith ns-str prefix)))]
             {:candidate (str literals ns-str), :type :namespace, :file file
-             :priority (namespace-priority ns-str)})
+             :priority ^{:lite 0} (namespace-priority ns-str)})
 
-          ns-names (set (map :candidate cands-from-classpath))
+          ns-names (set (map :candidate cands-from-cp))
           ns-sym->cand #(let [ns-str (name %1)]
                           (when (and (nscl-matches? prefix ns-str)
                                      (not (ns-names ns-str)))
                             {:candidate (str literals ns-str %2)
                              :type :namespace
-                             :priority (namespace-priority ns-str)}))]
+                             :priority ^{:lite 0} (namespace-priority ns-str)}))]
       ;; Add aliases and runtime namespaces not found on the classpath.
-      (-> cands-from-classpath
+      (-> cands-from-cp
           (into (keep #(ns-sym->cand % "/")) (keys (ns-aliases ns)))
           (into (comp (map ns-name)
                       (keep #(ns-sym->cand % nil)))

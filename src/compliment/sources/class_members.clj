@@ -7,6 +7,7 @@
                                                 resolve-class]])
   (:import [java.lang.reflect Field Member Method Modifier Constructor Executable]))
 
+^{:lite nil}
 (def ^:private base-priority 40)
 
 (defn- clojure-1-12+? []
@@ -179,7 +180,7 @@
                      :else :field)
          ;; Assign lower (bigger number) priority to non-static members so that
          ;; static members are shown first when qualified.
-         :priority (+ base-priority 1)}))))
+         :priority ^{:lite 0} (+ base-priority 1)}))))
 
 ;; ### Member documentation
 
@@ -298,7 +299,7 @@
            :type (cond (instance? Constructor (first members)) :constructor
                        (instance? Method (first members)) :static-method
                        :else :static-field)
-           :priority base-priority})))))
+           :priority ^{:lite 0} base-priority})))))
 
 ^{:lite nil}
 (defn resolve-static-members

@@ -129,7 +129,7 @@
          (completions "cl.test.ta" {}))
 
     ;; Test for aliases
-    (is? (mc/embeds [{:type :namespace, :candidate "lite"}])
+    (is? (mc/embeds [{:type :namespace, :candidate "lite/"}])
          (completions "lit" {:ns 'compliment.lite-test}))
 
     (is? [{:type :class, :candidate "clojure.lang.LispReader"}]
@@ -164,16 +164,4 @@
          (completions "tru" {}))
 
     (is? (mc/embeds [{:candidate ":arglists", :type :keyword}])
-         (completions ":argl" {})))
-
-  (testing "extra-metadata arglists"
-    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "apply", :arglists '("[f args]" "[f x args]" "[f x y args]" "[f x y z args]" "[f a b c d & args]")}])
-         (completions "apply" {:extra-metadata #{:arglists}})))
-
-  (testing "extra-metadata doc"
-    (is? (mc/embeds [{:ns "clojure.core", :type :function, :candidate "bound-fn*"}
-                     {:ns "clojure.core", :type :macro, :candidate "bound-fn"}])
-         (completions "bound" {:extra-metadata #{:doc}}))
-
-    (is? (mc/seq-of {:doc string?})
-         (completions "bound" {:extra-metadata #{:doc}}))))
+         (completions ":argl" {}))))

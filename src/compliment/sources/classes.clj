@@ -6,6 +6,7 @@
             [compliment.sources.namespaces :refer [nscl-symbol? nscl-matches?]])
   (:import java.util.HashSet))
 
+^{:lite nil}
 (def ^:private base-priority 60)
 
 (defn- all-classes-short-names
@@ -42,6 +43,7 @@
                  l))
              [] (all-classes-short-names)))
 
+^{:lite nil}
 (defn- priority-by-name [^String full-name]
   (if (or (.startsWith full-name "clojure")
           (.startsWith full-name "java")
@@ -67,7 +69,7 @@
                             true)))
             str->cand (fn [s fqname]
                         {:candidate s, :type :class
-                         :priority (+ base-priority (priority-by-name fqname) 1)})
+                         :priority ^{:lite 0} (+ base-priority (priority-by-name fqname) 1)})
             all-classes (utils/classes-on-classpath)
             it (.iterator ^Iterable all-classes)
             roots (utils/root-packages-on-classpath)]
@@ -87,7 +89,7 @@
                    (and (nscl-matches? prefix sname) (include? sname true))
                    (conj! {:candidate sname, :type :class,
                            :package (some-> (.getPackage v) .getName)
-                           :priority (+ base-priority (priority-by-name fqname))})))
+                           :priority ^{:lite 0} (+ base-priority (priority-by-name fqname))})))
                result))
            result (ns-map ns))
 

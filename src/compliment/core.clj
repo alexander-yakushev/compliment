@@ -42,12 +42,13 @@
    - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
-  ([prefix {:keys [ns context sort-order sources extra-metadata]
-            :or {sort-order :by-length}}]
+  ([prefix ^{:lite {:keys [ns context sources]}}
+    {:keys [ns context sort-order sources extra-metadata]
+     :or {sort-order :by-length}}]
    (let [nspc (ensure-ns ns)
          ctx ^{:lite nil} (binding [*ns* nspc]
                             (cache-context context))]
-     (binding [*extra-metadata* extra-metadata]
+     (binding ^{:lite []} [*extra-metadata* extra-metadata]
        (let [candidate-fns (keep (fn [[_ src]]
                                    (when (:enabled src)
                                      (:candidates src)))
@@ -55,6 +56,7 @@
                                    (all-sources sources)
                                    (all-sources)))
              candidates (into [] (comp (map (fn [f] (f prefix nspc ctx))) cat) candidate-fns)]
+         ^{:lite '(sort-by :candidate candidates)}
          (compliment.sources/sort-candidates candidates sort-order))))))
 
 ^{:lite nil}
