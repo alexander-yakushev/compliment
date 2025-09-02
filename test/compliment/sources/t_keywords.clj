@@ -30,7 +30,7 @@
          (strip-tags (src/candidates "::core/ali" (find-ns 'compliment.sources.t-keywords) nil))))
 
   (testing "namespace aliases are completed when double colon"
-    (is? ["::src"]
+    (is? ["::src/"]
          (strip-tags (src/candidates "::s" (find-ns 'compliment.sources.t-keywords) nil))))
 
   (testing "keyword candidates have a special tag"

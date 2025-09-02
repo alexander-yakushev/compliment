@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [#126](https://github.com/alexander-yakushev/compliment/pull/126): Append `/`
+  when completing aliases in keywords.
+
 ### 0.7.0 (2025-03-25)
 
 - [cider#3792](https://github.com/clojure-emacs/cider/issues/3792): Don't fail
