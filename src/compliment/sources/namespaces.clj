@@ -39,16 +39,17 @@
              :priority (namespace-priority ns-str)})
 
           ns-names (set (map :candidate cands-from-classpath))
-          ns-sym->cand #(let [ns-str (name %)]
+          ns-sym->cand #(let [ns-str (name %1)]
                           (when (and (nscl-matches? prefix ns-str)
                                      (not (ns-names ns-str)))
-                            {:candidate (str literals ns-str), :type :namespace
+                            {:candidate (str literals ns-str %2)
+                             :type :namespace
                              :priority (namespace-priority ns-str)}))]
       ;; Add aliases and runtime namespaces not found on the classpath.
       (-> cands-from-classpath
-          (into (keep ns-sym->cand) (keys (ns-aliases ns)))
+          (into (keep #(ns-sym->cand % "/")) (keys (ns-aliases ns)))
           (into (comp (map ns-name)
-                      (keep ns-sym->cand))
+                      (keep #(ns-sym->cand % nil)))
                 (all-ns))))))
 
 ^{:lite nil}

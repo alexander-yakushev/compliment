@@ -4,6 +4,8 @@
 
 - [#126](https://github.com/alexander-yakushev/compliment/pull/126): Append `/`
   when completing aliases in keywords.
+- [#127](https://github.com/alexander-yakushev/compliment/pull/127): Append `/`
+  when completing namespace aliases.
 
 ### 0.7.0 (2025-03-25)
 
