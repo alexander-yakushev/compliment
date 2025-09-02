@@ -133,7 +133,7 @@
          (core/completions "cl.test.ta" {}))
 
     ;; Test for aliases
-    (is? (mc/embeds [{:type :namespace, :candidate "core"}])
+    (is? (mc/embeds [{:type :namespace, :candidate "core/"}])
          (core/completions "cor" {:ns 'compliment.t-core}))
 
     (is? [{:type :class, :candidate "clojure.lang.LispReader"}]

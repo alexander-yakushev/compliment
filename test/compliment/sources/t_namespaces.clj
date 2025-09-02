@@ -32,7 +32,7 @@
                      "clojure.stacktrace" "clojure.string"])
          (strip-tags (src/candidates "cl.s" (-ns) nil)))
 
-    (is? ["src"]
+    (is? ["src/"]
          (strip-tags (src/candidates "src" (-ns) nil)))
 
     (is? (mc/embeds [{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
@@ -44,10 +44,10 @@
 
   (testing "aliases are completed by this source too"
     (require '[clojure.string :as str])
-    (is? ["str"] (strip-tags (src/candidates "st" (-ns) nil)))
+    (is? ["str/"] (strip-tags (src/candidates "st" (-ns) nil)))
 
     (require '[clojure.string :as c.str])
-    (is? (mc/embeds ["c.str"])
+    (is? (mc/embeds ["c.str/"])
          (strip-tags (src/candidates "c.st" (-ns) nil))))
 
   (testing "priorities"
