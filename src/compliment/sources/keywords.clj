@@ -32,7 +32,7 @@
     (for [[alias _] (ns-aliases ns)
           :let [aname (name alias)]
           :when (.startsWith aname prefix)]
-      (tagged-candidate (str "::" aname)))))
+      (tagged-candidate (str "::" aname "/")))))
 
 (defn aliased-candidates
   "Returns a list of alias-qualified double-colon keywords (like ::str/foo),
@@ -53,9 +53,10 @@
     (cond (and double-colon? has-slash?) (aliased-candidates prefix ns)
           double-colon? (concat (qualified-candidates prefix ns)
                                 (namespace-alias-candidates prefix ns))
-          single-colon? (for [[kw _] @keywords-table
-                              :when (.startsWith (str kw) (subs prefix 1))]
-                          (tagged-candidate (str ":" kw))))))
+          single-colon? (let [prefix (subs prefix 1)]
+                          (for [[kw _] @keywords-table
+                                :when (.startsWith (str kw) prefix)]
+                            (tagged-candidate (str ":" kw)))))))
 
 ^{:lite '(defsource :compliment.lite/keywords :candidates #'keyword-candidates)}
 (defsource ::keywords
