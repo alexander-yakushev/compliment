@@ -5,6 +5,7 @@
                                       *extra-metadata* split-by-leading-literals]])
   (:import java.io.StringWriter))
 
+^{:lite nil}
 (def ^:private base-priority 30)
 
 (defn var-symbol?
@@ -60,6 +61,21 @@
         (println " " (:doc m))))
     (str *out*)))
 
+^{:lite nil}
+(defn- add-extra-metadata [cand {:keys [private deprecated arglists doc] :as m}]
+  (cond-> cand
+    (and private (:private *extra-metadata*))
+    (assoc :private (boolean private))
+
+    (and deprecated (:deprecated *extra-metadata*))
+    (assoc :deprecated (boolean deprecated))
+
+    (and arglists (:arglists *extra-metadata*))
+    (assoc :arglists (apply list (map pr-str arglists)))
+
+    (and doc (:doc *extra-metadata*))
+    (assoc :doc (generate-docstring m))))
+
 (defn ^{:lite 'vars-candidates} candidates
   "Returns a list of namespace-bound candidates, with namespace being
   either the scope (if prefix is scoped), `ns` arg or the namespace
@@ -80,34 +96,24 @@
         (for [[var-sym var] vars
               :let [var-name (name var-sym)]
               :when (and (var? var) (dash-matches? prefix var-name))
-              :let [{:keys [arglists doc private deprecated] :as var-meta} (meta var)]
+              :let [var-meta (meta var)]
               :when (not (:completion/hidden var-meta))
               :let [var-ns (.ns ^clojure.lang.Var var)
                     this-ns? (= var-ns ns)
-                    clojure-ns? (some-> var-ns ns-name name (.startsWith "clojure"))]]
+                    clojure-ns? ^{:lite true} (some-> var-ns ns-name name (.startsWith "clojure"))]]
           (cond-> {:candidate (str literals
                                    (if scope
                                      (str scope-name "/" var-name)
                                      var-name))
                    :type (cond (:macro var-meta) :macro
-                               arglists :function
+                               (:arglists var-meta) :function
                                :else :var)
                    :ns (str (or (:ns var-meta) ns))
                    ;; Priority rule: vars from requested ns, then from Clojure
                    ;; namespaces, then the rest.
-                   :priority (+ base-priority
-                                (cond this-ns? 0, clojure-ns? 1, :else 2))}
-            (and private (:private *extra-metadata*))
-            (assoc :private (boolean private))
-
-            (and deprecated (:deprecated *extra-metadata*))
-            (assoc :deprecated (boolean deprecated))
-
-            (and arglists (:arglists *extra-metadata*))
-            (assoc :arglists (apply list (map pr-str arglists)))
-
-            (and doc (:doc *extra-metadata*))
-            (assoc :doc ^{:lite 'doc} (generate-docstring var-meta))))))))
+                   :priority ^{:lite 0} (+ base-priority
+                                           (cond this-ns? 0, clojure-ns? 1, :else 2))}
+            *extra-metadata* ^{:lite '(identity)} (add-extra-metadata var-meta)))))))
 
 ^{:lite nil}
 (defn- resolve-var [symbol-str ns]

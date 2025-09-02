@@ -31,6 +31,9 @@ it does not support:
 - **Local bindings and resources.** Those two sources of completions completely
   rely on context, so they are disabled in Compliment-lite.
 - **Documentation.** `documentation` function is absent from Compliment-lite.
+- **Extra metadata.** You cannot request extra metadata like `:arglists` or
+  `:doc` for Var candidates.
+- **Advanced sorting.** Compliment-lite sorts candidates alphabetically.
 
 ## How it is created
 
