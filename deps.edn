@@ -27,6 +27,9 @@
                          "--test-ns-regex" ".+\\.t-(?!benchmark)[^.]+$"
                          "--codecov"]}
 
+  :kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2025.07.28"}}
+          :main-opts ["-m" "clj-kondo.main"]}
+
   :eastwood {:extra-deps {jonase/eastwood {:mvn/version "1.4.3"}}
              :main-opts ["-m" "eastwood.lint"
                          {:ignored-faults {:bad-arglists {compliment.sources.t-local-bindings true}

@@ -76,6 +76,7 @@ jobs:
             - run: CLOJURE_VERSION=1.10 clojure -X:1.10:test:no-bench
             - run: CLOJURE_VERSION=1.11 clojure -X:1.11:test:no-bench
             - run: CLOJURE_VERSION=1.12 clojure -X:1.12:test
+            - run: clojure -M:kondo --lint src
             - run: clojure -M:eastwood
 
   coverage:
