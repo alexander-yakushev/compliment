@@ -47,6 +47,14 @@ commands:
             done | sha256sum | awk '{print $1}' > /tmp/clojure_cache_seed
       - restore_cache:
           key: cache-<< parameters.cache_key >>-{{ checksum "/tmp/clojure_cache_seed" }}
+      - run:
+          name: Download extras
+          command: |
+            # Skip Codecov download if present
+            [ -e /usr/local/bin/codecov ] && exit
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            mv codecov /usr/local/bin/codecov
       - steps: << parameters.steps >>
       - save_cache:
           paths:
@@ -75,13 +83,10 @@ jobs:
     steps:
       - checkout
       - with_cache:
-          cache_key: "coverage_v1"
+          cache_key: "coverage_v2"
           steps:
             - run: CLOJURE_VERSION=1.12 clojure -M:test:coverage:1.12
-            - run: >
-                curl -Os https://uploader.codecov.io/latest/linux/codecov &&
-                chmod +x codecov &&
-                ./codecov -f target/coverage/codecov.json -t ${CODECOV_TOKEN} -R .
+            - run: codecov -f target/coverage/codecov.json -t ${CODECOV_TOKEN} -R .
             - store_artifacts:
                 path: target/coverage
 
@@ -102,9 +107,12 @@ jobs:
          name: Deploy
          command: clojure -T:build deploy :version \"$CIRCLE_TAG\"
 
-tags_filter: &tags_filter
-  tags:
-    only: /^\d+\.\d+\.\d+/
+run_always: &run_always
+  filters:
+    branches:
+      only: /.*/
+    tags:
+      only: /.*/
 
 workflows:
   run_all:
@@ -113,16 +121,17 @@ workflows:
           matrix:
             parameters:
               jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk24]
-          filters:
-            branches:
-              only: /.*/
-            <<: *tags_filter
-      - test-lite
-      - coverage
+          <<: *run_always
+      - test-lite:
+          <<: *run_always
+      - coverage:
+          <<: *run_always
       - deploy:
           requires:
             - test
+            - test-lite
           filters:
             branches:
               ignore: /.*/
-            <<: *tags_filter
+            tags:
+              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/
