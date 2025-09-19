@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.7.1 (2025-09-19)
+
 - [#126](https://github.com/alexander-yakushev/compliment/pull/126): Append `/`
   when completing aliases in keywords.
 - [#127](https://github.com/alexander-yakushev/compliment/pull/127): Append `/`
