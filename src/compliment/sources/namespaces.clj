@@ -24,7 +24,7 @@
 
 (defn ^{:lite 'namespaces-candidates} candidates
   "Return a list of namespace candidates."
-  [^String prefix, ns context]
+  [^String prefix, ns _context]
   (when (nscl-symbol? prefix)
     (let [has-dot (> (.indexOf prefix ".") -1)
           [literals prefix] (utils/split-by-leading-literals prefix)
