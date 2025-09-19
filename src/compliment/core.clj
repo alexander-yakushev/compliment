@@ -17,8 +17,7 @@
             [compliment.sources :refer [all-sources]]
             [compliment.context :refer [cache-context]]
             [compliment.utils :refer [*extra-metadata*]]
-            [clojure.string :refer [join]])
-  (:import java.util.Comparator))
+            [clojure.string :refer [join]]))
 
 (defn ensure-ns
   "Takes either a namespace object or a symbol and returns the corresponding
@@ -42,7 +41,8 @@
    - :sources - list of source keywords to use."
   ([prefix]
    (completions prefix {}))
-  ([prefix ^{:lite {:keys [ns context sources]}}
+  (#_{:clj-kondo/ignore [:unresolved-symbol]}
+   [prefix ^{:lite {:keys [ns context sources]}}
     {:keys [ns context sort-order sources extra-metadata]
      :or {sort-order :by-length}}]
    (let [nspc (ensure-ns ns)
@@ -68,7 +68,7 @@
   ([symbol-str]
    (documentation symbol-str *ns*))
   ([symbol-str ns]
-   (documentation symbol-str *ns* nil))
+   (documentation symbol-str ns nil))
   ([symbol-str ns options-map]
    (let [{:keys [sources]} options-map]
      (if (empty? symbol-str)

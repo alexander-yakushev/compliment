@@ -239,10 +239,10 @@
   [[^Class cl members]]
   (let [^Member f-mem (first members)]
     (str (.getName cl) "." (.getName f-mem)
-         (str " = " (try (.get ^Field f-mem nil)
-                         (catch Exception _e "?"))
-              " (" (type-to-pretty-string (.getType ^Field f-mem)) ")\n"
-              (Modifier/toString (.getModifiers f-mem)))
+         " = " (try (.get ^Field f-mem nil)
+                    (catch Exception _e "?"))
+         " (" (type-to-pretty-string (.getType ^Field f-mem)) ")\n"
+         (Modifier/toString (.getModifiers f-mem))
          "\n")))
 
 ^{:lite nil}
