@@ -20,9 +20,9 @@ executors:
     docker:
       - image: clojure:temurin-21-noble
     <<: *defaults
-  jdk24:
+  jdk25:
     docker:
-      - image: clojure:temurin-24-noble
+      - image: clojure:temurin-25-noble
     <<: *defaults
 
 commands:
@@ -121,7 +121,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk24]
+              jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk25]
           <<: *run_always
       - test-lite:
           <<: *run_always
