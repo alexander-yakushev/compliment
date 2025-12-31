@@ -1,17 +1,17 @@
 {:paths ["src"]
- :deps {org.clojure/clojure {:mvn/version "1.12.3" :mvn/scope "provided"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.4" :mvn/scope "provided"}}
 
  :aliases
- {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.10"}
+ {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.11"}
                  slipset/deps-deploy {:mvn/version "0.2.2"}}
           :ns-default build}
 
   :1.10 {:override-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
   :1.11 {:override-deps {org.clojure/clojure {:mvn/version "1.11.4"}}}
-  :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.3"}}}
+  :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.4"}}}
 
   :test {:extra-paths ["test"]
-         :extra-deps {nubank/matcher-combinators {:mvn/version "3.9.1"}
+         :extra-deps {nubank/matcher-combinators {:mvn/version "3.9.2"}
                       criterium/criterium {:mvn/version "0.4.6"}
                       io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
                                                             :git/sha "dfb30dd"}}
@@ -27,7 +27,7 @@
                          "--test-ns-regex" ".+\\.t-(?!benchmark)[^.]+$"
                          "--codecov"]}
 
-  :kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2025.09.22"}}
+  :kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2025.12.23"}}
           :main-opts ["-m" "clj-kondo.main"]}
 
   :eastwood {:extra-deps {jonase/eastwood {:mvn/version "1.4.3"}}
