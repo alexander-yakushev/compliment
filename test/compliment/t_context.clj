@@ -76,7 +76,10 @@
                                  __prefix__)})
          (->> (ctx/parse-context
                (#'ctx/safe-read-context-string "(remove #(some #{(:value %)}) __prefix__)"))
-              (walk/postwalk #(if (and (symbol? %) (.endsWith (name %) "#"))
+              (walk/postwalk #(if (and (symbol? %)
+                                      (or (.endsWith (name %) "#")
+                                          ;; bb reader uses %1, %2, etc. instead of gensyms
+                                          (re-matches #"%\d+" (name %))))
                                 'arg1
                                 %)))))
 

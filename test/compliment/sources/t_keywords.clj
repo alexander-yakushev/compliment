@@ -35,7 +35,8 @@
 
   (testing "keyword candidates have a special tag"
     (str :it-is-deprecated)
-    (is? [{:candidate ":it-is-deprecated" :type :keyword}]
+    ;; use embeds because bb has additional keywords registered at startup
+    (is? (mc/embeds [{:candidate ":it-is-deprecated" :type :keyword}])
          (src/candidates ":it" *ns* nil)))
 
   (testing "namespace aliases without namespace are handled"

@@ -13,3 +13,14 @@
 
 (def jdk11+? (try (resolve 'java.lang.Runtime$Version)
                   (catch Exception _)))
+
+(def bb? (some? (System/getProperty "babashka.version")))
+
+(defmacro when-not-bb [& body]
+  (when-not bb?
+    `(do ~@body)))
+
+(defmacro if-bb [then else]
+  (if bb?
+    then
+    else))
