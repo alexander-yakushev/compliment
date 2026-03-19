@@ -7,6 +7,23 @@
                                                 resolve-class]])
   (:import [java.lang.reflect Field Member Method Modifier Constructor Executable]))
 
+;; In babashka, sci.lang.Type passes class? but doesn't support
+;; java.lang.Class reflection methods. These helpers handle that gracefully.
+(defn- class-methods
+  "Return methods of `class`, or nil if not supported (e.g. sci.lang.Type)."
+  [^Class class]
+  (try (.getMethods class) (catch Exception _ nil)))
+
+(defn- class-fields
+  "Return fields of `class`, or nil if not supported (e.g. sci.lang.Type)."
+  [^Class class]
+  (try (.getFields class) (catch Exception _ nil)))
+
+(defn- class-constructors
+  "Return constructors of `class`, or nil if not supported (e.g. sci.lang.Type)."
+  [^Class class]
+  (try (.getConstructors class) (catch Exception _ nil)))
+
 ^{:lite nil}
 (def ^:private base-priority 40)
 
@@ -39,7 +56,7 @@
   [ns classes]
   (let [members
         (for [^Class class classes
-              ^Member member (concat (.getMethods class) (.getFields class))
+              ^Member member (concat (class-methods class) (class-fields class))
               :when (not (static? member))]
           (let [dc (.getDeclaringClass member)
                 name (.getName member)
@@ -85,8 +102,8 @@
   "Populates qualified methods cache for a given class."
   [^Class class]
   (swap! class-members-cache assoc class
-         (let [methods&fields (concat (.getMethods class) (.getFields class))
-               constructors   (.getConstructors class)
+         (let [methods&fields (concat (class-methods class) (class-fields class))
+               constructors   (class-constructors class)
                member->type   #(if (instance? Field %)
                                  (if (static? %) :static-field :field)
                                  (if (static? %) :static-method :method))
@@ -261,8 +278,7 @@
 
 ^{:lite nil}
 (defn classname-doc [^Class class]
-  (let [members (group-by static? (concat (.getMethods class)
-                                          (.getFields class)))
+  (let [members (group-by static? (concat (class-methods class) (class-fields class)))
         [static non-static] (for [flag [true false]]
                               (->> (for [^Member m (members flag)]
                                      (.getName m))
