@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [compliment.core :as core]
             [compliment.t-helpers :refer :all]
+            [compliment.utils :refer [if-bb]]
             [compliment.sources.class-members :as class-members]
             [matcher-combinators.matchers :as mc]))
 

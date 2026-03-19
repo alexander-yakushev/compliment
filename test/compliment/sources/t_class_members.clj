@@ -3,6 +3,7 @@
             [compliment.context :as ctx]
             [compliment.sources.class-members :as src]
             [compliment.t-helpers :refer :all]
+            [compliment.utils :refer [if-bb]]
             [matcher-combinators.matchers :as mc]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-class-members))

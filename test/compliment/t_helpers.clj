@@ -20,6 +20,3 @@
 (defmacro when-not-bb [& body]
   (when-not bb?
     `(do ~@body)))
-
-(defmacro if-bb [then else]
-  `(utils/if-bb ~then ~else))
