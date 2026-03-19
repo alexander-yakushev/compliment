@@ -47,7 +47,6 @@
 
   (testing "aliases are completed by this source too"
     (require '[clojure.string :as str])
-    ;; use embeds because bb has additional namespaces matching "st"
     (is? (mc/embeds ["str/"]) (strip-tags (src/candidates "st" (-ns) nil)))
 
     (require '[clojure.string :as c.str])

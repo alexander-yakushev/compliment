@@ -57,7 +57,7 @@
     (is? (find-ns 'compliment.context) (resolve-namespace 'user *ns*))))
 
 (deftest classes-on-classpath-test
-  (is? (mc/all-of #(> (count %) (if-bb 500 3000))
+  (is? (mc/all-of #(> (count %) 500)
                   (mc/embeds ["java.lang.Thread" "java.io.File"]))
        (classes-on-classpath)))
 

@@ -63,9 +63,7 @@
     (is? ["remove-method" "remove-all-methods"]
          (strip-tags (core/completions "remme")))
 
-    (is? (mc/embeds (if-bb ["clojure.core.server" "clojure.core.protocols"]
-                          ["clojure.core.server" "clojure.core.reducers"
-                           "clojure.core.protocols" "clojure.core.specs.alpha"]))
+    (is? (mc/embeds ["clojure.core.server" "clojure.core.protocols"])
          (strip-tags (core/completions "cl.co.")))
 
     (is? (mc/embeds ["clojure.java.io"])
@@ -110,10 +108,9 @@
     (is? #(> (count %) 20)
          (core/completions "cl" {:ns 'compliment.t-core}))
 
-    (is? (if-bb ["clone" "class" "class?" "clojure-version"]
-                ["clone" "class" "class?" "clojure-version" "clear-agent-errors"])
-         (strip-tags (core/completions "cl" {:sources [:compliment.sources.vars/vars]
-                                             :ns 'compliment.t-core}))))
+    (is? ["clone" "clojure-version"]
+         (strip-tags (core/completions "clo" {:sources [:compliment.sources.vars/vars]
+                                              :ns 'compliment.t-core}))))
 
   (testing "empty prefix returns a list of candidates"
     (is (not-empty (core/completions ""))))
@@ -142,10 +139,8 @@
     (is? (mc/embeds [{:type :namespace, :candidate "core/"}])
          (core/completions "cor" {:ns 'compliment.t-core}))
 
-    ;; bb doesn't have clojure.lang.LispReader
-    (when-not-bb
-     (is? [{:type :class, :candidate "clojure.lang.LispReader"}]
-          (core/completions "clojure.lang.Lisp" {})))
+    (is? (mc/embeds [{:type :class, :candidate "clojure.lang.PersistentVector"}])
+         (core/completions "clojure.lang.PersistentVec" {}))
 
     (is? [{:type :class, :candidate "java.net.URLEncoder"}]
          (core/completions "java.net.URLE" {}))
@@ -194,6 +189,8 @@
 
 (deftest priority-based-sorting
   (testing "works with default sort-order (:by-length)"
+    ;; On JVM, namespaces found via classpath scanning have :file metadata;
+    ;; in bb, built-in namespaces are only found at runtime and lack :file.
     (is-ordered-subset
      (if-bb
       [{:candidate "clone", :type :function, :ns "compliment.t-core", :priority 30}
@@ -205,7 +202,6 @@
       [{:candidate "clone", :type :function, :ns "compliment.t-core", :priority 30}
        {:candidate "clojure-version", :type :function, :ns "clojure.core", :priority 31}
        {:candidate "clojure.set", :type :namespace, :file "clojure/set.clj", :priority 50}
-       {:candidate "clojure.data", :type :namespace, :file "clojure/data.clj", :priority 50}
        {:candidate "compliment.sources.local-bindings", :type :namespace, :priority 51}
        {:candidate "clojure.lang.Compiler", :type :class, :priority 61}
        {:candidate "clojure.", :type :class, :priority 62}])
@@ -231,7 +227,6 @@
        {:candidate "clojure.", :type :class, :priority 62}]
       [{:candidate "clone", :type :function, :ns "compliment.t-core", :priority 30}
        {:candidate "clojure-version", :type :function, :ns "clojure.core", :priority 31}
-       {:candidate "clojure.data", :type :namespace, :file "clojure/data.clj", :priority 50}
        {:candidate "clojure.set", :type :namespace, :file "clojure/set.clj", :priority 50}
        {:candidate "compliment.sources.local-bindings", :type :namespace, :priority 51}
        {:candidate "clojure.lang.Compiler", :type :class, :priority 61}

@@ -217,7 +217,7 @@
 
 (def ^:private bb? (System/getProperty "babashka.version"))
 
-(defmacro ^:private if-bb [then else]
+(defmacro if-bb [then else]
   (if bb? then else))
 
 (defn- recache-files-on-classpath []

@@ -1,5 +1,6 @@
 (ns compliment.t-helpers
   (:require [clojure.test :refer [is]]
+            [compliment.utils :as utils]
             [matcher-combinators.test :refer [match?]]))
 
 (defn strip-tags
@@ -21,6 +22,4 @@
     `(do ~@body)))
 
 (defmacro if-bb [then else]
-  (if bb?
-    then
-    else))
+  `(utils/if-bb ~then ~else))

@@ -35,7 +35,6 @@
 
   (testing "keyword candidates have a special tag"
     (str :it-is-deprecated)
-    ;; use embeds because bb has additional keywords registered at startup
     (is? (mc/embeds [{:candidate ":it-is-deprecated" :type :keyword}])
          (src/candidates ":it" *ns* nil)))
 

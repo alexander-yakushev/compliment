@@ -185,16 +185,10 @@
                                                            "(__prefix__ a-str)")))))
 
   (testing "completes members of context object even if its class is not imported"
-    ;; java.util.BitSet is not available in bb, use java.net.URI instead
-    (if-bb
-     (do (def a-uri (java.net.URI. "http://example.com"))
-         (is? [".getHost"]
-              (strip-tags (src/members-candidates ".getHo" (-ns) (ctx/cache-context
-                                                                   "(__prefix__ a-uri)")))))
-     (do (def a-bitset (java.util.BitSet.))
-         (is? [".intersects"]
-              (strip-tags (src/members-candidates ".inter" (-ns) (ctx/cache-context
-                                                                   "(__prefix__ a-bitset)")))))))
+    (def a-uri (java.net.URI. "http://example.com"))
+    (is? [".getHost"]
+         (strip-tags (src/members-candidates ".getHo" (-ns) (ctx/cache-context
+                                                              "(__prefix__ a-uri)")))))
 
   (testing "given a subclass context, superclass members are suggested when not imported"
     (is? (mc/embeds [".getLineNumber" ".markSupported"])

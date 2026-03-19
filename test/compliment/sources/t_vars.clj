@@ -88,7 +88,6 @@
 
   (testing "private vars will be suggested when prefixed with var quote"
     ;; no candidate for a non-public var
-    ;; use binding-conveyor-fn because it's private in both Clojure and bb
     (is? []
          (strip-tags (src/candidates "clojure.core/binding-conveyor-fn" (-ns) nil)))
     ;; var quote works though
