@@ -6,6 +6,16 @@
             [compliment.sources.namespaces :refer [nscl-symbol? nscl-matches?]])
   (:import java.util.HashSet))
 
+(defn- split-class-name
+  "Splits a fully qualified class name into [package simple-name].
+  Used instead of .getSimpleName/.getPackage which aren't available on
+  babashka's sci.lang.Type."
+  [^String fqname]
+  (let [i (.lastIndexOf fqname ".")]
+    (if (pos? i)
+      [(subs fqname 0 i) (subs fqname (inc i))]
+      [nil fqname])))
+
 ^{:lite nil}
 (def ^:private base-priority 60)
 
@@ -81,14 +91,14 @@
            (fn [result _ ^Class v]
              (if (class? v)
                (let [fqname (.getName v)
-                     sname (.getSimpleName v)]
+                     [pkg sname] (split-class-name fqname)]
                  (cond-> result
                    (and (nscl-matches? prefix fqname) (include? fqname true))
                    (conj! (str->cand fqname fqname))
 
                    (and (nscl-matches? prefix sname) (include? sname true))
                    (conj! {:candidate sname, :type :class,
-                           :package (some-> (.getPackage v) .getName)
+                           :package pkg
                            :priority ^{:lite 0} (+ base-priority (priority-by-name fqname))})))
                result))
            result (ns-map ns))
