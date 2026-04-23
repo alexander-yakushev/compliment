@@ -1,20 +1,30 @@
 (ns compliment.sources.classes
   "Completion for class names."
-  (:require [compliment.sources :refer [defsource]]
+  (:require [clojure.string :as str]
+            [compliment.sources :refer [defsource]]
             [compliment.utils :as utils]
             [compliment.sources.class-members :refer [classname-doc]]
             [compliment.sources.namespaces :refer [nscl-symbol? nscl-matches?]])
   (:import java.util.HashSet))
 
-(defn- split-class-name
-  "Splits a fully qualified class name into [package simple-name].
-  Used instead of .getSimpleName/.getPackage which aren't available on
-  babashka's sci.lang.Type."
-  [^String fqname]
-  (let [i (.lastIndexOf fqname ".")]
-    (if (pos? i)
-      [(subs fqname 0 i) (subs fqname (inc i))]
-      [nil fqname])))
+(defn- get-simple-name
+  "Like `.getSimpleName` but also works on babashka's sci.lang.Type."
+  ^String [^Class klass]
+  (utils/if-bb
+   (let [fqname (.getName klass)
+         i (str/last-index-of fqname ".")]
+     (if i (subs fqname (inc i)) fqname))
+   (.getSimpleName klass)))
+
+(defn- get-package
+  "Like `(.. klass getPackage getName)` but also works on babashka's
+  sci.lang.Type."
+  ^String [^Class klass]
+  (utils/if-bb
+   (let [fqname (.getName klass)
+         i (str/last-index-of fqname ".")]
+     (when i (subs fqname 0 i)))
+   (some-> (.getPackage klass) .getName)))
 
 ^{:lite nil}
 (def ^:private base-priority 60)
@@ -91,7 +101,8 @@
            (fn [result _ ^Class v]
              (if (class? v)
                (let [fqname (.getName v)
-                     [pkg sname] (split-class-name fqname)]
+                     pkg (get-package v)
+                     sname (get-simple-name v)]
                  (cond-> result
                    (and (nscl-matches? prefix fqname) (include? fqname true))
                    (conj! (str->cand fqname fqname))
