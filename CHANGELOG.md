@@ -2,6 +2,11 @@
 
 ### master (unreleased)
 
+### 0.8.0 (2026-04-24)
+
+- [#131](https://github.com/alexander-yakushev/compliment/pull/131): Add
+  babashka compatibility.
+
 ### 0.7.1 (2025-09-19)
 
 - [#126](https://github.com/alexander-yakushev/compliment/pull/126): Append `/`
