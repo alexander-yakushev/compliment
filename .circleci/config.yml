@@ -100,8 +100,8 @@ jobs:
           files: "bb.edn deps.edn"
           steps:
             - run:
-                name: Install bb dev build
-                command: bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install) --dev-build --dir .
+                name: Install bb
+                command: bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install) --dir .
             - run: ./bb test:bb
 
   test-lite:
