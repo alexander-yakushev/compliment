@@ -215,10 +215,26 @@
                        {:ns-str ns-str, :file file}))))
         files))
 
+(def ^:private bb? (System/getProperty "babashka.version"))
+
+(defmacro if-bb [then else]
+  (if bb? then else))
+
 (defn- recache-files-on-classpath []
   (with-classpath-cache :files-on-classpath
     (let [files (all-files-on-classpath* (classpath))
-          [classes roots] (classes-on-classpath* files)]
+          [classes roots] (if-bb
+                           (let [classes (into []
+                                              (comp (map #(.getName ^Class %))
+                                                    (remove #(.startsWith ^String % "[")))
+                                              #_:clj-kondo/ignore
+                                              (babashka.classes/all-classes))
+                                 roots (into #{} (keep (fn [^String c]
+                                                         (let [idx (.indexOf c ".")]
+                                                           (when (pos? idx) (subs c 0 idx)))))
+                                             classes)]
+                             [classes roots])
+                           (classes-on-classpath* files))]
       {:classes classes
        :root-packages roots
        :namespaces (namespaces-on-classpath* files)})))

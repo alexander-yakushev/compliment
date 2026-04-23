@@ -89,10 +89,10 @@
   (testing "private vars will be suggested when prefixed with var quote"
     ;; no candidate for a non-public var
     (is? []
-         (strip-tags (src/candidates "clojure.core/print-tagged-object" (-ns) nil)))
+         (strip-tags (src/candidates "clojure.core/binding-conveyor-fn" (-ns) nil)))
     ;; var quote works though
-    (is? ["#'clojure.core/print-tagged-object"]
-         (strip-tags (src/candidates "#'clojure.core/print-tagged-object" (-ns) nil)))
+    (is? ["#'clojure.core/binding-conveyor-fn"]
+         (strip-tags (src/candidates "#'clojure.core/binding-conveyor-fn" (-ns) nil)))
     (is? ["#'src/resolve-var"]
          (strip-tags (src/candidates "#'src/resolve-var" (-ns) nil))))
 

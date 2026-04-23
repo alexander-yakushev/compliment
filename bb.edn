@@ -1,0 +1,9 @@
+{:paths ["src" "test"]
+ :deps {nubank/matcher-combinators {:mvn/version "3.9.2"}}
+ :tasks {test:bb {:doc "Run tests under babashka"
+               :task (exec 'cognitect.test-runner.api/test)
+               :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
+                                                                   :git/sha "dfb30dd"}}
+               ;; exclude t-classes (classpath-only) and t-benchmark
+               :exec-args {:patterns ["compliment\\.(?!sources\\.t-classes|t-benchmark).*"]}}}}
+

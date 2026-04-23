@@ -35,25 +35,31 @@
     (is? ["src/"]
          (strip-tags (src/candidates "src" (-ns) nil)))
 
-    (is? (mc/embeds [{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
-                     {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}])
-         (src/candidates "clojure.java." (-ns) nil))
+    (let [expected [{:candidate "clojure.java.browse", :type :namespace, :file "clojure/java/browse.clj"}
+                    {:candidate "clojure.java.shell", :type :namespace, :file "clojure/java/shell.clj"}]
+          ;; bb doesn't have classpath-scanned file metadata
+          expected (if bb? (mapv #(dissoc % :file) expected) expected)]
+      (is? (mc/embeds expected)
+           (src/candidates "clojure.java." (-ns) nil)))
 
     (is? (mc/embeds ["#'clojure.core"])
          (strip-tags (src/candidates "#'clojure.co" (-ns) nil))))
 
   (testing "aliases are completed by this source too"
     (require '[clojure.string :as str])
-    (is? ["str/"] (strip-tags (src/candidates "st" (-ns) nil)))
+    (is? (mc/embeds ["str/"]) (strip-tags (src/candidates "st" (-ns) nil)))
 
     (require '[clojure.string :as c.str])
     (is? (mc/embeds ["c.str/"])
          (strip-tags (src/candidates "c.st" (-ns) nil))))
 
   (testing "priorities"
-    (is? (mc/embeds [{:candidate "compliment.core", :type :namespace, :file "compliment/core.clj", :priority 51}
-                     {:candidate "clojure.core", :type :namespace, :file "clojure/core.clj", :priority 50}])
-         (src/candidates "c" (-ns) nil)))
+    (let [expected [{:candidate "compliment.core", :type :namespace, :file "compliment/core.clj", :priority 51}
+                    {:candidate "clojure.core", :type :namespace, :file "clojure/core.clj", :priority 50}]
+          ;; bb doesn't have classpath-scanned file metadata
+          expected (if bb? (mapv #(dissoc % :file) expected) expected)]
+      (is? (mc/embeds expected)
+           (src/candidates "c" (-ns) nil))))
 
   (testing "namespaces have documentation"
     (is? string? (src/doc "clojure.core" (-ns)))

@@ -3,6 +3,7 @@
             [compliment.context :as ctx]
             [compliment.sources.class-members :as src]
             [compliment.t-helpers :refer :all]
+            [compliment.utils :refer [if-bb]]
             [matcher-combinators.matchers :as mc]))
 
 (defn- -ns [] (find-ns 'compliment.sources.t-class-members))
@@ -104,7 +105,8 @@
                                                            "(doto thread (__prefix__) .checkAccess)"))))))
 
 (deftype FooType [x-y x-z])
-(definterface SomeIface (foo_bar [this]))
+;; definterface is not supported in bb
+(when-not-bb (definterface SomeIface (foo_bar [this])))
 
 (deftest class-members-test
   (in-ns 'compliment.sources.t-class-members)
@@ -184,10 +186,10 @@
                                                            "(__prefix__ a-str)")))))
 
   (testing "completes members of context object even if its class is not imported"
-    (def a-bitset (java.util.BitSet.))
-    (is? [".intersects"]
-         (strip-tags (src/members-candidates ".inter" (-ns) (ctx/cache-context
-                                                             "(__prefix__ a-bitset)")))))
+    (def a-uri (java.net.URI. "http://example.com"))
+    (is? [".getHost"]
+         (strip-tags (src/members-candidates ".getHo" (-ns) (ctx/cache-context
+                                                              "(__prefix__ a-uri)")))))
 
   (testing "given a subclass context, superclass members are suggested when not imported"
     (is? (mc/embeds [".getLineNumber" ".markSupported"])
@@ -207,11 +209,15 @@
                                                                                "(__prefix__ an-object)")))))
 
   (testing "deftype fields are demunged for better compatibility"
-    (is? (mc/in-any-order [".x-z" ".x-y" ".xor"])
+    ;; bb deftype fields aren't reflected as demunged names
+    (is? (if-bb [".xor"]
+                (mc/in-any-order [".x-z" ".x-y" ".xor"]))
          (strip-tags (src/members-candidates ".x" (-ns) nil)))
 
-    (is? [".foo_bar"]
-         (strip-tags (src/members-candidates ".foo" (-ns) nil))))
+    ;; definterface is not supported in bb
+    (when-not-bb
+     (is? [".foo_bar"]
+          (strip-tags (src/members-candidates ".foo" (-ns) nil)))))
 
   (when (#'src/clojure-1-12+?)
     (testing "instance class members have docs"

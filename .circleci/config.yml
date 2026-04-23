@@ -91,6 +91,19 @@ jobs:
             - store_artifacts:
                 path: target/coverage
 
+  test-bb:
+    executor: jdk21
+    steps:
+      - checkout
+      - with_cache:
+          cache_key: "test_bb_v1"
+          files: "bb.edn deps.edn"
+          steps:
+            - run:
+                name: Install bb
+                command: bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install) --dir .
+            - run: ./bb test:bb
+
   test-lite:
     executor: jdk21
     steps:
@@ -124,6 +137,8 @@ workflows:
               jdk_version: [jdk8, jdk11, jdk17, jdk21, jdk25]
           <<: *run_always
       - test-lite:
+          <<: *run_always
+      - test-bb:
           <<: *run_always
       - coverage:
           <<: *run_always
