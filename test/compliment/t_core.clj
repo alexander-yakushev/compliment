@@ -51,7 +51,10 @@
          (strip-tags (core/completions "'core/doc" {:ns (find-ns 'compliment.t-core)})))
 
     (is? ["#'core/documentation"]
-         (strip-tags (core/completions "#'core/doc" {:ns (find-ns 'compliment.t-core)}))))
+         (strip-tags (core/completions "#'core/doc" {:ns (find-ns 'compliment.t-core)})))
+
+    (is? (mc/embeds ["#inst" "#uuid"])
+         (strip-tags (core/completions "#" {}))))
 
   (testing "in case of non-existing namespace doesn't fail"
     (is (core/completions "redu" {:ns nil}))
