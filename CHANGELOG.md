@@ -2,6 +2,8 @@
 
 ### master (unreleased)
 
+### 0.8.1 (2026-07-13)
+
 - [#132](https://github.com/alexander-yakushev/compliment/pull/132): Add
   data-readers source.
 
