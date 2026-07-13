@@ -2,6 +2,9 @@
 
 ### master (unreleased)
 
+- [#132](https://github.com/alexander-yakushev/compliment/pull/132): Add
+  data-readers source.
+
 ### 0.8.0 (2026-04-24)
 
 - [#131](https://github.com/alexander-yakushev/compliment/pull/131): Add
