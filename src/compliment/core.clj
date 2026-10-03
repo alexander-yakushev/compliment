@@ -13,6 +13,7 @@
                                 keywords
                                 special-forms
                                 local-bindings
+                                data-readers
                                 resources)
             [compliment.sources :refer [all-sources]]
             [compliment.context :refer [cache-context]]
