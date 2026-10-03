@@ -2,6 +2,10 @@
 
 ### master (unreleased)
 
+### 0.8.2 (2026-10-03)
+
+- Bugfix: properly enable data-readers source.
+
 ### 0.8.1 (2026-07-13)
 
 - [#132](https://github.com/alexander-yakushev/compliment/pull/132): Add
